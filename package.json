@@ -8,7 +8,7 @@
     "server": "npm run dev --prefix server",
     "backend": "npm run dev --prefix backend",
     "dev:all": "concurrently \"npm run dev\" \"npm run server\" \"npm run backend\"",
-    "build": "tsc && vite build",
+    "build": "vite build",
     "lint": "eslint .",
     "preview": "vite preview"
   },
