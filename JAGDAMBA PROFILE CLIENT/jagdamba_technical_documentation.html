@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Jagdamba Profile - Technical Documentation</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #f5a623;
+            --primary-dark: #d97706;
+            --primary-light: rgba(245, 166, 35, 0.1);
+            --bg-dark: #0f172a;
+            --bg-card: #1e293b;
+            --text-primary: #f8fafc;
+            --text-secondary: #94a3b8;
+            --border: rgba(255, 255, 255, 0.1);
+            --accent-blue: #3b82f6;
+            --accent-green: #10b981;
+            --accent-red: #ef4444;
+            --radius: 16px;
+            --shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.3), 0 10px 10px -5px rgba(0, 0, 0, 0.2);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            line-height: 1.6;
+            color: var(--text-primary);
+            background: var(--bg-dark);
+            padding: 40px 20px;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background: var(--bg-card);
+            padding: 60px;
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            border: 1px solid var(--border);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .container::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, var(--primary), var(--accent-blue), var(--accent-green));
+        }
+
+        .print-btn {
+            position: absolute;
+            top: 30px;
+            right: 30px;
+            background: var(--primary);
+            color: #000;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 30px;
+            font-weight: 700;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 13px;
+            transition: all 0.3s;
+            z-index: 10;
+        }
+
+        .print-btn:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(245, 166, 35, 0.4); }
+
+        header {
+            margin-bottom: 60px;
+            text-align: center;
+        }
+
+        .logo {
+            font-family: 'Outfit', sans-serif;
+            font-size: 36px;
+            font-weight: 800;
+            letter-spacing: -1.5px;
+            margin-bottom: 12px;
+        }
+
+        .logo span { color: var(--primary); }
+
+        h1 { font-family: 'Outfit', sans-serif; font-size: 42px; margin-bottom: 16px; letter-spacing: -1px; }
+        .subtitle { color: var(--text-secondary); font-size: 18px; max-width: 600px; margin: 0 auto; }
+
+        .section-title {
+            font-family: 'Outfit', sans-serif;
+            font-size: 28px;
+            margin: 60px 0 30px;
+            padding-bottom: 12px;
+            border-bottom: 2px solid var(--border);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .section-title span { color: var(--primary); font-size: 14px; text-transform: uppercase; letter-spacing: 2px; }
+
+        .module-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 40px;
+        }
+
+        .module-card {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 30px;
+            transition: all 0.3s;
+        }
+
+        .module-card:hover { border-color: var(--primary); transform: translateX(5px); }
+
+        .module-header {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .module-icon {
+            width: 50px;
+            height: 50px;
+            background: var(--primary-light);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            color: var(--primary);
+        }
+
+        .module-name { font-size: 22px; font-weight: 700; color: var(--primary); }
+
+        .feature-list {
+            list-style: none;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .feature-item {
+            padding-left: 24px;
+            position: relative;
+            font-size: 14px;
+            color: var(--text-secondary);
+        }
+
+        .feature-item::before {
+            content: '→';
+            position: absolute;
+            left: 0;
+            color: var(--primary);
+            font-weight: bold;
+        }
+
+        .feature-item strong { color: var(--text-primary); display: block; margin-bottom: 2px; }
+
+        .tech-box {
+            background: rgba(255, 255, 255, 0.03);
+            padding: 20px;
+            border-radius: 12px;
+            border: 1px solid var(--border);
+            text-align: center;
+        }
+
+        .tech-box h4 { font-size: 12px; text-transform: uppercase; color: var(--primary); margin-bottom: 10px; letter-spacing: 1px; }
+        .tech-box p { font-size: 15px; font-weight: 600; }
+
+        footer {
+            margin-top: 80px;
+            padding-top: 40px;
+            border-top: 1px solid var(--border);
+            text-align: center;
+            color: var(--text-secondary);
+            font-size: 13px;
+        }
+
+        @media print {
+            body { background: white !important; padding: 0 !important; color: black !important; }
+            .container { box-shadow: none !important; border: none !important; width: 100% !important; max-width: 100% !important; padding: 20px !important; background: white !important; color: black !important; }
+            .print-btn { display: none !important; }
+            .module-card { break-inside: avoid !important; border: 1px solid #eee !important; background: #fafafa !important; color: black !important; }
+            .module-name, .logo span, .section-title span { color: #000 !important; }
+            .tech-box { border: 1px solid #eee !important; background: #fafafa !important; }
+            .text-secondary { color: #444 !important; }
+            .feature-item::before { color: #000 !important; }
+        }
+
+        @media (max-width: 768px) {
+            .feature-list { grid-template-columns: 1fr; }
+            .container { padding: 30px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <button class="print-btn" onclick="window.print()">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"></polyline><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect x="6" y="14" width="12" height="8"></rect></svg>
+            Export to PDF
+        </button>
+
+        <header>
+            <div class="logo">Jagdamba <span>Profile</span></div>
+            <h1>Steel Connect Pro ERP</h1>
+            <p class="subtitle">Official Module Documentation & Functional Specification</p>
+        </header>
+
+        <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; margin-bottom: 40px;">
+            <div class="tech-box">
+                <h4>Frontend</h4>
+                <p>React 19 + Vite</p>
+            </div>
+            <div class="tech-box">
+                <h4>Backend</h4>
+                <p>Node.js + MongoDB</p>
+            </div>
+            <div class="tech-box">
+                <h4>Design</h4>
+                <p>Premium Dark UI</p>
+            </div>
+            <div class="tech-box">
+                <h4>Analytics</h4>
+                <p>Recharts API</p>
+            </div>
+        </div>
+
+        <h2 class="section-title">Core Modules <span>System Functional Deep-Dive</span></h2>
+
+        <div class="module-grid">
+            <!-- Contacts -->
+            <div class="module-card">
+                <div class="module-header">
+                    <div class="module-icon">👥</div>
+                    <div class="module-name">Contacts & CRM Module</div>
+                </div>
+                <p style="color: var(--text-secondary); font-size: 15px;">The central nerve center for managing the industrial ecosystem of steel traders, transporters, and retailers.</p>
+                <div class="feature-list">
+                    <div class="feature-item"><strong>Segmented Database</strong>Categorization by Steel Traders, Transporters, and VIP clients.</div>
+                    <div class="feature-item"><strong>Advanced Filtering</strong>Multi-tier filtering by Group, Category, Status, and City.</div>
+                    <div class="feature-item"><strong>Quick Interaction</strong>One-click WhatsApp, Calling, and Email integration.</div>
+                    <div class="feature-item"><strong>Excel Interchange</strong>High-speed import/export for bulk contact management.</div>
+                </div>
+            </div>
+
+            <!-- Master -->
+            <div class="module-card">
+                <div class="module-header">
+                    <div class="module-icon">⚙️</div>
+                    <div class="module-name">Master Data Module</div>
+                </div>
+                <p style="color: var(--text-secondary); font-size: 15px;">The system's configuration engine for defining industrial standards and business categories.</p>
+                <div class="feature-list">
+                    <div class="feature-item"><strong>Category Master</strong>Centralized organization of business groups (Retail, Professional, etc.).</div>
+                    <div class="feature-item"><strong>Steel Grade Master</strong>Dynamic management of industrial steel grades (e.g., IS 2062).</div>
+                    <div class="feature-item"><strong>Association Logic</strong>Real-time tracking of suppliers linked to specific material grades.</div>
+                    <div class="feature-item"><strong>Custom Extensions</strong>Ability to add new custom grades to adapt to market shifts.</div>
+                </div>
+            </div>
+
+            <!-- Reminder -->
+            <div class="module-card">
+                <div class="module-header">
+                    <div class="module-icon">🔔</div>
+                    <div class="module-name">Relationship Reminder System</div>
+                </div>
+                <p style="color: var(--text-secondary); font-size: 15px;">A strategic tool focused on maintaining zero-leakage business relationships and social connectivity.</p>
+                <div class="feature-list">
+                    <div class="feature-item"><strong>Birthday Tracking</strong>Automated monitoring of client birthdays within a 60-day window.</div>
+                    <div class="feature-item"><strong>Follow-up Engine</strong>Categorization of tasks into Overdue, Today, and Upcoming.</div>
+                    <div class="feature-item"><strong>Visual Urgency</strong>Color-coded indicators (Red/Gold) for immediate attention.</div>
+                    <div class="feature-item"><strong>Instant Greeting</strong>Pre-filled social greetings via integrated messaging tools.</div>
+                </div>
+            </div>
+
+            <!-- Reports -->
+            <div class="module-card">
+                <div class="module-header">
+                    <div class="module-icon">📊</div>
+                    <div class="module-name">Business Intelligence & Reports</div>
+                </div>
+                <p style="color: var(--text-secondary); font-size: 15px;">Data-driven visualization module for high-level business strategy and analysis.</p>
+                <div class="feature-list">
+                    <div class="feature-item"><strong>Geographic Analysis</strong>City-wise distribution charts for market concentration.</div>
+                    <div class="feature-item"><strong>VIP Network Reports</strong>Focused analytics on top-tier business partners.</div>
+                    <div class="feature-item"><strong>Supply Chain Stats</strong>Breakdown of suppliers by material grade availability.</div>
+                    <div class="feature-item"><strong>Portable Data</strong>Dedicated Excel export for every analytical report card.</div>
+                </div>
+            </div>
+
+            <!-- Search -->
+            <div class="module-card">
+                <div class="module-header">
+                    <div class="module-icon">🔍</div>
+                    <div class="module-name">Advanced Search Module</div>
+                </div>
+                <p style="color: var(--text-secondary); font-size: 15px;">Precision data retrieval engine for complex multi-field business queries.</p>
+                <div class="feature-list">
+                    <div class="feature-item"><strong>Multi-Field Querying</strong>Simultaneous search across 8+ distinct data fields.</div>
+                    <div class="feature-item"><strong>Niche Discovery</strong>Filter by grade, city, and status in a single operation.</div>
+                    <div class="feature-item"><strong>Actionable Results</strong>Instant contact tools embedded directly in search results.</div>
+                    <div class="feature-item"><strong>Search History</strong>Ability to reset and refine complex queries on the fly.</div>
+                </div>
+            </div>
+
+            <!-- Transport -->
+            <div class="module-card">
+                <div class="module-header">
+                    <div class="module-icon">🚛</div>
+                    <div class="module-name">Transport & Logistics Module</div>
+                </div>
+                <p style="color: var(--text-secondary); font-size: 15px;">Operational hub for managing the logistics fleet and external transporter partners.</p>
+                <div class="feature-list">
+                    <div class="feature-item"><strong>Fleet Tracking</strong>Management of vehicle types, numbers, and ton-capacities.</div>
+                    <div class="feature-item"><strong>Availability Status</strong>Real-time tracking (Available, Busy, Maintenance).</div>
+                    <div class="feature-item"><strong>Driver Database</strong>Linked driver contact details for instant dispatch coordination.</div>
+                    <div class="feature-item"><strong>Partner Integration</strong>Automatic sync with transporter CRM contacts.</div>
+                </div>
+            </div>
+
+            <!-- Staff -->
+            <div class="module-card">
+                <div class="module-header">
+                    <div class="module-icon">👤</div>
+                    <div class="module-name">HR & Staff Management</div>
+                </div>
+                <p style="color: var(--text-secondary); font-size: 15px;">Comprehensive internal management for employees and the recruitment pipeline.</p>
+                <div class="feature-list">
+                    <div class="feature-item"><strong>Employee Profiles</strong>Tracking of skills, departments, and seniority.</div>
+                    <div class="feature-item"><strong>Payroll Monitoring</strong>Secure management of monthly salary structures.</div>
+                    <div class="feature-item"><strong>Recruitment Pipeline</strong>Candidate tracking from application to selection status.</div>
+                    <div class="feature-item"><strong>Departmental Sync</strong>Organization of internal staff by business function.</div>
+                </div>
+            </div>
+        </div>
+
+        <footer>
+            <p>&copy; 2026 Jagdamba Profile Pvt. Ltd. | Confidential Technical Documentation</p>
+            <p>Generated: May 4, 2026</p>
+        </footer>
+    </div>
+</body>
+</html>

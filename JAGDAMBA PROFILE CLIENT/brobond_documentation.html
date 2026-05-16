@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BroBond India - Technical Documentation & System Architecture</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #004AAD;
+            --primary-dark: #00337C;
+            --primary-light: #E6F0FF;
+            --secondary: #64748B;
+            --dark: #0F172A;
+            --slate-50: #F8FAF9;
+            --slate-100: #F1F5F9;
+            --slate-200: #E2E8F0;
+            --slate-800: #1E293B;
+            --accent: #00D1FF;
+            --success: #10B981;
+            --warning: #F59E0B;
+            --border-radius: 16px;
+            --shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            line-height: 1.6;
+            color: var(--slate-800);
+            background: var(--slate-100);
+            padding: 60px 20px;
+        }
+
+        .container {
+            max-width: 1100px;
+            margin: 0 auto;
+            background: white;
+            padding: 80px;
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+            border: 1px solid var(--slate-200);
+        }
+
+        nav {
+            position: sticky;
+            top: 20px;
+            margin-bottom: 60px;
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(10px);
+            padding: 15px;
+            border-radius: 12px;
+            border: 1px solid var(--slate-200);
+            z-index: 100;
+            display: flex;
+            gap: 20px;
+            font-size: 13px;
+            font-weight: 600;
+        }
+
+        nav a { color: var(--secondary); text-decoration: none; transition: color 0.2s; }
+        nav a:hover { color: var(--primary); }
+
+        header {
+            border-bottom: 2px solid var(--slate-100);
+            padding-bottom: 60px;
+            margin-bottom: 60px;
+        }
+
+        .logo {
+            font-family: 'Outfit', sans-serif;
+            font-size: 32px;
+            font-weight: 800;
+            color: var(--dark);
+            letter-spacing: -1px;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .logo img { width: 50px; height: 50px; object-fit: contain; }
+        .logo span { color: var(--primary); }
+
+        h1 { font-family: 'Outfit', sans-serif; font-size: 48px; color: var(--dark); letter-spacing: -1.5px; margin-bottom: 20px; }
+        h2 { font-family: 'Outfit', sans-serif; font-size: 28px; color: var(--dark); margin: 60px 0 30px; padding-bottom: 10px; border-bottom: 2px solid var(--primary-light); position: relative; }
+        h2::after { content: ''; position: absolute; bottom: -2px; left: 0; width: 60px; height: 2px; background: var(--primary); }
+
+        h3 { font-size: 20px; color: var(--primary-dark); margin: 35px 0 15px; }
+
+        .tech-stack-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 25px;
+            margin: 40px 0;
+        }
+
+        .tech-box {
+            background: var(--slate-50);
+            padding: 25px;
+            border-radius: 12px;
+            border: 1px solid var(--slate-200);
+        }
+
+        .tech-box h4 { font-size: 14px; text-transform: uppercase; letter-spacing: 1.5px; color: var(--primary); margin-bottom: 15px; }
+        .tech-box ul { list-style: none; }
+        .tech-box li { font-size: 14px; margin-bottom: 8px; display: flex; justify-content: space-between; }
+        .tech-box li span { color: var(--secondary); font-size: 12px; }
+
+        .module-card {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            border: 1px solid var(--slate-200);
+            margin-bottom: 30px;
+            transition: transform 0.3s;
+        }
+        .module-card:hover { transform: scale(1.01); box-shadow: var(--shadow); }
+
+        .code-snippet {
+            background: var(--dark);
+            color: #d1d5db;
+            padding: 25px;
+            border-radius: 10px;
+            font-family: 'Fira Code', monospace;
+            font-size: 13px;
+            margin: 20px 0;
+            line-height: 1.5;
+            position: relative;
+        }
+        .code-snippet::before { content: 'typescript'; position: absolute; top: 10px; right: 20px; font-size: 10px; text-transform: uppercase; color: var(--secondary); }
+
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 30px 0;
+        }
+        .data-table th { text-align: left; padding: 15px; background: var(--slate-100); font-size: 13px; border-bottom: 2px solid var(--slate-200); }
+        .data-table td { padding: 15px; font-size: 14px; border-bottom: 1px solid var(--slate-100); }
+
+        .architecture-viz {
+            background: var(--slate-50);
+            padding: 40px;
+            border-radius: 12px;
+            margin-top: 20px;
+            text-align: center;
+        }
+
+        .flow-container {
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+
+        .flow-node {
+            background: white;
+            padding: 20px;
+            border: 2px solid var(--primary);
+            border-radius: 8px;
+            width: 180px;
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
+        }
+
+        .flow-node strong { display: block; margin-bottom: 5px; color: var(--primary-dark); }
+        .flow-node span { font-size: 10px; color: var(--secondary); }
+
+        footer {
+            margin-top: 100px;
+            padding-top: 40px;
+            border-top: 2px solid var(--slate-100);
+            color: var(--secondary);
+            font-size: 12px;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .print-btn {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 30px;
+            font-weight: 600;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+            z-index: 1000;
+        }
+
+        @media print {
+            nav, .print-btn { display: none; }
+            .container { padding: 40px; box-shadow: none; border: none; }
+            .module-card { break-inside: avoid; }
+        }
+    </style>
+</head>
+<body>
+    <button class="print-btn" onclick="window.print()">Export to PDF</button>
+
+    <div class="container">
+        <nav>
+            <a href="#overview">Overview</a>
+            <a href="#tech-stack">Tech Stack</a>
+            <a href="#modules">Modules</a>
+            <a href="#data-models">Data Models</a>
+            <a href="#architecture">Architecture</a>
+        </nav>
+
+        <header>
+            <div class="logo"><img src="./brobond_logo.png" alt="BroBond"> BroBond <span>India</span></div>
+            <h1>The Technical Encyclopedia</h1>
+            <p style="font-size: 20px; color: var(--secondary); max-width: 700px;">A comprehensive technical specification for the Shree Nakoda Beverages ERP ecosystem, detailing field sales automation, AI verification, and live tracking logic.</p>
+        </header>
+
+        <section id="overview">
+            <h2>1. System Vision</h2>
+            <p>The BroBond ERP is a mission-critical platform designed to bridge the gap between management and field operations. It transforms traditional beverage distribution into a data-driven ecosystem through real-time telemetry, facial authentication, and automated audit workflows.</p>
+            <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px; margin-top: 30px;">
+                <div style="background: var(--primary-light); padding: 20px; border-radius: 12px;">
+                    <h4 style="color: var(--primary-dark);">Field Automation</h4>
+                    <p style="font-size: 13px;">Eliminating manual paperwork with real-time order entry and GPS-validated visits.</p>
+                </div>
+                <div style="background: #E6FFFA; padding: 20px; border-radius: 12px;">
+                    <h4 style="color: #2C7A7B;">Verification AI</h4>
+                    <p style="font-size: 13px;">Ensuring integrity through Face Recognition and GPS-tagged image verification.</p>
+                </div>
+                <div style="background: #FFFBEB; padding: 20px; border-radius: 12px;">
+                    <h4 style="color: #B45309;">Live Intelligence</h4>
+                    <p style="font-size: 13px;">Providing management with a bird's-eye view of all field movements on a live map.</p>
+                </div>
+            </div>
+        </section>
+
+        <section id="tech-stack">
+            <h2>2. Comprehensive Technology Stack</h2>
+            <div class="tech-stack-grid">
+                <div class="tech-box">
+                    <h4>Frontend Core</h4>
+                    <ul>
+                        <li>React.js 18 <span>SPA Architecture</span></li>
+                        <li>TypeScript <span>Type Safety</span></li>
+                        <li>Vite <span>Build Pipeline</span></li>
+                        <li>Tailwind CSS <span>Utility Styling</span></li>
+                    </ul>
+                </div>
+                <div class="tech-box">
+                    <h4>Backend Engine</h4>
+                    <ul>
+                        <li>Node.js <span>API Runtime</span></li>
+                        <li>Express <span>Server Framework</span></li>
+                        <li>PostgreSQL <span>Relational DB</span></li>
+                        <li>Prisma <span>ORM / Data Access</span></li>
+                    </ul>
+                </div>
+                <div class="tech-box">
+                    <h4>AI & Services</h4>
+                    <ul>
+                        <li>AWS Rekognition <span>Face Verification</span></li>
+                        <li>Google Maps API <span>GPS & Tracking</span></li>
+                        <li>AWS S3 <span>Image Storage</span></li>
+                        <li>VPS (KVM4) <span>Cloud Infrastructure</span></li>
+                    </ul>
+                </div>
+                <div class="tech-box">
+                    <h4>Mobile Ops</h4>
+                    <ul>
+                        <li>PWA Capabilities <span>Offline Support</span></li>
+                        <li>Geolocation API <span>Live Tracking</span></li>
+                        <li>Camera API <span>Audit Capturing</span></li>
+                        <li>LocalForage <span>Sync Management</span></li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <section id="modules">
+            <h2>3. Module Encyclopedia</h2>
+            
+            <div class="module-card">
+                <h3>A. Smart Attendance & Identity</h3>
+                <p>The system's security gatekeeper, ensuring field staff presence through multi-factor validation.</p>
+                <table class="data-table">
+                    <thead>
+                        <tr><th>Workflow Step</th><th>Technology Used</th><th>Security Measure</th></tr>
+                    </thead>
+                    <tbody>
+                        <tr><td>Punch-In</td><td>React Camera API</td><td>Live Selfie Capture</td></tr>
+                        <tr><td>Verification</td><td>AWS Rekognition</td><td>99% Confidence Threshold</td></tr>
+                        <tr><td>Localization</td><td>Geolocation API</td><td>GPS Geofence Match</td></tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="module-card">
+                <h3>B. Field Beat & Route Planning</h3>
+                <p>Algorithmic route optimization for sales executives.</p>
+                <ul style="margin: 15px 0; padding-left: 20px; font-size: 14px;">
+                    <li><strong>Route Assignment:</strong> Admins define daily "Beats" for specific retailers.</li>
+                    <li><strong>Visit Sequence:</strong> Optimized order of retailers based on GPS distance.</li>
+                    <li><strong>Compliance:</strong> System blocks order entry if executive is >50m from retailer GPS.</li>
+                </ul>
+            </div>
+
+            <div class="module-card">
+                <h3>C. Live Telemetry & GPS</h3>
+                <p>The "Live Map" feature provides real-time visibility into the entire mobile workforce.</p>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 30px; margin: 20px 0;">
+                    <div>
+                        <h4 style="font-size: 14px; margin-bottom: 10px; color: var(--primary);">Real-time Tracking</h4>
+                        <ul style="font-size: 13px; list-style: none;">
+                            <li>• Polling interval: 30 seconds</li>
+                            <li>• Path visualization: Polyline on map</li>
+                            <li>• Distance calculation: Haversine algorithm</li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h4 style="font-size: 14px; margin-bottom: 10px; color: var(--primary);">Visit History</h4>
+                        <ul style="font-size: 13px; list-style: none;">
+                            <li>• Timestamped entry/exit logs</li>
+                            <li>• Total duration per retail shop</li>
+                            <li>• Total distance travelled report</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="data-models">
+            <h2>4. Core Data Interfaces</h2>
+            <p>The following TypeScript interfaces define the backbone of the system's data integrity.</p>
+
+            <div class="code-snippet">
+interface User {
+  id: string;
+  name: string;
+  role: 'ADMIN' | 'SALES_EXECUTIVE' | 'DELIVERY_STAFF';
+  faceIdToken?: string; // AWS Rekognition reference
+  assignedBeatId?: string;
+  lastKnownLocation?: { lat: number; lng: number; time: string };
+}
+
+interface AttendanceRecord {
+  userId: string;
+  type: 'IN' | 'OUT';
+  timestamp: string;
+  location: { lat: number; lng: number };
+  selfieUrl: string;
+  verificationConfidence: number;
+}
+            </div>
+
+            <div class="code-snippet">
+interface StoreAudit {
+  id: string;
+  retailerId: string;
+  executiveId: string;
+  images: string[]; // S3 bucket URLs
+  timestamp: string;
+  gpsTag: { lat: number; lng: number };
+  complianceStatus: 'VERIFIED' | 'FLAGGED';
+}
+            </div>
+        </section>
+
+        <section id="architecture">
+            <h2>5. Architectural Flow</h2>
+            <p>The application uses a distributed client-server model with heavy emphasis on telemetry synchronization.</p>
+            
+            <div class="architecture-viz">
+                <div class="flow-container">
+                    <div class="flow-node">
+                        <strong>Field App</strong>
+                        <span>React / PWA</span>
+                    </div>
+                    <div style="font-size: 24px; color: var(--primary);">⇆</div>
+                    <div class="flow-node">
+                        <strong>API Gateway</strong>
+                        <span>Node.js / Express</span>
+                    </div>
+                    <div style="font-size: 24px; color: var(--primary);">⇆</div>
+                    <div class="flow-node">
+                        <strong>Service Layer</strong>
+                        <span>AWS / Google Cloud</span>
+                    </div>
+                    <div style="font-size: 24px; color: var(--primary);">⇆</div>
+                    <div class="flow-node">
+                        <strong>Database</strong>
+                        <span>PostgreSQL</span>
+                    </div>
+                </div>
+                <div style="margin-top: 30px; font-size: 13px; color: var(--secondary);">
+                    Data Pipeline: Mobile Capture → GPS/Face Validation → Persistent Ledger → Live Admin Dashboard
+                </div>
+            </div>
+        </section>
+
+        <footer>
+            <div>© 2026 BroBond India | Technical Authority & Specification</div>
+            <div>Revision 1.0.4 | Generated: May 4, 2026</div>
+        </footer>
+    </div>
+</body>
+</html>

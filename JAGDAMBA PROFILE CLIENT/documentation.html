@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Shree Nakoda Beverages - ERP Technical Documentation</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #004AAD;
+            --primary-dark: #00337C;
+            --primary-light: #E6F0FF;
+            --secondary: #64748B;
+            --dark: #0F172A;
+            --slate-50: #F8FAF9;
+            --slate-100: #F1F5F9;
+            --slate-200: #E2E8F0;
+            --slate-800: #1E293B;
+            --accent: #00D1FF;
+            --success: #10B981;
+            --warning: #F59E0B;
+            --border-radius: 16px;
+            --shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            line-height: 1.6;
+            color: var(--slate-800);
+            background: var(--slate-100);
+            padding: 60px 20px;
+        }
+
+        .container {
+            max-width: 1100px;
+            margin: 0 auto;
+            background: white;
+            padding: 80px;
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+            border: 1px solid var(--slate-200);
+            position: relative;
+        }
+
+        .print-btn {
+            position: absolute;
+            top: 40px;
+            right: 40px;
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 30px;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
+            z-index: 1000;
+        }
+
+        .print-btn:hover { background: var(--primary-dark); transform: translateY(-1px); }
+
+        nav {
+            position: sticky;
+            top: 20px;
+            margin-bottom: 60px;
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(10px);
+            padding: 15px;
+            border-radius: 12px;
+            border: 1px solid var(--slate-200);
+            z-index: 100;
+            display: flex;
+            gap: 20px;
+            font-size: 13px;
+            font-weight: 600;
+        }
+
+        nav a { color: var(--secondary); text-decoration: none; transition: color 0.2s; }
+        nav a:hover { color: var(--primary); }
+
+        header {
+            border-bottom: 2px solid var(--slate-100);
+            padding-bottom: 60px;
+            margin-bottom: 60px;
+        }
+
+        .logo {
+            font-family: 'Outfit', sans-serif;
+            font-size: 32px;
+            font-weight: 800;
+            color: var(--dark);
+            letter-spacing: -1px;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .logo img { width: 60px; height: 60px; object-fit: contain; }
+        .logo span { color: var(--primary); }
+
+        h1 { font-family: 'Outfit', sans-serif; font-size: 48px; color: var(--dark); letter-spacing: -1.5px; margin-bottom: 20px; }
+        h2 { font-family: 'Outfit', sans-serif; font-size: 28px; color: var(--dark); margin: 60px 0 30px; padding-bottom: 10px; border-bottom: 2px solid var(--primary-light); position: relative; }
+        h2::after { content: ''; position: absolute; bottom: -2px; left: 0; width: 60px; height: 2px; background: var(--primary); }
+
+        h3 { font-size: 20px; color: var(--primary-dark); margin: 35px 0 15px; }
+
+        .tech-stack-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 25px;
+            margin: 40px 0;
+        }
+
+        .tech-box {
+            background: var(--slate-50);
+            padding: 25px;
+            border-radius: 12px;
+            border: 1px solid var(--slate-200);
+        }
+
+        .tech-box h4 { font-size: 14px; text-transform: uppercase; letter-spacing: 1.5px; color: var(--primary); margin-bottom: 15px; }
+        .tech-box ul { list-style: none; }
+        .tech-box li { font-size: 14px; margin-bottom: 8px; display: flex; justify-content: space-between; }
+        .tech-box li span { color: var(--secondary); font-size: 12px; }
+
+        .module-card {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            border: 1px solid var(--slate-200);
+            margin-bottom: 30px;
+            transition: transform 0.3s;
+        }
+        .module-card:hover { transform: scale(1.01); box-shadow: var(--shadow); }
+
+        .code-snippet {
+            background: var(--dark);
+            color: #d1d5db;
+            padding: 25px;
+            border-radius: 10px;
+            font-family: 'Fira Code', monospace;
+            font-size: 13px;
+            margin: 20px 0;
+            line-height: 1.5;
+            position: relative;
+        }
+        .code-snippet::before { content: 'typescript'; position: absolute; top: 10px; right: 20px; font-size: 10px; text-transform: uppercase; color: var(--secondary); }
+
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 30px 0;
+        }
+        .data-table th { text-align: left; padding: 15px; background: var(--slate-100); font-size: 13px; border-bottom: 2px solid var(--slate-200); }
+        .data-table td { padding: 15px; font-size: 14px; border-bottom: 1px solid var(--slate-100); }
+
+        .architecture-viz {
+            background: var(--slate-50);
+            padding: 40px;
+            border-radius: 12px;
+            margin: 40px 0;
+            border: 1px dashed var(--slate-200);
+        }
+
+        .flow-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+
+        .flow-node {
+            background: white;
+            padding: 15px;
+            border: 2px solid var(--primary);
+            border-radius: 8px;
+            width: 160px;
+            text-align: center;
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
+        }
+
+        .flow-node strong { display: block; font-size: 12px; color: var(--primary-dark); }
+        .flow-node span { font-size: 10px; color: var(--secondary); }
+
+        .arrow { font-size: 24px; color: var(--primary-light); }
+
+        footer {
+            margin-top: 100px;
+            padding-top: 40px;
+            border-top: 2px solid var(--slate-100);
+            color: var(--secondary);
+            font-size: 12px;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        @media print {
+            nav, .print-btn { display: none; }
+            body { background: white; padding: 0; }
+            .container { padding: 40px; box-shadow: none; border: none; width: 100%; max-width: 100%; }
+            .module-card { break-inside: avoid; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <button class="print-btn" onclick="window.print()">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"></polyline><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect x="6" y="14" width="12" height="8"></rect></svg>
+            Export to PDF
+        </button>
+
+        <nav>
+            <a href="#overview">System Overview</a>
+            <a href="#tech-stack">Technology Stack</a>
+            <a href="#architecture">Architecture</a>
+            <a href="#modules">Module Encyclopedia</a>
+            <a href="#data-models">Data Models</a>
+        </nav>
+
+        <header>
+            <div class="logo">
+                <img src="./brobond_logo.png" alt="BroBond Logo">
+                BroBond <span>India</span>
+            </div>
+            <h1>The Technical Encyclopedia</h1>
+            <p style="font-size: 18px; color: var(--secondary); max-width: 750px;">A comprehensive technical specification for the <strong>Shree Nakoda Beverages ERP System</strong>. Covering digitizing field operations, AI-based verification, and live tracking telemetry.</p>
+        </header>
+
+        <section id="overview">
+            <h2>1. System Vision & Goals</h2>
+            <p>The BroBond ERP is a mission-critical platform designed to digitize and automate field sales operations. It provides real-time visibility into employee movement, order workflows, and inventory status, ensuring operational integrity through AI-driven verification.</p>
+            <div class="tech-stack-grid">
+                <div class="tech-box" style="border-left: 4px solid var(--primary);">
+                    <h4>Operational Goal</h4>
+                    <p style="font-size: 13px;">Eliminate manual paperwork and track 100% of field activities via GPS and automated logs.</p>
+                </div>
+                <div class="tech-box" style="border-left: 4px solid var(--success);">
+                    <h4>Security Goal</h4>
+                    <p style="font-size: 13px;">Prevent proxy attendance using Face Recognition and GPS Geofencing verification.</p>
+                </div>
+                <div class="tech-box" style="border-left: 4px solid var(--warning);">
+                    <h4>Growth Goal</h4>
+                    <p style="font-size: 13px;">Optimize sales routes (Beat Planning) to increase retailer touchpoints by 30%.</p>
+                </div>
+            </div>
+        </section>
+
+        <section id="tech-stack">
+            <h2>2. Comprehensive Technology Stack</h2>
+            <div class="tech-stack-grid">
+                <div class="tech-box">
+                    <h4>Frontend Layer</h4>
+                    <ul>
+                        <li>React.js 18 <span>Framework</span></li>
+                        <li>TypeScript <span>Language</span></li>
+                        <li>Vite <span>Build Tool</span></li>
+                        <li>Tailwind CSS <span>Styling</span></li>
+                    </ul>
+                </div>
+                <div class="tech-box">
+                    <h4>Backend Layer</h4>
+                    <ul>
+                        <li>Node.js <span>Runtime</span></li>
+                        <li>Express.js <span>API Framework</span></li>
+                        <li>PostgreSQL <span>Primary DB</span></li>
+                        <li>Prisma ORM <span>Data Access</span></li>
+                    </ul>
+                </div>
+                <div class="tech-box">
+                    <h4>External Services</h4>
+                    <ul>
+                        <li>AWS Rekognition <span>Face AI</span></li>
+                        <li>Google Maps <span>GPS/Maps</span></li>
+                        <li>AWS S3 <span>Cloud Storage</span></li>
+                        <li>VPS (KVM4) <span>Hosting</span></li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <section id="architecture">
+            <h2>3. System Architecture</h2>
+            <div class="architecture-viz">
+                <div class="flow-container">
+                    <div class="flow-node">
+                        <strong>Field Mobile App</strong>
+                        <span>React / PWA</span>
+                    </div>
+                    <div class="arrow">→</div>
+                    <div class="flow-node">
+                        <strong>Node.js API</strong>
+                        <span>Business Logic</span>
+                    </div>
+                    <div class="arrow">→</div>
+                    <div class="flow-node">
+                        <strong>AWS / Cloud</strong>
+                        <span>AI & Storage</span>
+                    </div>
+                    <div class="arrow">→</div>
+                    <div class="flow-node">
+                        <strong>Database</strong>
+                        <span>PostgreSQL</span>
+                    </div>
+                </div>
+                <p style="margin-top: 20px; font-size: 12px; color: var(--secondary); text-align: center;">
+                    Real-time Sync: Geolocation Polling (30s) | Instant Image Upload | Admin Live Dashboard
+                </p>
+            </div>
+        </section>
+
+        <section id="modules">
+            <h2>4. Module Encyclopedia</h2>
+            
+            <div class="module-card">
+                <h3>A. Smart Attendance System</h3>
+                <p>Ensuring valid presence through multi-layered verification.</p>
+                <table class="data-table">
+                    <thead>
+                        <tr><th>Component</th><th>Technology</th><th>Validation</th></tr>
+                    </thead>
+                    <tbody>
+                        <tr><td>Face Recognition</td><td>AWS Rekognition</td><td>Similarity > 95%</td></tr>
+                        <tr><td>GPS Punch-In</td><td>Google Geolocation</td><td>Geofence Check</td></tr>
+                        <li>Selfie Capture with timestamped metadata</li>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="module-card">
+                <h3>B. Beat Planning & Route System</h3>
+                <p>Admin-driven daily route assignments and sequence tracking.</p>
+                <ul style="font-size: 14px; margin-top: 15px; padding-left: 20px;">
+                    <li><strong>Route Assignment:</strong> Admins assign specific retailer lists to executives.</li>
+                    <li><strong>Visit Sequence:</strong> Optimized order of retailers based on proximity.</li>
+                    <li><strong>Visit History:</strong> Timestamped logs for every retailer check-in/out.</li>
+                </ul>
+            </div>
+
+            <div class="module-card">
+                <h3>C. Live Tracking & Shelf Audit</h3>
+                <p>Real-time telemetry and retail compliance monitoring.</p>
+                <div class="tech-stack-grid" style="margin-top: 20px;">
+                    <div style="background: var(--slate-100); padding: 15px; border-radius: 8px;">
+                        <h4 style="font-size: 14px; color: var(--primary);">Live GPS</h4>
+                        <p style="font-size: 12px;">Real-time map visualization of all employees with route path history.</p>
+                    </div>
+                    <div style="background: var(--slate-100); padding: 15px; border-radius: 8px;">
+                        <h4 style="font-size: 14px; color: var(--primary);">Shelf Audit</h4>
+                        <p style="font-size: 12px;">Capture store images with mandatory GPS tags and admin verification.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="data-models">
+            <h2>5. Core Data Models</h2>
+            <div class="code-snippet">
+interface User {
+  id: string;
+  name: string;
+  role: 'ADMIN' | 'SALES' | 'DELIVERY';
+  faceToken: string; // AWS Rekognition
+  lastLocation: { lat: number; lng: number };
+}
+
+interface Attendance {
+  userId: string;
+  type: 'IN' | 'OUT';
+  timestamp: string;
+  location: { lat: number; lng: number };
+  verified: boolean;
+}
+
+interface StoreAudit {
+  retailerId: string;
+  images: string[];
+  gpsTag: { lat: number; lng: number };
+  timestamp: string;
+}
+            </div>
+        </section>
+
+        <footer>
+            <div>© 2026 Shree Nakoda Beverages Pvt. Ltd. | ERP Documentation</div>
+            <div>Generated: May 4, 2026</div>
+        </footer>
+    </div>
+</body>
+</html>
