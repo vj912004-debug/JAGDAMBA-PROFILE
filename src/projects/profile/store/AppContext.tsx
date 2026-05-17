@@ -223,6 +223,7 @@ export interface PurchaseReceipt {
   receivedQty: number;
   date: string;
   remark?: string;
+  items?: { itemId: string; receivedQty: number }[];
 }
 
 export interface ActivityLog {

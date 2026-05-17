@@ -236,16 +236,35 @@ export const PurchaseReports: React.FC = () => {
                                   <tr>
                                     <th className="p-2.5 text-[10px] font-bold text-amber-800 uppercase">Date</th>
                                     <th className="p-2.5 text-[10px] font-bold text-amber-800 uppercase text-right">Qty Received</th>
+                                    <th className="p-2.5 text-[10px] font-bold text-amber-800 uppercase">Received Items</th>
                                     <th className="p-2.5 text-[10px] font-bold text-amber-800 uppercase">Remark</th>
                                   </tr>
                                 </thead>
                                 <tbody className="divide-y divide-amber-50">
                                   {getReceiptsForPO(po.id).length === 0 ? (
-                                    <tr><td colSpan={3} className="p-4 text-center text-xs text-slate-400 italic">No receipts recorded yet</td></tr>
+                                    <tr><td colSpan={4} className="p-4 text-center text-xs text-slate-400 italic">No receipts recorded yet</td></tr>
                                   ) : getReceiptsForPO(po.id).map(pr => (
-                                    <tr key={pr.id}>
+                                    <tr key={pr.id} className="align-top hover:bg-amber-50/20 transition-colors">
                                       <td className="p-2.5 text-xs text-slate-600 font-medium">{pr.date}</td>
                                       <td className="p-2.5 text-xs text-emerald-600 font-bold text-right">{pr.receivedQty} Nos</td>
+                                      <td className="p-2.5 text-xs text-slate-700">
+                                        {pr.items && pr.items.length > 0 ? (
+                                          <div className="flex flex-col gap-1 max-w-xs">
+                                            {pr.items.map(ri => {
+                                              const poItem = po.items.find(i => i.id === ri.itemId);
+                                              if (!poItem || ri.receivedQty <= 0) return null;
+                                              return (
+                                                <div key={ri.itemId} className="flex justify-between gap-4 text-[10px] bg-slate-50 border border-slate-100 rounded px-1.5 py-0.5">
+                                                  <span className="font-semibold text-slate-600">{poItem.grade} ({poItem.thickness}mm)</span>
+                                                  <span className="font-bold text-slate-800">{ri.receivedQty} Nos</span>
+                                                </div>
+                                              );
+                                            })}
+                                          </div>
+                                        ) : (
+                                          <span className="text-slate-400 italic text-[10px]">Flat receipt</span>
+                                        )}
+                                      </td>
                                       <td className="p-2.5 text-xs text-slate-500 italic">{pr.remark || '-'}</td>
                                     </tr>
                                   ))}

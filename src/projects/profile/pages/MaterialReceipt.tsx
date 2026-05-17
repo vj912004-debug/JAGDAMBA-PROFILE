@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { ClipboardCheck, Search, AlertCircle } from 'lucide-react';
 import { useAppContext, type PurchaseReceipt, type PurchaseOrder } from '../store/AppContext';
 import toast from 'react-hot-toast';
@@ -7,7 +7,7 @@ export const MaterialReceipt: React.FC = () => {
   const { t, purchaseOrders, setPurchaseOrders, purchaseReceipts, setPurchaseReceipts, role } = useAppContext();
 
   const [selectedPOId, setSelectedPOId] = useState('');
-  const [receivedQty, setReceivedQty] = useState<number>(0);
+  const [itemQuantities, setItemQuantities] = useState<Record<string, number>>({});
   const [remark, setRemark] = useState('');
   const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
 
@@ -20,6 +20,32 @@ export const MaterialReceipt: React.FC = () => {
     return po.items.reduce((sum, item) => sum + (item.nos || 0), 0);
   };
 
+  const getItemReceivedBefore = (itemId: string) => {
+    return purchaseReceipts
+      .filter(pr => pr.poId === selectedPOId)
+      .reduce((sum, pr) => {
+        if (pr.items) {
+          const matchingItem = pr.items.find(i => i.itemId === itemId);
+          return sum + (matchingItem ? matchingItem.receivedQty : 0);
+        }
+        return sum;
+      }, 0);
+  };
+
+  useEffect(() => {
+    if (selectedPO) {
+      const initial: Record<string, number> = {};
+      selectedPO.items.forEach(item => {
+        const prevRecd = getItemReceivedBefore(item.id);
+        const pending = Math.max(0, (item.nos || 0) - prevRecd);
+        initial[item.id] = pending;
+      });
+      setItemQuantities(initial);
+    } else {
+      setItemQuantities({});
+    }
+  }, [selectedPOId, purchaseReceipts]);
+
   const totalReceivedBefore = useMemo(() => {
     if (!selectedPOId) return 0;
     return purchaseReceipts
@@ -27,32 +53,45 @@ export const MaterialReceipt: React.FC = () => {
       .reduce((sum, pr) => sum + pr.receivedQty, 0);
   }, [selectedPOId, purchaseReceipts]);
 
+  const currentTotalReceived = useMemo(() => {
+    return Object.values(itemQuantities).reduce((sum, qty) => sum + qty, 0);
+  }, [itemQuantities]);
+
   const pendingQty = useMemo(() => {
     if (!selectedPO) return 0;
     return getTotalNos(selectedPO) - totalReceivedBefore;
   }, [selectedPO, totalReceivedBefore]);
 
   const newPendingQty = useMemo(() => {
-    return pendingQty - receivedQty;
-  }, [pendingQty, receivedQty]);
+    return pendingQty - currentTotalReceived;
+  }, [pendingQty, currentTotalReceived]);
 
   const handleSave = () => {
     if (!selectedPOId) { toast.error('Please select a Purchase Order'); return; }
-    if (receivedQty <= 0) { toast.error('Received Quantity must be greater than 0'); return; }
+    
+    const totalCurrentReceived = Object.values(itemQuantities).reduce((sum, qty) => sum + qty, 0);
+    if (totalCurrentReceived <= 0) {
+      toast.error('Total received quantity must be greater than 0');
+      return;
+    }
 
     const newReceipt: PurchaseReceipt = {
       id: Date.now().toString(),
       poId: selectedPOId,
-      receivedQty,
+      receivedQty: totalCurrentReceived,
       date,
       remark: remark.trim(),
+      items: Object.entries(itemQuantities).map(([itemId, qty]) => ({
+        itemId,
+        receivedQty: qty
+      }))
     };
 
     setPurchaseReceipts(prev => [...prev, newReceipt]);
 
     // Update PO Status
     const totalOrdered = getTotalNos(selectedPO!);
-    const totalNow = totalReceivedBefore + receivedQty;
+    const totalNow = totalReceivedBefore + totalCurrentReceived;
     let newStatus: PurchaseOrder['status'] = 'Partial';
     if (totalNow >= totalOrdered) {
       newStatus = 'Complete';
@@ -66,7 +105,7 @@ export const MaterialReceipt: React.FC = () => {
     
     // Reset fields
     setSelectedPOId('');
-    setReceivedQty(0);
+    setItemQuantities({});
     setRemark('');
   };
 
@@ -112,23 +151,68 @@ export const MaterialReceipt: React.FC = () => {
               </div>
 
               {selectedPO && (
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
+                <div className="space-y-4 pt-2">
                   <div>
                     <label className="block text-xs font-semibold text-slate-500 mb-1.5 uppercase tracking-wider">Received Date</label>
                     <input type="date" value={date} onChange={(e) => setDate(e.target.value)} className="w-full bg-white border border-slate-200 text-slate-800 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
                   </div>
-                  <div>
-                    <label className="block text-xs font-semibold text-slate-500 mb-1.5 uppercase tracking-wider">Received Qty (Nos) *</label>
-                    <input 
-                      type="number" 
-                      step="0.001"
-                      value={receivedQty || ''} 
-                      onChange={(e) => setReceivedQty(Number(e.target.value))} 
-                      className="w-full bg-white border border-slate-200 text-slate-800 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                      placeholder="0"
-                    />
+
+                  <div className="space-y-1.5">
+                    <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wider">Item Details & Received Quantities *</label>
+                    <div className="border border-slate-100 rounded-xl overflow-hidden bg-slate-50/20">
+                      <table className="w-full text-left border-collapse text-xs">
+                        <thead>
+                          <tr className="bg-slate-50 border-b border-slate-100">
+                            <th className="p-3 font-semibold text-slate-500">Item Specifications</th>
+                            <th className="p-3 font-semibold text-slate-500 text-center">Ordered</th>
+                            <th className="p-3 font-semibold text-slate-500 text-center">Prev. Recd</th>
+                            <th className="p-3 font-semibold text-slate-500 text-center">Pending</th>
+                            <th className="p-3 font-semibold text-slate-500 text-center w-28">Recd Qty (Nos)</th>
+                          </tr>
+                        </thead>
+                        <tbody className="divide-y divide-slate-100 bg-white">
+                          {selectedPO.items.map((item) => {
+                            const prevRecd = getItemReceivedBefore(item.id);
+                            const pending = Math.max(0, (item.nos || 0) - prevRecd);
+                            const curQty = itemQuantities[item.id] ?? 0;
+
+                            return (
+                              <tr key={item.id} className="hover:bg-slate-50/50 transition-colors">
+                                <td className="p-3 font-medium text-slate-700">
+                                  <div className="flex flex-col">
+                                    <span className="font-bold text-slate-800">{item.grade}</span>
+                                    <span className="text-slate-400 text-[10px]">{item.thickness}mm • {item.width}x{item.length}mm</span>
+                                  </div>
+                                </td>
+                                <td className="p-3 text-center font-semibold text-slate-600">{item.nos} Nos</td>
+                                <td className="p-3 text-center text-emerald-600 font-semibold">{prevRecd} Nos</td>
+                                <td className="p-3 text-center text-blue-600 font-bold">{pending} Nos</td>
+                                <td className="p-3 text-center">
+                                  <input
+                                    type="number"
+                                    min="0"
+                                    step="1"
+                                    value={curQty || ''}
+                                    onChange={(e) => {
+                                      const val = Number(e.target.value);
+                                      setItemQuantities(prev => ({
+                                        ...prev,
+                                        [item.id]: val
+                                      }));
+                                    }}
+                                    className="w-20 bg-slate-50 border border-slate-200 rounded-lg px-2 py-1 text-center font-bold text-slate-700 focus:bg-white focus:ring-2 focus:ring-blue-500 outline-none"
+                                    placeholder="0"
+                                  />
+                                </td>
+                              </tr>
+                            );
+                          })}
+                        </tbody>
+                      </table>
+                    </div>
                   </div>
-                  <div className="sm:col-span-2">
+
+                  <div>
                     <label className="block text-xs font-semibold text-slate-500 mb-1.5 uppercase tracking-wider">Remark / Batch Info</label>
                     <input 
                       type="text" 
@@ -146,7 +230,7 @@ export const MaterialReceipt: React.FC = () => {
               <div className="mt-8">
                 <button 
                   onClick={handleSave}
-                  disabled={!canEntry || receivedQty <= 0}
+                  disabled={!canEntry || currentTotalReceived <= 0}
                   className="w-full flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-5 py-3 rounded-xl font-semibold shadow-md shadow-blue-100 transition-all disabled:opacity-50"
                 >
                   <ClipboardCheck className="w-5 h-5" /> Record Receipt
