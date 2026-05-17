@@ -392,7 +392,7 @@ export const Quotation: React.FC = () => {
                     <th className="p-4">Thk</th>
                     <th className="p-4">Dimensions (mm)</th>
                     <th className="p-4">Nos</th>
-                    <th className="p-4">Rate</th>
+                    <th className="p-4 min-w-[160px]">Rate</th>
                     <th className="p-4 text-blue-600">Rate / Nos</th>
                     <th className="p-4 text-right">Amount</th>
                     <th className="p-4 text-center w-10 print:hidden"></th>
@@ -441,7 +441,7 @@ export const Quotation: React.FC = () => {
                       <td className="p-3 w-20">
                         <input type="number" value={item.nos ?? ''} onChange={(e) => updateItem(item.id, 'nos', e.target.value)} className="w-full bg-transparent border-transparent focus:ring-0 text-sm font-medium" placeholder="1" />
                       </td>
-                      <td className="p-3 w-44">
+                      <td className="p-3 w-44 min-w-[160px]">
                         {item.shape === 'Ring' ? (
                           <div className="flex flex-col gap-1.5">
                             <div className="flex items-center gap-1">
