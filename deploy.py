@@ -23,7 +23,7 @@ def deploy():
         "sudo -u postgres psql -c \"CREATE DATABASE jagdamba_final;\" || true",
         "sudo -u postgres psql -c \"ALTER USER postgres WITH PASSWORD 'Vraj@2003';\" || true",
         "rm -rf JAGDAMBA-PROFILE",
-        "git clone --depth 1 https://github.com/vj912004-debug/JAGDAMBA-PROFILE.git",
+        "git clone --depth 1 -b master https://github.com/vj912004-debug/JAGDAMBA-PROFILE.git",
         "cd JAGDAMBA-PROFILE && npm install",
         "cd JAGDAMBA-PROFILE/backend && npm install",
         "cd JAGDAMBA-PROFILE/server && npm install",
