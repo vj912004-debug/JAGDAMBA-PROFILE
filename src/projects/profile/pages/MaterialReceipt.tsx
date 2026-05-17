@@ -260,7 +260,7 @@ export const MaterialReceipt: React.FC = () => {
                   <span className="font-bold text-blue-600">{pendingQty} Nos</span>
                 </div>
                 
-                {receivedQty > 0 && (
+                {currentTotalReceived > 0 && (
                   <div className={`p-3 rounded-lg text-xs font-medium flex gap-2 ${newPendingQty < 0 ? 'bg-red-50 text-red-700 border border-red-100' : 'bg-blue-50 text-blue-700 border border-blue-100'}`}>
                     <AlertCircle className="w-4 h-4 shrink-0" />
                     <div>
