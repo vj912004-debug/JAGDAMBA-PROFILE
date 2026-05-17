@@ -446,16 +446,28 @@ export const Quotation: React.FC = () => {
                       <td className="p-3">
                         <span className="text-sm font-black text-blue-600">{item.weight.toFixed(3)}</span>
                       </td>
-                      <td className="p-3 w-24">
+                      <td className="p-3 w-36">
                         {item.shape === 'Ring' ? (
-                          <div className="flex flex-col gap-1">
+                          <div className="flex flex-col gap-1.5">
                             <div className="flex items-center gap-1">
-                              <span className="text-[8px] font-bold text-slate-400 w-4">OD</span>
-                              <input type="number" value={item.odRate ?? ''} onChange={(e) => updateItem(item.id, 'odRate', e.target.value)} className="w-full bg-blue-50/50 rounded px-1.5 py-0.5 text-xs font-bold text-blue-600 outline-none" placeholder="OD Rate" />
+                              <span className="text-[9px] font-bold text-slate-400 w-5 uppercase">OD</span>
+                              <input 
+                                type="number" 
+                                value={item.odRate ?? ''} 
+                                onChange={(e) => updateItem(item.id, 'odRate', e.target.value)} 
+                                className="w-full bg-blue-50/50 border border-blue-100 rounded px-2 py-0.5 text-xs font-bold text-blue-700 outline-none focus:bg-white focus:ring-1 focus:ring-blue-500" 
+                                placeholder="OD Rate" 
+                              />
                             </div>
                             <div className="flex items-center gap-1">
-                              <span className="text-[8px] font-bold text-slate-400 w-4">ID</span>
-                              <input type="number" value={item.idRate ?? ''} onChange={(e) => updateItem(item.id, 'idRate', e.target.value)} className="w-full bg-amber-50/50 rounded px-1.5 py-0.5 text-xs font-bold text-amber-600 outline-none" placeholder="ID Rate" />
+                              <span className="text-[9px] font-bold text-slate-400 w-5 uppercase">ID</span>
+                              <input 
+                                type="number" 
+                                value={item.idRate ?? ''} 
+                                onChange={(e) => updateItem(item.id, 'idRate', e.target.value)} 
+                                className="w-full bg-amber-50/50 border border-amber-100 rounded px-2 py-0.5 text-xs font-bold text-amber-700 outline-none focus:bg-white focus:ring-1 focus:ring-amber-500" 
+                                placeholder="ID Rate" 
+                              />
                             </div>
                           </div>
                         ) : (
