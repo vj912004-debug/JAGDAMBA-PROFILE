@@ -273,7 +273,6 @@ export const PurchaseOrderEntry: React.FC = () => {
                     <th className="p-3 border-b">Kg (Actual)</th>
                     <th className="p-3 border-b">Rate</th>
                     <th className="p-3 border-b">Amount</th>
-                    <th className="p-3 border-b">Heat No</th>
                     <th className="p-3 border-b text-center w-10"></th>
                   </tr>
                 </thead>
@@ -312,9 +311,6 @@ export const PurchaseOrderEntry: React.FC = () => {
                       </td>
                       <td className="p-2 w-28 text-right font-bold text-slate-700">
                         {item.amount.toLocaleString()}
-                      </td>
-                      <td className="p-2 w-24">
-                        <input type="text" value={item.heatNo || ''} onChange={(e) => updateItem(item.id, 'heatNo', e.target.value)} className="w-full border-transparent bg-transparent group-hover:bg-white group-hover:border-slate-200 rounded px-2 py-1.5 text-sm transition-all" placeholder="HT-..." />
                       </td>
                       <td className="p-2 text-center">
                         <button onClick={() => handleRemoveItem(item.id)} className="p-1.5 text-slate-300 hover:text-red-500 hover:bg-red-50 rounded-lg transition-all">
