@@ -393,7 +393,6 @@ export const Quotation: React.FC = () => {
                     <th className="p-4">Thk</th>
                     <th className="p-4">Dimensions (mm)</th>
                     <th className="p-4">Nos</th>
-                    <th className="p-4 text-blue-600">Weight (Kg)</th>
                     <th className="p-4">Rate</th>
                     <th className="p-4 text-blue-600">Rate / Nos</th>
                     <th className="p-4 text-right">Amount</th>
@@ -416,35 +415,32 @@ export const Quotation: React.FC = () => {
                       <td className="p-3">
                         <input type="text" value={item.grade} onChange={(e) => updateItem(item.id, 'grade', e.target.value)} className="w-full bg-transparent border-transparent focus:ring-0 text-sm font-medium print:placeholder-transparent" placeholder="Grade" />
                       </td>
-                      <td className="p-3 w-20">
+                      <td className="p-3 w-24">
                         <input type="number" value={item.thickness ?? ''} onChange={(e) => updateItem(item.id, 'thickness', e.target.value)} className="w-full bg-transparent border-transparent focus:ring-0 text-sm font-bold text-blue-600" placeholder="0" />
                       </td>
-                      <td className="p-3 min-w-[180px]">
+                      <td className="p-3 w-72 min-w-[240px]">
                         {item.shape === 'Ring' ? (
                           <div className="flex items-center gap-2">
                             <div className="flex flex-col">
                               <span className="text-[8px] font-bold text-slate-400 uppercase">OD</span>
-                              <input type="number" value={item.od ?? ''} onChange={(e) => updateItem(item.id, 'od', e.target.value)} className="w-16 bg-slate-50 rounded px-2 py-1 text-xs focus:ring-1 focus:ring-blue-500 outline-none print:bg-transparent print:font-bold" placeholder="OD" />
+                              <input type="number" value={item.od ?? ''} onChange={(e) => updateItem(item.id, 'od', e.target.value)} className="w-24 bg-slate-50 rounded px-2 py-1 text-xs focus:ring-1 focus:ring-blue-500 outline-none print:bg-transparent print:font-bold" placeholder="OD" />
                             </div>
                             <span className="text-slate-300 mt-3">x</span>
                             <div className="flex flex-col">
                               <span className="text-[8px] font-bold text-slate-400 uppercase">ID</span>
-                              <input type="number" value={item.id_dim ?? ''} onChange={(e) => updateItem(item.id, 'id_dim', e.target.value)} className="w-16 bg-slate-50 rounded px-2 py-1 text-xs focus:ring-1 focus:ring-blue-500 outline-none print:bg-transparent print:font-bold" placeholder="ID" />
+                              <input type="number" value={item.id_dim ?? ''} onChange={(e) => updateItem(item.id, 'id_dim', e.target.value)} className="w-24 bg-slate-50 rounded px-2 py-1 text-xs focus:ring-1 focus:ring-blue-500 outline-none print:bg-transparent print:font-bold" placeholder="ID" />
                             </div>
                           </div>
                         ) : (
                           <div className="flex items-center gap-2">
-                            <input type="number" value={item.length ?? ''} onChange={(e) => updateItem(item.id, 'length', e.target.value)} className="w-16 bg-slate-50 rounded px-2 py-1 text-xs focus:ring-1 focus:ring-blue-500 outline-none print:bg-transparent print:font-bold" placeholder="L" />
+                            <input type="number" value={item.length ?? ''} onChange={(e) => updateItem(item.id, 'length', e.target.value)} className="w-24 bg-slate-50 rounded px-2 py-1 text-xs focus:ring-1 focus:ring-blue-500 outline-none print:bg-transparent print:font-bold" placeholder="L" />
                             <span className="text-slate-300">x</span>
-                            <input type="number" value={item.width ?? ''} onChange={(e) => updateItem(item.id, 'width', e.target.value)} className="w-16 bg-slate-50 rounded px-2 py-1 text-xs focus:ring-1 focus:ring-blue-500 outline-none print:bg-transparent print:font-bold" placeholder="W" />
+                            <input type="number" value={item.width ?? ''} onChange={(e) => updateItem(item.id, 'width', e.target.value)} className="w-24 bg-slate-50 rounded px-2 py-1 text-xs focus:ring-1 focus:ring-blue-500 outline-none print:bg-transparent print:font-bold" placeholder="W" />
                           </div>
                         )}
                       </td>
-                      <td className="p-3 w-16">
+                      <td className="p-3 w-20">
                         <input type="number" value={item.nos ?? ''} onChange={(e) => updateItem(item.id, 'nos', e.target.value)} className="w-full bg-transparent border-transparent focus:ring-0 text-sm font-medium" placeholder="1" />
-                      </td>
-                      <td className="p-3">
-                        <span className="text-sm font-black text-blue-600">{item.weight.toFixed(3)}</span>
                       </td>
                       <td className="p-3 w-36">
                         {item.shape === 'Ring' ? (
@@ -490,14 +486,12 @@ export const Quotation: React.FC = () => {
                 </tbody>
                 <tfoot className="bg-slate-50/50 print:bg-white text-slate-800">
                   <tr className="border-t border-slate-200">
-                    <td colSpan={5} className="p-3 text-right text-[10px] font-bold uppercase text-slate-400">Total Weight</td>
-                    <td className="p-3 font-bold text-blue-600">{totalWeight.toFixed(3)} Kg</td>
-                    <td colSpan={2} className="p-3 text-right text-[10px] font-bold uppercase text-slate-400">Sub Total</td>
+                    <td colSpan={7} className="p-3 text-right text-[10px] font-bold uppercase text-slate-400">Sub Total</td>
                     <td className="p-3 text-right font-bold">₹ {totalAmount.toLocaleString()}</td>
                     <td className="print:hidden"></td>
                   </tr>
                   <tr>
-                    <td colSpan={8} className="p-2 text-right text-[10px] font-bold uppercase text-slate-400">Loading & Unloading Charges</td>
+                    <td colSpan={7} className="p-2 text-right text-[10px] font-bold uppercase text-slate-400">Loading & Unloading Charges</td>
                     <td className="p-2 text-right">
                       <input 
                         type="number" 
@@ -510,7 +504,7 @@ export const Quotation: React.FC = () => {
                     <td className="print:hidden"></td>
                   </tr>
                   <tr>
-                    <td colSpan={8} className="p-2 text-right text-[10px] font-bold uppercase text-slate-400">Transport Charges</td>
+                    <td colSpan={7} className="p-2 text-right text-[10px] font-bold uppercase text-slate-400">Transport Charges</td>
                     <td className="p-2 text-right">
                       <input 
                         type="number" 
@@ -523,7 +517,7 @@ export const Quotation: React.FC = () => {
                     <td className="print:hidden"></td>
                   </tr>
                   <tr>
-                    <td colSpan={8} className="p-2 text-right text-[10px] font-bold uppercase text-slate-400 align-middle">
+                    <td colSpan={7} className="p-2 text-right text-[10px] font-bold uppercase text-slate-400 align-middle">
                       GST 
                       <select 
                         value={gstRate} 
@@ -541,7 +535,7 @@ export const Quotation: React.FC = () => {
                     <td className="print:hidden"></td>
                   </tr>
                   <tr className="bg-blue-50/50 print:bg-white">
-                    <td colSpan={8} className="p-4 text-right text-xs font-black uppercase text-blue-600 tracking-wider">Grand Total Amount</td>
+                    <td colSpan={7} className="p-4 text-right text-xs font-black uppercase text-blue-600 tracking-wider">Grand Total Amount</td>
                     <td className="p-4 text-right text-xl font-black text-slate-900 border-t-2 border-blue-600">
                       ₹ {( (totalAmount + loadingCharges + transportCharges) * (1 + gstRate / 100) ).toLocaleString()}
                     </td>
