@@ -22,6 +22,11 @@ export const TCManagement: React.FC = () => {
   const [mailData, setMailData] = useState({ to: '', subject: '', message: '' });
   const [whatsAppData, setWhatsAppData] = useState({ number: '', message: '' });
   
+  // WhatsApp Connection State
+  const [waStatus, setWaStatus] = useState<string>('DISCONNECTED');
+  const [waQr, setWaQr] = useState<string | null>(null);
+  const [isWaLoading, setIsWaLoading] = useState(false);
+  
   // Advanced Search Filters
   const [filters, setFilters] = useState({
     heatNumber: '',
@@ -112,6 +117,42 @@ export const TCManagement: React.FC = () => {
       }
     }
   }, [formData.heatNumber, formData.plateNumber, isAdding, tcRecords]);
+
+  // Poll WhatsApp Status
+  useEffect(() => {
+    let interval: NodeJS.Timeout;
+    if (showWhatsAppModal) {
+      const fetchStatus = async () => {
+        try {
+          const res = await fetch('/api/whatsapp/status');
+          const data = await res.json();
+          setWaStatus(data.status);
+          if (data.status === 'QR_READY') {
+            const qrRes = await fetch('/api/whatsapp/qr');
+            const qrData = await qrRes.json();
+            if (qrData.qr) setWaQr(qrData.qr);
+          }
+        } catch (e) {
+          console.error('Failed to fetch WA status', e);
+        }
+      };
+      fetchStatus();
+      interval = setInterval(fetchStatus, 3000);
+    }
+    return () => clearInterval(interval);
+  }, [showWhatsAppModal]);
+
+  const handleWaInit = async () => {
+    setIsWaLoading(true);
+    try {
+      await fetch('/api/whatsapp/init', { method: 'POST' });
+      toast.success('Initializing WhatsApp... please wait');
+    } catch (error) {
+      toast.error('Failed to initialize WhatsApp');
+    } finally {
+      setIsWaLoading(false);
+    }
+  };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -866,55 +907,81 @@ export const TCManagement: React.FC = () => {
           </div>
           
           <div className="p-8 space-y-6">
-            <div className="space-y-4">
-              <div>
-                <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5">WhatsApp Number *</label>
-                <input 
-                  type="text" 
-                  required
-                  value={whatsAppData.number}
-                  onChange={e => setWhatsAppData({...whatsAppData, number: e.target.value})}
-                  placeholder="e.g. 98XXXXXXXX"
-                  className="w-full bg-slate-50 border-none rounded-2xl px-4 py-3 text-sm font-bold focus:ring-2 focus:ring-green-500 outline-none"
-                />
-              </div>
-              
-              <div>
-                <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5">Message Caption</label>
-                <textarea 
-                  rows={5}
-                  value={whatsAppData.message}
-                  onChange={e => setWhatsAppData({...whatsAppData, message: e.target.value})}
-                  className="w-full bg-slate-50 border-none rounded-2xl px-4 py-3 text-sm font-medium focus:ring-2 focus:ring-green-500 outline-none resize-none"
-                />
-              </div>
+            {waStatus === 'CONNECTED' ? (
+              <>
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5">WhatsApp Number *</label>
+                    <input 
+                      type="text" 
+                      required
+                      value={whatsAppData.number}
+                      onChange={e => setWhatsAppData({...whatsAppData, number: e.target.value})}
+                      placeholder="e.g. 98XXXXXXXX"
+                      className="w-full bg-slate-50 border-none rounded-2xl px-4 py-3 text-sm font-bold focus:ring-2 focus:ring-green-500 outline-none"
+                    />
+                  </div>
+                  
+                  <div>
+                    <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5">Message Caption</label>
+                    <textarea 
+                      rows={5}
+                      value={whatsAppData.message}
+                      onChange={e => setWhatsAppData({...whatsAppData, message: e.target.value})}
+                      className="w-full bg-slate-50 border-none rounded-2xl px-4 py-3 text-sm font-medium focus:ring-2 focus:ring-green-500 outline-none resize-none"
+                    />
+                  </div>
 
-              <div className="flex items-center gap-3 p-4 bg-green-50 rounded-2xl border border-green-100">
-                <div className="w-10 h-10 bg-green-100 rounded-xl flex items-center justify-center">
-                  <Download className="w-5 h-5 text-green-600" />
+                  <div className="flex items-center gap-3 p-4 bg-green-50 rounded-2xl border border-green-100">
+                    <div className="w-10 h-10 bg-green-100 rounded-xl flex items-center justify-center">
+                      <Download className="w-5 h-5 text-green-600" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-xs font-black text-green-900 truncate">{selectedTC?.pdfName || `Generated_TC_${selectedTC?.heatNumber}.pdf`}</p>
+                      <p className="text-[10px] text-green-600 font-bold uppercase tracking-wider">{selectedTC?.pdfData ? 'Ready for WhatsApp' : 'Auto-Generated Attachment'}</p>
+                    </div>
+                  </div>
                 </div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-xs font-black text-green-900 truncate">{selectedTC?.pdfName || `Generated_TC_${selectedTC?.heatNumber}.pdf`}</p>
-                  <p className="text-[10px] text-green-600 font-bold uppercase tracking-wider">{selectedTC?.pdfData ? 'Ready for WhatsApp' : 'Auto-Generated Attachment'}</p>
+
+                <div className="flex gap-3">
+                  <button 
+                    onClick={() => setShowWhatsAppModal(false)}
+                    className="flex-1 py-4 rounded-2xl text-sm font-black text-slate-500 hover:bg-slate-50 transition-colors"
+                  >
+                    Cancel
+                  </button>
+                  <button 
+                    onClick={sendWhatsApp}
+                    className="flex-1 bg-green-600 hover:bg-green-700 text-white py-4 rounded-2xl text-sm font-black shadow-lg shadow-green-200 transition-all active:scale-95 flex items-center justify-center gap-2"
+                  >
+                    <MessageSquare className="w-4 h-4" />
+                    Send WhatsApp
+                  </button>
+                </div>
+              </>
+            ) : waStatus === 'QR_READY' && waQr ? (
+              <div className="text-center py-8">
+                <p className="text-sm font-bold text-slate-600 mb-4">Scan this QR code with your WhatsApp to connect</p>
+                <div className="inline-block p-4 bg-white border border-slate-200 rounded-2xl shadow-sm">
+                  <img src={waQr} alt="WhatsApp QR" className="w-48 h-48" />
                 </div>
               </div>
-            </div>
-
-            <div className="flex gap-3">
-              <button 
-                onClick={() => setShowWhatsAppModal(false)}
-                className="flex-1 py-4 rounded-2xl text-sm font-black text-slate-500 hover:bg-slate-50 transition-colors"
-              >
-                Cancel
-              </button>
-              <button 
-                onClick={sendWhatsApp}
-                className="flex-1 bg-green-600 hover:bg-green-700 text-white py-4 rounded-2xl text-sm font-black shadow-lg shadow-green-200 transition-all active:scale-95 flex items-center justify-center gap-2"
-              >
-                <MessageSquare className="w-4 h-4" />
-                Send WhatsApp
-              </button>
-            </div>
+            ) : (
+              <div className="text-center py-12">
+                <div className="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <MessageSquare className="w-8 h-8 text-slate-400" />
+                </div>
+                <h4 className="text-lg font-bold text-slate-800 mb-2">WhatsApp Disconnected</h4>
+                <p className="text-sm text-slate-500 mb-6">You need to connect your WhatsApp account before sending certificates.</p>
+                <button 
+                  onClick={handleWaInit} 
+                  disabled={isWaLoading || waStatus === 'INITIALIZING'}
+                  className="bg-green-600 text-white px-6 py-3 rounded-xl font-bold shadow-lg shadow-green-200 hover:bg-green-700 transition-all disabled:opacity-50"
+                >
+                  {(isWaLoading || waStatus === 'INITIALIZING') ? 'Initializing... please wait' : 'Initialize WhatsApp'}
+                </button>
+              </div>
+            )}
           </div>
         </div>
       </div>
