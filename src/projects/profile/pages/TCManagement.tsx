@@ -8,6 +8,7 @@ import {
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { cn } from '../components/Sidebar';
+import { generateTCPDFBase64 } from '../utils/pdfGenerator';
 
 export const TCManagement: React.FC = () => {
   const { t, tcRecords, addTCRecord, updateTCRecord, deleteTCRecord } = useAppContext();
@@ -174,14 +175,16 @@ export const TCManagement: React.FC = () => {
   };
 
   const sendEmail = async () => {
+    if (!selectedTC) return;
+
     if (!mailData.to) {
       toast.error('Recipient email is required');
       return;
     }
 
-    if (!selectedTC?.pdfData) {
-      toast.error('No TC attachment found for this record');
-      return;
+    let tcDataToSend = selectedTC.pdfData;
+    if (!tcDataToSend) {
+      tcDataToSend = generateTCPDFBase64(selectedTC);
     }
 
     const loadingToast = toast.loading('Sending email...');
@@ -195,8 +198,8 @@ export const TCManagement: React.FC = () => {
           to: mailData.to,
           subject: mailData.subject,
           message: mailData.message,
-          tcData: selectedTC.pdfData,
-          fileName: selectedTC.pdfName || `TC_${selectedTC.heatNumber}.pdf`
+          tcData: tcDataToSend,
+          fileName: selectedTC.pdfName || `TC_${selectedTC.heatNumber || 'Generated'}.pdf`
         }),
       });
 
@@ -223,14 +226,16 @@ export const TCManagement: React.FC = () => {
   };
 
   const sendWhatsApp = async () => {
+    if (!selectedTC) return;
+
     if (!whatsAppData.number) {
       toast.error('WhatsApp number is required');
       return;
     }
 
-    if (!selectedTC?.pdfData) {
-      toast.error('No TC attachment found');
-      return;
+    let tcDataToSend = selectedTC.pdfData;
+    if (!tcDataToSend) {
+      tcDataToSend = generateTCPDFBase64(selectedTC);
     }
 
     const loadingToast = toast.loading('Sending WhatsApp...');
@@ -240,8 +245,8 @@ export const TCManagement: React.FC = () => {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           number: whatsAppData.number,
-          mediaData: selectedTC.pdfData,
-          fileName: selectedTC.pdfName || `TC_${selectedTC.heatNumber}.pdf`,
+          mediaData: tcDataToSend,
+          fileName: selectedTC.pdfName || `TC_${selectedTC.heatNumber || 'Generated'}.pdf`,
           caption: whatsAppData.message
         }),
       });
@@ -817,8 +822,8 @@ export const TCManagement: React.FC = () => {
                   <Download className="w-5 h-5 text-emerald-600" />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="text-xs font-black text-emerald-900 truncate">{selectedTC?.pdfName || 'TC_Document.pdf'}</p>
-                  <p className="text-[10px] text-emerald-600 font-bold uppercase tracking-wider">Ready as Attachment</p>
+                  <p className="text-xs font-black text-emerald-900 truncate">{selectedTC?.pdfName || `Generated_TC_${selectedTC?.heatNumber}.pdf`}</p>
+                  <p className="text-[10px] text-emerald-600 font-bold uppercase tracking-wider">{selectedTC?.pdfData ? 'Ready as Attachment' : 'Auto-Generated Attachment'}</p>
                 </div>
               </div>
             </div>
@@ -889,8 +894,8 @@ export const TCManagement: React.FC = () => {
                   <Download className="w-5 h-5 text-green-600" />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="text-xs font-black text-green-900 truncate">{selectedTC?.pdfName || 'TC_Document.pdf'}</p>
-                  <p className="text-[10px] text-green-600 font-bold uppercase tracking-wider">Ready for WhatsApp</p>
+                  <p className="text-xs font-black text-green-900 truncate">{selectedTC?.pdfName || `Generated_TC_${selectedTC?.heatNumber}.pdf`}</p>
+                  <p className="text-[10px] text-green-600 font-bold uppercase tracking-wider">{selectedTC?.pdfData ? 'Ready for WhatsApp' : 'Auto-Generated Attachment'}</p>
                 </div>
               </div>
             </div>

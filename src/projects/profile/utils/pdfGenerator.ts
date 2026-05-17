@@ -542,3 +542,69 @@ export const generatePurchaseReportPDF = (orders: PurchaseOrder[]) => {
 
   doc.save(`Purchase_Report_${new Date().toISOString().split('T')[0]}.pdf`);
 };
+
+/**
+ * Generate Test Certificate (TC) as Base64 Data URL
+ */
+export const generateTCPDFBase64 = (tc: any): string => {
+  const doc = new jsPDF();
+  const pageWidth = doc.internal.pageSize.width;
+
+  doc.setDrawColor(0, 0, 0);
+  doc.setLineWidth(0.5);
+  doc.rect(5, 5, pageWidth - 10, doc.internal.pageSize.height - 10);
+
+  doc.setFontSize(22);
+  doc.setFont('helvetica', 'bold');
+  doc.text('TEST CERTIFICATE', pageWidth / 2, 20, { align: 'center' });
+
+  doc.setFontSize(12);
+  doc.text(`TC No: ${tc.tcNumber || '-'}`, 15, 30);
+  doc.text(`Date: ${tc.tcDate || '-'}`, pageWidth - 15, 30, { align: 'right' });
+
+  doc.line(5, 35, pageWidth - 5, 35);
+
+  doc.setFontSize(11);
+  doc.setFont('helvetica', 'normal');
+  let y = 45;
+  const leftX = 15;
+  const rightX = pageWidth / 2 + 5;
+
+  doc.setFont('helvetica', 'bold');
+  doc.text('Core Details', leftX, y);
+  doc.setFont('helvetica', 'normal');
+  y += 8;
+  doc.text(`Heat Number: ${tc.heatNumber || '-'}`, leftX, y);
+  doc.text(`Plate Number: ${tc.plateNumber || '-'}`, rightX, y);
+  y += 8;
+  doc.text(`Grade: ${tc.grade || '-'}`, leftX, y);
+  doc.text(`Thickness: ${tc.thickness || '-'}`, rightX, y);
+  y += 8;
+  doc.text(`Width: ${tc.width || '-'}`, leftX, y);
+  doc.text(`Length: ${tc.length || '-'}`, rightX, y);
+  y += 8;
+  doc.text(`Weight: ${tc.plateWeight || '-'} Kg`, leftX, y);
+  doc.text(`Make: ${tc.make || '-'}`, rightX, y);
+  y += 8;
+  doc.text(`Standard: ${tc.standard || '-'}`, leftX, y);
+
+  y += 15;
+  doc.setFont('helvetica', 'bold');
+  doc.text('Order Details', leftX, y);
+  doc.setFont('helvetica', 'normal');
+  y += 8;
+  doc.text(`Sales Order No: ${tc.salesOrderNumber || '-'}`, leftX, y);
+  doc.text(`SO Date: ${tc.salesOrderDate || '-'}`, rightX, y);
+  y += 8;
+  doc.text(`Purchase Order No: ${tc.purchaseOrderNumber || '-'}`, leftX, y);
+  doc.text(`PO Date: ${tc.purchaseOrderDate || '-'}`, rightX, y);
+  y += 8;
+  doc.text(`Supplier Invoice No: ${tc.supplierInvoiceNumber || '-'}`, leftX, y);
+  doc.text(`Invoice Date: ${tc.supplierInvoiceDate || '-'}`, rightX, y);
+
+  doc.setFontSize(9);
+  doc.text('This is a system generated summary of the Test Certificate.', pageWidth / 2, doc.internal.pageSize.height - 20, { align: 'center' });
+
+  return doc.output('datauristring');
+};
+
