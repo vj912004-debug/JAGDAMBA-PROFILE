@@ -100,7 +100,6 @@ export const Quotation: React.FC = () => {
     setItems((prev: QuotationItem[]) => prev.filter((item: QuotationItem) => item.id !== id));
   };
 
-  const totalWeight = useMemo(() => items.reduce((sum: number, item: QuotationItem) => sum + item.weight, 0), [items]);
   const totalAmount = useMemo(() => items.reduce((sum: number, item: QuotationItem) => sum + item.amount, 0), [items]);
 
   const handleReset = () => {
