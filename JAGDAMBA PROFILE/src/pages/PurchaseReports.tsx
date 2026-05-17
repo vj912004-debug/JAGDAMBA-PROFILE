@@ -239,19 +239,32 @@ export const PurchaseReports: React.FC = () => {
                                   <tr>
                                     <th className="p-2.5 text-[10px] font-bold text-amber-800 uppercase">Date</th>
                                     <th className="p-2.5 text-[10px] font-bold text-amber-800 uppercase text-right">Qty Received</th>
+                                    <th className="p-2.5 text-[10px] font-bold text-amber-800 uppercase text-right">Qty Pending</th>
                                     <th className="p-2.5 text-[10px] font-bold text-amber-800 uppercase">Remark</th>
                                   </tr>
                                 </thead>
                                 <tbody className="divide-y divide-amber-50">
                                   {getReceiptsForPO(po.id).length === 0 ? (
-                                    <tr><td colSpan={3} className="p-4 text-center text-xs text-slate-400 italic">No receipts recorded yet</td></tr>
-                                  ) : getReceiptsForPO(po.id).map(pr => (
-                                    <tr key={pr.id}>
-                                      <td className="p-2.5 text-xs text-slate-600 font-medium">{pr.date}</td>
-                                      <td className="p-2.5 text-xs text-emerald-600 font-bold text-right">{pr.receivedQty.toFixed(3)} MT</td>
-                                      <td className="p-2.5 text-xs text-slate-500 italic">{pr.remark || '-'}</td>
-                                    </tr>
-                                  ))}
+                                    <tr><td colSpan={4} className="p-4 text-center text-xs text-slate-400 italic">No receipts recorded yet</td></tr>
+                                  ) : getReceiptsForPO(po.id).map(pr => {
+                                    const totalKg = po.totalKg;
+                                    const receipts = purchaseReceipts.filter(r => r.poId === po.id);
+                                    const totalReceivedUpToPr = receipts
+                                      .filter(r => r.id <= pr.id)
+                                      .reduce((sum, r) => sum + r.receivedQty, 0);
+                                    const pendingAfterPr = Math.max(0, totalKg - totalReceivedUpToPr);
+
+                                    return (
+                                      <tr key={pr.id}>
+                                        <td className="p-2.5 text-xs text-slate-600 font-medium">{pr.date}</td>
+                                        <td className="p-2.5 text-xs text-emerald-600 font-bold text-right">{pr.receivedQty.toFixed(3)} MT</td>
+                                        <td className={clsx("p-2.5 text-xs font-bold text-right", pendingAfterPr > 0 ? "text-blue-600" : "text-slate-400")}>
+                                          {pendingAfterPr.toFixed(3)} MT
+                                        </td>
+                                        <td className="p-2.5 text-xs text-slate-500 italic">{pr.remark || '-'}</td>
+                                      </tr>
+                                    );
+                                  })}
                                 </tbody>
                               </table>
                             </div>
