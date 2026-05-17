@@ -100,10 +100,10 @@ export const api = {
   
   // WhatsApp Utility (Local Server)
   whatsapp: {
-    getStatus: () => fetch('http://127.0.0.1:5001/api/whatsapp/status').then(r => r.json()),
-    getQr: () => fetch('http://127.0.0.1:5001/api/whatsapp/qr').then(r => r.json()),
-    init: () => fetch('http://127.0.0.1:5001/api/whatsapp/init', { method: 'POST' }).then(r => r.json()),
-    sendBulk: (message, contacts) => fetch('http://127.0.0.1:5001/api/whatsapp/send-bulk', {
+    getStatus: () => fetch('/api/whatsapp/status').then(r => r.json()),
+    getQr: () => fetch('/api/whatsapp/qr').then(r => r.json()),
+    init: () => fetch('/api/whatsapp/init', { method: 'POST' }).then(r => r.json()),
+    sendBulk: (message, contacts) => fetch('/api/whatsapp/send-bulk', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ message, contacts }),
