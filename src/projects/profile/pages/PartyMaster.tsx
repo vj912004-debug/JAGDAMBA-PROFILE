@@ -163,8 +163,8 @@ export const PartyMasterPage: React.FC = () => {
       {/* Filter and Stats Row */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         {/* Search & Filter Panel */}
-        <div className="md:col-span-2 flex flex-col sm:flex-row gap-4 bg-white dark:bg-slate-900 p-4 rounded-xl border border-slate-100 dark:border-slate-800 shadow-sm">
-          <div className="relative flex-1">
+        <div className="md:col-span-2 flex flex-col sm:flex-row sm:items-center gap-4 bg-white dark:bg-slate-900 p-4 rounded-xl border border-slate-100 dark:border-slate-800 shadow-sm">
+          <div className="relative flex-1 flex items-center">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 dark:text-slate-500" />
             <input
               type="text"
