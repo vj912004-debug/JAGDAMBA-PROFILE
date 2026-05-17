@@ -205,7 +205,7 @@ export const PurchaseReports: React.FC = () => {
                           </button>
                           {(role === 'Admin' || role === 'Office Entry') && (
                             <button 
-                              onClick={() => navigate(`/purchase-order-entry?edit=${po.id}`)}
+                              onClick={() => navigate(`/purchase-order?edit=${po.id}`)}
                               className="p-1.5 text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors"
                               title="Edit Purchase Order"
                             >
