@@ -32,14 +32,18 @@ export const Quotation: React.FC = () => {
   const [gstRate, setGstRate] = useState(18); // Default 18%
 
   const calculateWeight = (item: QuotationItem): number => {
-    const { shape, thickness, width, length, od, id_dim, nos } = item;
+    const shape = item.shape;
+    const thickness = parseFloat(item.thickness as any) || 0;
+    const width = parseFloat(item.width as any) || 0;
+    const length = parseFloat(item.length as any) || 0;
+    const od = parseFloat(item.od as any) || 0;
+    const id_dim = parseFloat(item.id_dim as any) || 0;
+    const nos = parseInt(item.nos as any) || 0;
     let weight = 0;
     
     if (shape === 'Square' || shape === 'CNC Profile') {
-      // Formula: thick * width * length * nos * 8 / 1000000
       weight = (thickness * width * length * nos * 8) / 1000000;
     } else if (shape === 'Ring') {
-      // Formula: (OD^2 - ID^2) * (PI/4) * thickness * nos * 8 / 1000000
       weight = ((Math.pow(od, 2) - Math.pow(id_dim, 2)) * (Math.PI / 4) * thickness * nos * 8) / 1000000;
     }
     
@@ -59,13 +63,22 @@ export const Quotation: React.FC = () => {
         // Recalculate amount if weight or rate changes
         if (['weight', 'rate', 'odRate', 'idRate', 'shape', 'thickness', 'width', 'length', 'od', 'id_dim', 'nos'].includes(field)) {
           if (updated.shape === 'Ring') {
+            const odVal = parseFloat(updated.od as any) || 0;
+            const idDimVal = parseFloat(updated.id_dim as any) || 0;
+            const thicknessVal = parseFloat(updated.thickness as any) || 0;
+            const nosVal = parseInt(updated.nos as any) || 0;
+            const odRateVal = parseFloat(updated.odRate as any) || 0;
+            const idRateVal = parseFloat(updated.idRate as any) || 0;
+
             // Formula: OD Amount = ((OD+5)*(OD+5)*0.7854 * thickness * 8 * OD_Rate) / 1000000
             // Formula: ID Amount = ((ID-10)*(ID-10)*0.7854 * thickness * 8 * ID_Rate) / 1000000
-            const odA = ((updated.od + 5) * (updated.od + 5) * 0.7854 * updated.thickness * 8 * (updated.odRate || 0)) / 1000000;
-            const idA = ((updated.id_dim - 10) * (updated.id_dim - 10) * 0.7854 * updated.thickness * 8 * (updated.idRate || 0)) / 1000000;
-            updated.amount = parseFloat(((odA - idA) * updated.nos).toFixed(2));
+            const odA = ((odVal + 5) * (odVal + 5) * 0.7854 * thicknessVal * 8 * odRateVal) / 1000000;
+            const idA = idDimVal > 10 ? (((idDimVal - 10) * (idDimVal - 10) * 0.7854 * thicknessVal * 8 * idRateVal) / 1000000) : 0;
+            updated.amount = parseFloat(((odA - idA) * nosVal).toFixed(2));
           } else {
-            updated.amount = parseFloat((updated.weight * updated.rate).toFixed(2));
+            const weightVal = parseFloat(updated.weight as any) || 0;
+            const rateVal = parseFloat(updated.rate as any) || 0;
+            updated.amount = parseFloat((weightVal * rateVal).toFixed(2));
           }
         }
         
@@ -404,31 +417,31 @@ export const Quotation: React.FC = () => {
                         <input type="text" value={item.grade} onChange={(e) => updateItem(item.id, 'grade', e.target.value)} className="w-full bg-transparent border-transparent focus:ring-0 text-sm font-medium print:placeholder-transparent" placeholder="Grade" />
                       </td>
                       <td className="p-3 w-20">
-                        <input type="number" value={item.thickness || ''} onChange={(e) => updateItem(item.id, 'thickness', parseFloat(e.target.value) || 0)} className="w-full bg-transparent border-transparent focus:ring-0 text-sm font-bold text-blue-600" placeholder="0" />
+                        <input type="number" value={item.thickness || ''} onChange={(e) => updateItem(item.id, 'thickness', e.target.value)} className="w-full bg-transparent border-transparent focus:ring-0 text-sm font-bold text-blue-600" placeholder="0" />
                       </td>
                       <td className="p-3 min-w-[180px]">
                         {item.shape === 'Ring' ? (
                           <div className="flex items-center gap-2">
                             <div className="flex flex-col">
                               <span className="text-[8px] font-bold text-slate-400 uppercase">OD</span>
-                              <input type="number" value={item.od || ''} onChange={(e) => updateItem(item.id, 'od', parseFloat(e.target.value) || 0)} className="w-16 bg-slate-50 rounded px-2 py-1 text-xs focus:ring-1 focus:ring-blue-500 outline-none print:bg-transparent print:font-bold" placeholder="OD" />
+                              <input type="number" value={item.od || ''} onChange={(e) => updateItem(item.id, 'od', e.target.value)} className="w-16 bg-slate-50 rounded px-2 py-1 text-xs focus:ring-1 focus:ring-blue-500 outline-none print:bg-transparent print:font-bold" placeholder="OD" />
                             </div>
                             <span className="text-slate-300 mt-3">x</span>
                             <div className="flex flex-col">
                               <span className="text-[8px] font-bold text-slate-400 uppercase">ID</span>
-                              <input type="number" value={item.id_dim || ''} onChange={(e) => updateItem(item.id, 'id_dim', parseFloat(e.target.value) || 0)} className="w-16 bg-slate-50 rounded px-2 py-1 text-xs focus:ring-1 focus:ring-blue-500 outline-none print:bg-transparent print:font-bold" placeholder="ID" />
+                              <input type="number" value={item.id_dim || ''} onChange={(e) => updateItem(item.id, 'id_dim', e.target.value)} className="w-16 bg-slate-50 rounded px-2 py-1 text-xs focus:ring-1 focus:ring-blue-500 outline-none print:bg-transparent print:font-bold" placeholder="ID" />
                             </div>
                           </div>
                         ) : (
                           <div className="flex items-center gap-2">
-                            <input type="number" value={item.length || ''} onChange={(e) => updateItem(item.id, 'length', parseFloat(e.target.value) || 0)} className="w-16 bg-slate-50 rounded px-2 py-1 text-xs focus:ring-1 focus:ring-blue-500 outline-none print:bg-transparent print:font-bold" placeholder="L" />
+                            <input type="number" value={item.length || ''} onChange={(e) => updateItem(item.id, 'length', e.target.value)} className="w-16 bg-slate-50 rounded px-2 py-1 text-xs focus:ring-1 focus:ring-blue-500 outline-none print:bg-transparent print:font-bold" placeholder="L" />
                             <span className="text-slate-300">x</span>
-                            <input type="number" value={item.width || ''} onChange={(e) => updateItem(item.id, 'width', parseFloat(e.target.value) || 0)} className="w-16 bg-slate-50 rounded px-2 py-1 text-xs focus:ring-1 focus:ring-blue-500 outline-none print:bg-transparent print:font-bold" placeholder="W" />
+                            <input type="number" value={item.width || ''} onChange={(e) => updateItem(item.id, 'width', e.target.value)} className="w-16 bg-slate-50 rounded px-2 py-1 text-xs focus:ring-1 focus:ring-blue-500 outline-none print:bg-transparent print:font-bold" placeholder="W" />
                           </div>
                         )}
                       </td>
                       <td className="p-3 w-16">
-                        <input type="number" value={item.nos || ''} onChange={(e) => updateItem(item.id, 'nos', parseInt(e.target.value) || 0)} className="w-full bg-transparent border-transparent focus:ring-0 text-sm font-medium" placeholder="1" />
+                        <input type="number" value={item.nos || ''} onChange={(e) => updateItem(item.id, 'nos', e.target.value)} className="w-full bg-transparent border-transparent focus:ring-0 text-sm font-medium" placeholder="1" />
                       </td>
                       <td className="p-3">
                         <span className="text-sm font-black text-blue-600">{item.weight.toFixed(3)}</span>
@@ -438,15 +451,15 @@ export const Quotation: React.FC = () => {
                           <div className="flex flex-col gap-1">
                             <div className="flex items-center gap-1">
                               <span className="text-[8px] font-bold text-slate-400 w-4">OD</span>
-                              <input type="number" value={item.odRate || ''} onChange={(e) => updateItem(item.id, 'odRate', parseFloat(e.target.value) || 0)} className="w-full bg-blue-50/50 rounded px-1.5 py-0.5 text-xs font-bold text-blue-600 outline-none" placeholder="OD Rate" />
+                              <input type="number" value={item.odRate || ''} onChange={(e) => updateItem(item.id, 'odRate', e.target.value)} className="w-full bg-blue-50/50 rounded px-1.5 py-0.5 text-xs font-bold text-blue-600 outline-none" placeholder="OD Rate" />
                             </div>
                             <div className="flex items-center gap-1">
                               <span className="text-[8px] font-bold text-slate-400 w-4">ID</span>
-                              <input type="number" value={item.idRate || ''} onChange={(e) => updateItem(item.id, 'idRate', parseFloat(e.target.value) || 0)} className="w-full bg-amber-50/50 rounded px-1.5 py-0.5 text-xs font-bold text-amber-600 outline-none" placeholder="ID Rate" />
+                              <input type="number" value={item.idRate || ''} onChange={(e) => updateItem(item.id, 'idRate', e.target.value)} className="w-full bg-amber-50/50 rounded px-1.5 py-0.5 text-xs font-bold text-amber-600 outline-none" placeholder="ID Rate" />
                             </div>
                           </div>
                         ) : (
-                          <input type="number" value={item.rate || ''} onChange={(e) => updateItem(item.id, 'rate', parseFloat(e.target.value) || 0)} className="w-full bg-transparent border-transparent focus:ring-0 text-sm font-bold text-emerald-600" placeholder="0.00" />
+                          <input type="number" value={item.rate || ''} onChange={(e) => updateItem(item.id, 'rate', e.target.value)} className="w-full bg-transparent border-transparent focus:ring-0 text-sm font-bold text-emerald-600" placeholder="0.00" />
                         )}
                       </td>
                       <td className="p-3">
