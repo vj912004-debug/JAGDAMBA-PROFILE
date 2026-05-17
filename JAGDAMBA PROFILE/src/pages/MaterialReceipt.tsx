@@ -10,6 +10,10 @@ export const MaterialReceipt: React.FC = () => {
   const [receivedQty, setReceivedQty] = useState<number>(0);
   const [remark, setRemark] = useState('');
   const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
+  const [billNo, setBillNo] = useState('');
+  const [transporterName, setTransporterName] = useState('');
+  const [vehicleNo, setVehicleNo] = useState('');
+  const [tcAvailable, setTcAvailable] = useState<'Yes' | 'No'>('No');
 
   const selectedPO = useMemo(() => 
     purchaseOrders.find(po => po.id === selectedPOId), 
@@ -42,6 +46,10 @@ export const MaterialReceipt: React.FC = () => {
       receivedQty,
       date,
       remark: remark.trim(),
+      billNo: billNo.trim(),
+      transporterName: transporterName.trim(),
+      vehicleNo: vehicleNo.trim(),
+      tcAvailable,
     };
 
     setPurchaseReceipts(prev => [...prev, newReceipt]);
@@ -63,6 +71,10 @@ export const MaterialReceipt: React.FC = () => {
     setSelectedPOId('');
     setReceivedQty(0);
     setRemark('');
+    setBillNo('');
+    setTransporterName('');
+    setVehicleNo('');
+    setTcAvailable('No');
   };
 
   const activePOs = purchaseOrders.filter(po => po.status !== 'Complete');
@@ -122,6 +134,45 @@ export const MaterialReceipt: React.FC = () => {
                       className="w-full bg-white border border-slate-200 text-slate-800 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                       placeholder="0.000"
                     />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-500 mb-1.5 uppercase tracking-wider">Bill No</label>
+                    <input type="text" value={billNo} onChange={(e) => setBillNo(e.target.value)} className="w-full bg-white border border-slate-200 text-slate-800 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Enter Bill No" />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-500 mb-1.5 uppercase tracking-wider">Transporter Name</label>
+                    <input type="text" value={transporterName} onChange={(e) => setTransporterName(e.target.value)} className="w-full bg-white border border-slate-200 text-slate-800 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Enter Transporter Name" />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-500 mb-1.5 uppercase tracking-wider">Vehicle No</label>
+                    <input type="text" value={vehicleNo} onChange={(e) => setVehicleNo(e.target.value)} className="w-full bg-white border border-slate-200 text-slate-800 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="GJ-06-XX-XXXX" />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-500 mb-1.5 uppercase tracking-wider">TC (Test Certificate) Available?</label>
+                    <div className="flex gap-3">
+                      <button
+                        type="button"
+                        onClick={() => setTcAvailable('Yes')}
+                        className={`flex-1 py-2 rounded-lg border text-xs font-bold transition-all duration-300 ${
+                          tcAvailable === 'Yes'
+                            ? 'bg-emerald-600 border-emerald-600 text-white shadow-md shadow-emerald-100'
+                            : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50'
+                        }`}
+                      >
+                        Yes
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setTcAvailable('No')}
+                        className={`flex-1 py-2 rounded-lg border text-xs font-bold transition-all duration-300 ${
+                          tcAvailable === 'No'
+                            ? 'bg-rose-600 border-rose-600 text-white shadow-md shadow-rose-100'
+                            : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50'
+                        }`}
+                      >
+                        No
+                      </button>
+                    </div>
                   </div>
                   <div className="sm:col-span-2">
                     <label className="block text-xs font-semibold text-slate-500 mb-1.5 uppercase tracking-wider">Remark / Batch Info</label>

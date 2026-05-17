@@ -20,6 +20,22 @@ export const EditableSelect: React.FC<EditableSelectProps> = ({
 }) => {
   const [isManual, setIsManual] = useState(false);
 
+  // Automatically increase size and padding to ensure dropdowns are clear, easy-to-read, and professional
+  const enhancedClassName = className
+    .replace(/\bp-1\.5\b/g, 'px-2.5 py-2')
+    .replace(/\bp-1\b/g, 'px-2.5 py-2')
+    .replace(/\bp-2\b/g, 'px-3 py-2.5')
+    .replace(/\bpy-1\b/g, 'py-2')
+    .replace(/\bpy-0\.5\b/g, 'py-1.5')
+    .replace(/\bpx-1\.5\b/g, 'px-2.5')
+    .replace(/\btext-xs\b/g, 'text-sm font-semibold')
+    .replace(/\btext-\[10px\]\b/g, 'text-xs font-bold')
+    .replace(/\bw-28\b/g, 'w-36')
+    .replace(/\bw-20\b/g, 'w-24')
+    .replace(/\bw-32\b/g, 'w-40')
+    .replace(/\bw-18\b/g, 'w-24')
+    .replace(/\bw-22\b/g, 'w-28');
+
   // Check if initial value is manual (not in options and not empty)
   useEffect(() => {
     if (value && !options.includes(value) && value !== 'OTHER_MANUAL') {
@@ -55,7 +71,7 @@ export const EditableSelect: React.FC<EditableSelectProps> = ({
           value={value}
           onChange={(e) => onChange(e.target.value)}
           placeholder={placeholder || "Type manually..."}
-          className={`${className} pr-8 focus:ring-2 focus:ring-blue-500 outline-none transition-all`}
+          className={`${enhancedClassName} pr-8 focus:ring-2 focus:ring-blue-500 outline-none transition-all`}
           autoFocus
         />
         <datalist id={datalistId}>
@@ -79,7 +95,7 @@ export const EditableSelect: React.FC<EditableSelectProps> = ({
     <select
       value={value}
       onChange={handleSelectChange}
-      className={`${className} focus:ring-2 focus:ring-blue-500 outline-none transition-all`}
+      className={`${enhancedClassName} focus:ring-2 focus:ring-blue-500 outline-none transition-all`}
     >
       {placeholder && <option value="">{placeholder}</option>}
       {options.map(opt => (

@@ -1,7 +1,8 @@
 import React, { useState, useMemo } from 'react';
 import { Calculator, Plus, Trash2, Printer, RotateCcw, User, Ruler, Scissors, Search, List } from 'lucide-react';
-import { useAppContext, type CNCQuotationRecord } from '../store/AppContext';
+import { useAppContext, type CNCQuotationRecord, MATERIAL_GRADES } from '../store/AppContext';
 import toast from 'react-hot-toast';
+import { EditableSelect } from '../components/EditableSelect';
 
 interface CNCItem {
   id: string;
@@ -81,8 +82,8 @@ export const CNCQuotation: React.FC = () => {
       const finalRatePerPart = partOfNos > 0 ? (plateWeight * plateRate) / partOfNos : 0;
       
       return {
-        finalRate: parseFloat(finalRatePerPart.toFixed(2)),
-        amount: parseFloat(totalAmount.toFixed(2)),
+        finalRate: Math.ceil(finalRatePerPart),
+        amount: Math.ceil(totalAmount),
         plateWeight: parseFloat(plateWeight.toFixed(3))
       };
     }
@@ -117,8 +118,8 @@ export const CNCQuotation: React.FC = () => {
     const totalAmount = totalCostPerPlate * plateNos;
 
     return {
-      finalRate: Math.round(finalRatePerPart),
-      amount: Math.round(totalAmount), // Match user's 70122
+      finalRate: Math.ceil(finalRatePerPart),
+      amount: Math.ceil(totalAmount), // Match user's 70122
       plateWeight: parseFloat(plateWeight.toFixed(3))
     };
   };
@@ -180,7 +181,7 @@ export const CNCQuotation: React.FC = () => {
   const handleSave = () => {
     if (!partyName) { toast.error('Enter party name'); return; }
     
-    const grandTotal = (totalAmount + loadingCharges + transportCharges) * (1 + gstRate / 100);
+    const grandTotal = Math.ceil((totalAmount + loadingCharges + transportCharges) * (1 + gstRate / 100));
     
     const record: CNCQuotationRecord = {
       id: Date.now().toString(),
@@ -361,7 +362,7 @@ export const CNCQuotation: React.FC = () => {
               </div>
               <div className="flex justify-between text-xs border-t border-white/5 pt-4">
                 <span className="opacity-60 font-bold uppercase">Grand Total</span>
-                <span className="text-xl font-black text-blue-400">₹ {( (totalAmount + loadingCharges + transportCharges) * (1 + gstRate / 100) ).toLocaleString()}</span>
+                <span className="text-xl font-black text-blue-400">₹ {Math.ceil((totalAmount + loadingCharges + transportCharges) * (1 + gstRate / 100)).toLocaleString()}</span>
               </div>
             </div>
           </div>
@@ -389,7 +390,7 @@ export const CNCQuotation: React.FC = () => {
                   <th className="p-3 border-r text-sm font-bold min-w-[110px]">Plate Weight (Kg)</th>
                   <th className="p-3 border-r text-sm font-bold min-w-[160px]">Plate Rate / Nos</th>
                   <th className="p-3 border-r text-sm font-bold min-w-[100px]">Part of Nos</th>
-                  <th className="p-3 border-r text-sm font-bold min-w-[130px]">FG Weight (Kg)</th>
+                  <th className="p-3 border-r text-sm font-bold min-w-[160px]">FG Total Weight (Kg)</th>
                   <th className="p-3 border-r text-sm font-bold text-blue-600 min-w-[280px]">Cutting</th>
                   <th className="p-3 border-r text-sm font-bold min-w-[280px]">Scrap Rate</th>
                   <th className="p-3 border-r text-sm font-bold text-emerald-600 min-w-[120px]">Final Rate</th>
@@ -422,7 +423,13 @@ export const CNCQuotation: React.FC = () => {
                           <span className="text-slate-400 font-bold">x</span>
                           <input type="number" value={item.thickness ?? ''} onChange={(e) => updateItem(item.id, 'thickness', e.target.value)} className="w-16 bg-blue-50 border border-blue-200 text-blue-700 font-black rounded px-2 py-1 text-sm" placeholder="T" />
                         </div>
-                        <input type="text" value={item.grade} onChange={(e) => updateItem(item.id, 'grade', e.target.value)} className="text-[10px] uppercase font-bold text-slate-400 bg-transparent outline-none" placeholder="GRADE" />
+                        <EditableSelect 
+                          value={item.grade} 
+                          onChange={(v) => updateItem(item.id, 'grade', v)} 
+                          options={MATERIAL_GRADES}
+                          placeholder="GRADE"
+                          className="w-28 bg-white border border-slate-200 rounded px-1.5 py-0.5 text-[10px] uppercase font-bold text-slate-700 outline-none"
+                        />
                       </div>
                     </td>
                     <td className="p-3 border-r font-black text-slate-800 text-sm">
@@ -587,7 +594,7 @@ export const CNCQuotation: React.FC = () => {
                 <tr className="bg-blue-600 text-white">
                   <td colSpan={9} className="p-4 text-right text-xs uppercase tracking-widest font-black">Grand Total Amount</td>
                   <td colSpan={2} className="p-4 text-right text-xl font-black">
-                    ₹{( (totalAmount + loadingCharges + transportCharges) * (1 + gstRate / 100) ).toLocaleString()}
+                    ₹{Math.ceil((totalAmount + loadingCharges + transportCharges) * (1 + gstRate / 100)).toLocaleString()}
                   </td>
                   <td className="print:hidden"></td>
                 </tr>
@@ -678,7 +685,7 @@ export const CNCQuotation: React.FC = () => {
               <th>Plate Wt</th>
               <th>Nos</th>
               <th>Rate/Kg</th>
-              <th>FG Wt</th>
+              <th>FG Total Wt</th>
               <th>Scrap</th>
               <th className="text-right">Final Rate</th>
               <th className="text-right">Amount</th>
@@ -707,10 +714,10 @@ export const CNCQuotation: React.FC = () => {
             <tbody>
               <tr><td className="text-right font-bold">Sub Total:</td><td>₹{totalAmount.toLocaleString()}</td></tr>
               <tr><td className="text-right font-bold">Charges:</td><td>₹{(loadingCharges + transportCharges).toLocaleString()}</td></tr>
-              <tr><td className="text-right font-bold">GST ({gstRate}%):</td><td>₹{((totalAmount + loadingCharges + transportCharges) * gstRate / 100).toLocaleString()}</td></tr>
+              <tr><td className="text-right font-bold">GST ({gstRate}%):</td><td>₹{Math.ceil((totalAmount + loadingCharges + transportCharges) * gstRate / 100).toLocaleString()}</td></tr>
               <tr className="print-grand-total">
                 <td className="text-right uppercase">Grand Total:</td>
-                <td className="font-bold">₹{( (totalAmount + loadingCharges + transportCharges) * (1 + gstRate / 100) ).toLocaleString()}</td>
+                <td className="font-bold">₹{Math.ceil((totalAmount + loadingCharges + transportCharges) * (1 + gstRate / 100)).toLocaleString()}</td>
               </tr>
             </tbody>
           </table>

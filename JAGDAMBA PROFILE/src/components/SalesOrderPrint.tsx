@@ -245,8 +245,8 @@ export const SalesOrderPrint: React.FC<SalesOrderPrintProps> = ({ order }) => {
                           <td>{item.partName || item.cuttingType}</td>
                           <td>{item.materialGrade}</td>
                           <td>{item.thickness}</td>
-                          <td>{item.width || '-'}</td>
-                          <td>{item.length || '-'}</td>
+                          <td>{item.width || item.innerDiameter || '-'}</td>
+                          <td>{item.length || item.outerDiameter || '-'}</td>
                           <td>{item.quantity}</td>
                           <td>-</td>
                           <td>{item.rate}</td>

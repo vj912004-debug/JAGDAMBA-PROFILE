@@ -212,9 +212,9 @@ export const SalesOrderPrint: React.FC<SalesOrderPrintProps> = ({ order }) => {
                   <div className="info-row"><span className="info-label">Loading & Unloading:</span><span className="info-value">₹{(order.loadingUnloadingCharges || 0).toLocaleString()}</span></div>
                   <div className="info-row"><span className="info-label">Burning Loss:</span><span className="info-value"></span></div>
                   <div className="info-row"><span className="info-label">Payment Term:</span><span className="info-value">{order.paymentTerms || '-'}</span></div>
-                  <div className="info-row"><span className="info-label">TC:</span><span className="info-value"></span></div>
+                  <div className="info-row"><span className="info-label">TC:</span><span className="info-value" style={{ fontWeight: 'bold' }}>{order.tc || 'No'}</span></div>
                   <div className="info-row"><span className="info-label">GST Status:</span><span className="info-value" style={{ fontWeight: 'bold' }}>{order.gstType || 'GST 18%'}</span></div>
-                  <div className="info-row"><span className="info-label">UT:</span><span className="info-value"></span></div>
+                  <div className="info-row"><span className="info-label">UT:</span><span className="info-value" style={{ fontWeight: 'bold' }}>{order.ut || 'No'}</span></div>
               </div>
               <div className="delivery-row-full" style={{ marginTop: '4px' }}>
                   <span className="info-label" style={{ minWidth: '40px' }}>Note:</span>
@@ -244,8 +244,8 @@ export const SalesOrderPrint: React.FC<SalesOrderPrintProps> = ({ order }) => {
                           <td>{item.partName || item.cuttingType}</td>
                           <td>{item.materialGrade}</td>
                           <td>{item.thickness}</td>
-                          <td>{item.width || '-'}</td>
-                          <td>{item.length || '-'}</td>
+                          <td>{item.width || item.innerDiameter || '-'}</td>
+                          <td>{item.length || item.outerDiameter || '-'}</td>
                           <td>{item.quantity}</td>
                           <td>-</td>
                           <td>{item.rate}</td>

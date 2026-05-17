@@ -25,9 +25,9 @@ export const GRNReport: React.FC = () => {
   }, [purchaseOrders, purchaseReceipts, search]);
 
   const handleExport = () => {
-    const csvContent = "Date,PO Number,Supplier,Material Grade,Received Qty (MT),Remark\n" + 
+    const csvContent = "Date,PO Number,Supplier,Material Grade,Received Qty (Nos),Bill No,Transporter Name,Vehicle No,TC Available,Remark\n" + 
       grnReport.map(pr => 
-        `${pr.date},${pr.poNumber},${pr.supplierName},${pr.grade},${pr.receivedQty},${pr.remark || ''}`
+        `"${pr.date}","${pr.poNumber}","${pr.supplierName}","${pr.grade}","${pr.receivedQty}","${pr.billNo || ''}","${pr.transporterName || ''}","${pr.vehicleNo || ''}","${pr.tcAvailable || 'No'}","${pr.remark || ''}"`
       ).join("\n");
     
     const blob = new Blob([csvContent], { type: 'text/csv' });
@@ -73,20 +73,34 @@ export const GRNReport: React.FC = () => {
                 <th className="p-4 text-xs font-bold text-slate-500 uppercase tracking-wider">PO Number</th>
                 <th className="p-4 text-xs font-bold text-slate-500 uppercase tracking-wider">Supplier</th>
                 <th className="p-4 text-xs font-bold text-slate-500 uppercase tracking-wider">Material Grade</th>
-                <th className="p-4 text-xs font-bold text-slate-500 uppercase tracking-wider text-right">Received Qty (MT)</th>
+                <th className="p-4 text-xs font-bold text-slate-500 uppercase tracking-wider text-right">Received Qty (Nos)</th>
+                <th className="p-4 text-xs font-bold text-slate-500 uppercase tracking-wider">Bill No</th>
+                <th className="p-4 text-xs font-bold text-slate-500 uppercase tracking-wider">Transporter</th>
+                <th className="p-4 text-xs font-bold text-slate-500 uppercase tracking-wider">Vehicle No</th>
+                <th className="p-4 text-xs font-bold text-slate-500 uppercase tracking-wider text-center">TC</th>
                 <th className="p-4 text-xs font-bold text-slate-500 uppercase tracking-wider">Remark</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
               {grnReport.length === 0 ? (
-                <tr><td colSpan={6} className="p-10 text-center text-slate-400 italic">No material receipts recorded yet</td></tr>
+                <tr><td colSpan={10} className="p-10 text-center text-slate-400 italic">No material receipts recorded yet</td></tr>
               ) : grnReport.map((pr, idx) => (
                 <tr key={`${pr.id}-${idx}`} className="hover:bg-slate-50 transition-colors">
                   <td className="p-4 text-sm text-slate-600 font-medium">{pr.date}</td>
                   <td className="p-4 text-sm font-mono text-blue-600 font-bold">{pr.poNumber}</td>
                   <td className="p-4 text-sm font-medium text-slate-800">{pr.supplierName}</td>
                   <td className="p-4 text-sm text-slate-600">{pr.grade}</td>
-                  <td className="p-4 text-sm text-emerald-600 text-right font-bold">{pr.receivedQty.toFixed(3)}</td>
+                  <td className="p-4 text-sm text-emerald-600 text-right font-bold">{pr.receivedQty} Nos</td>
+                  <td className="p-4 text-sm text-slate-700 font-semibold">{pr.billNo || '-'}</td>
+                  <td className="p-4 text-sm text-slate-600">{pr.transporterName || '-'}</td>
+                  <td className="p-4 text-sm font-mono text-slate-700">{pr.vehicleNo || '-'}</td>
+                  <td className="p-4 text-sm text-center">
+                    {pr.tcAvailable === 'Yes' ? (
+                      <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-100">Yes</span>
+                    ) : (
+                      <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-bold bg-rose-50 text-rose-700 border border-rose-100">No</span>
+                    )}
+                  </td>
                   <td className="p-4 text-sm text-slate-500 italic">{pr.remark || '-'}</td>
                 </tr>
               ))}

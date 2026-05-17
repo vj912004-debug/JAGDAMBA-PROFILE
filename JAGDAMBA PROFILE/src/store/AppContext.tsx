@@ -36,8 +36,8 @@ export const ALL_STAGES: Stage[] = [
   'Payment Received',
 ];
 
-export type CuttingType = 'CNC Profile' | 'Circle' | 'Square' | 'Ring' | 'Plate' | 'Strip' | 'Other';
-export const CUTTING_TYPES: CuttingType[] = ['CNC Profile', 'Circle', 'Square', 'Ring', 'Plate', 'Strip', 'Other'];
+export type CuttingType = 'CNC Profile' | 'Circle' | 'Square' | 'Ring' | 'Plate' | 'Scrap';
+export const CUTTING_TYPES: CuttingType[] = ['CNC Profile', 'Circle', 'Square', 'Ring', 'Plate', 'Scrap'];
 
 export type MaterialType = 'MS' | 'SS' | 'Alloy' | 'Other';
 export const MATERIAL_TYPES: MaterialType[] = ['MS', 'SS', 'Alloy', 'Other'];
@@ -122,6 +122,10 @@ export interface Order {
   gstType?: string;
   transportationCharges?: number;
   loadingUnloadingCharges?: number;
+  customerPONo?: string;
+  customerPODate?: string;
+  tc?: 'Yes' | 'No';
+  ut?: 'Yes' | 'No';
   items: OrderLineItem[];
   createdAt: string;
 }
@@ -221,6 +225,11 @@ export interface PurchaseReceipt {
   receivedQty: number;
   date: string;
   remark?: string;
+  billNo?: string;
+  transporterName?: string;
+  vehicleNo?: string;
+  tcAvailable?: 'Yes' | 'No';
+  items?: { itemId: string; receivedQty: number }[];
 }
 
 export interface ActivityLog {
@@ -232,6 +241,18 @@ export interface ActivityLog {
   details: string;
   type: 'info' | 'warning' | 'alert';
   orderNo?: string;
+}
+
+export interface PartyMaster {
+  id: string;
+  partyName: string;
+  contactPerson: string;
+  mobileNumber: string;
+  location: string;
+  deliveryAddress: string;
+  paymentTerms?: string;
+  gstNumber?: string;
+  email?: string;
 }
 
 // ─── Context Type ─────────────────────────────────────────────
@@ -284,6 +305,12 @@ interface AppContextType {
   nextOrderNo: () => string;
   nextChallanNo: () => string;
   nextPONo: () => string;
+
+  parties: PartyMaster[];
+  setParties: React.Dispatch<React.SetStateAction<PartyMaster[]>>;
+  addParty: (party: Omit<PartyMaster, 'id'>) => Promise<PartyMaster>;
+  updateParty: (party: PartyMaster) => Promise<void>;
+  deleteParty: (id: string) => Promise<void>;
 }
 
 // ─── Translations ─────────────────────────────────────────────
@@ -430,7 +457,7 @@ const seedOrders: Order[] = [
     location: 'Por Unit', deliveryAddress: 'Tata Haldia', handledBy: 'System', remark: '',
     stage: 'Ready', urgent: false, createdAt: '2026-04-20T11:00:00',
     items: [
-      { id: '4a', cuttingType: 'Strip', materialType: 'SS', materialGrade: 'SS 316', thickness: '12mm', plateSize: '1500 x 6000', drawingNumber: 'DRW-4001', partName: 'Stiffener', quantity: 8, completedQty: 8, dispatchedQty: 0, unitType: 'Set', rate: 1500, amount: 12000, scrapBelongsTo: 'Customer', specialInstructions: '', fileName: null },
+      { id: '4a', cuttingType: 'Scrap', materialType: 'SS', materialGrade: 'SS 316', thickness: '12mm', plateSize: '1500 x 6000', drawingNumber: 'DRW-4001', partName: 'Stiffener', quantity: 8, completedQty: 8, dispatchedQty: 0, unitType: 'Set', rate: 1500, amount: 12000, scrapBelongsTo: 'Customer', specialInstructions: '', fileName: null },
     ],
   },
   {
@@ -478,7 +505,7 @@ const seedChallans: ChallanRecord[] = [
 const seedPurchaseOrders: PurchaseOrder[] = [
   { 
     id: 'PO1', 
-    poNumber: 'PO-2026-001', 
+    poNumber: 'PO-JP-2026-001', 
     supplierName: 'Steel India Ltd', 
     date: '2026-04-20', 
     status: 'Partial',
@@ -495,6 +522,14 @@ const seedPurchaseReceipts: PurchaseReceipt[] = [
   { id: 'PR1', poId: 'PO1', receivedQty: 6, date: '2026-04-22', remark: 'First lot' },
 ];
 
+const seedParties: PartyMaster[] = [
+  { id: '1', partyName: 'LARSEN & TOUBRO', contactPerson: 'RAHUL MEHTA', mobileNumber: '9876543210', location: 'Makarpura Unit', deliveryAddress: 'L&T GATE 4, VADODARA', paymentTerms: '30 DAYS' },
+  { id: '2', partyName: 'RELIANCE INDUSTRIES', contactPerson: 'AMIT PATEL', mobileNumber: '9876541111', location: 'Por Unit', deliveryAddress: 'RELIANCE JAMNAGAR', paymentTerms: '15 DAYS' },
+  { id: '3', partyName: 'ADANI POWER', contactPerson: 'VIJAY SHAH', mobileNumber: '9876542222', location: 'Makarpura Unit', deliveryAddress: 'ADANI MUNDRA', paymentTerms: '30 DAYS' },
+  { id: '4', partyName: 'TATA STEEL', contactPerson: 'DEEPAK JOSHI', mobileNumber: '9876543333', location: 'Por Unit', deliveryAddress: 'TATA HALDIA', paymentTerms: '45 DAYS' },
+  { id: '5', partyName: 'BHEL', contactPerson: 'SURESH KUMAR', mobileNumber: '9876544444', location: 'Makarpura Unit', deliveryAddress: 'BHEL HARIDWAR', paymentTerms: '30 DAYS' },
+];
+
 // ─── LocalStorage Helpers ─────────────────────────────────────
 
 const STORAGE_KEY = 'jagdamba_erp_data';
@@ -509,6 +544,7 @@ interface StoredData {
   purchaseOrders: PurchaseOrder[];
   purchaseReceipts: PurchaseReceipt[];
   logs: ActivityLog[];
+  parties: PartyMaster[];
 }
 
 function loadAuth(): User | null {
@@ -560,6 +596,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   const [purchaseOrders, setPurchaseOrders] = useState<PurchaseOrder[]>([]);
   const [purchaseReceipts, setPurchaseReceipts] = useState<PurchaseReceipt[]>([]);
   const [logs, setLogs] = useState<ActivityLog[]>([]);
+  const [parties, setParties] = useState<PartyMaster[]>([]);
 
   const fetchData = useCallback(async () => {
     try {
@@ -572,6 +609,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         setPurchaseOrders(stored.purchaseOrders ?? []);
         setPurchaseReceipts(stored.purchaseReceipts ?? []);
         setLogs(stored.logs ?? []);
+        setParties(stored.parties ?? seedParties);
       } else {
         // Fallback to seed data on first load
         setOrders(seedOrders);
@@ -581,6 +619,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         setChallans(seedChallans);
         setPurchaseOrders(seedPurchaseOrders);
         setPurchaseReceipts(seedPurchaseReceipts);
+        setParties(seedParties);
         
         saveToStorage({
           orders: seedOrders,
@@ -590,7 +629,8 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
           challans: seedChallans,
           purchaseOrders: seedPurchaseOrders,
           purchaseReceipts: seedPurchaseReceipts,
-          logs: []
+          logs: [],
+          parties: seedParties
         });
       }
     } catch (error) {
@@ -628,9 +668,23 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   }, []);
 
   // Sync to local storage on every state change
+  const addParty = useCallback(async (party: Omit<PartyMaster, 'id'>): Promise<PartyMaster> => {
+    const newParty: PartyMaster = { ...party, id: Date.now().toString() };
+    setParties(prev => [...prev, newParty]);
+    return newParty;
+  }, []);
+
+  const updateParty = useCallback(async (party: PartyMaster) => {
+    setParties(prev => prev.map(p => p.id === party.id ? party : p));
+  }, []);
+
+  const deleteParty = useCallback(async (id: string) => {
+    setParties(prev => prev.filter(p => p.id !== id));
+  }, []);
+
   useEffect(() => {
-    saveToStorage({ orders, plates, usages, dispatches, challans, purchaseOrders, purchaseReceipts, logs });
-  }, [orders, plates, usages, dispatches, challans, purchaseOrders, purchaseReceipts, logs]);
+    saveToStorage({ orders, plates, usages, dispatches, challans, purchaseOrders, purchaseReceipts, logs, parties });
+  }, [orders, plates, usages, dispatches, challans, purchaseOrders, purchaseReceipts, logs, parties]);
 
   const t = useCallback((key: string) => {
     return translations[language][key] || key;
@@ -661,7 +715,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       const num = parseInt(parts[parts.length - 1], 10);
       return isNaN(num) ? max : Math.max(max, num);
     }, 0);
-    return `PO-${year}-${String(maxNum + 1).padStart(3, '0')}`;
+    return `PO-JP-${year}-${String(maxNum + 1).padStart(3, '0')}`;
   }, [purchaseOrders]);
   
   const addLog = useCallback((log: Omit<ActivityLog, 'id' | 'timestamp' | 'user' | 'role'>) => {
@@ -860,6 +914,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       purchaseOrders, setPurchaseOrders,
       purchaseReceipts, setPurchaseReceipts,
       nextOrderNo, nextChallanNo, nextPONo,
+      parties, setParties, addParty, updateParty, deleteParty,
     }}>
       {children}
     </AppContext.Provider>

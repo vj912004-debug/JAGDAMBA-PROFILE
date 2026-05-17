@@ -44,7 +44,7 @@ export const OrderEntry: React.FC = () => {
   const orderNo = useMemo(() => nextOrderNo(), [nextOrderNo]);
 
   // Basic Details
-  const [orderDate, setOrderDate] = useState(new Date().toISOString().split('T')[0]);
+  const orderDate = new Date().toISOString().split('T')[0];
   const [deliveryDate, setDeliveryDate] = useState('');
   const [partyName, setPartyName] = useState('');
   const [contactPerson, setContactPerson] = useState('');
@@ -62,6 +62,8 @@ export const OrderEntry: React.FC = () => {
   const [gstType, setGstType] = useState('GST 18%');
   const [customerPONo, setCustomerPONo] = useState('');
   const [customerPODate, setCustomerPODate] = useState('');
+  const [tc, setTc] = useState<'Yes' | 'No'>('No');
+  const [ut, setUt] = useState<'Yes' | 'No'>('No');
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleSelectParty = (party: any) => {
@@ -131,9 +133,9 @@ export const OrderEntry: React.FC = () => {
       // Auto-calculate amount
       if (['quantity', 'totalWeight', 'rate', 'unitType'].includes(field)) {
         if (updated.unitType === 'Kg') {
-          updated.amount = Number(updated.totalWeight || 0) * Number(updated.rate || 0);
+          updated.amount = Math.ceil(Number(updated.totalWeight || 0) * Number(updated.rate || 0));
         } else {
-          updated.amount = Number(updated.quantity || 0) * Number(updated.rate || 0);
+          updated.amount = Math.ceil(Number(updated.quantity || 0) * Number(updated.rate || 0));
         }
       }
       return updated;
@@ -177,9 +179,11 @@ export const OrderEntry: React.FC = () => {
       loadingUnloadingCharges,
       customerPONo: customerPONo.trim(),
       customerPODate,
+      tc,
+      ut,
       items: lines.map(l => ({ 
         ...l, 
-        amount: l.unitType === 'Kg' ? (l.totalWeight || 0) * l.rate : l.quantity * l.rate 
+        amount: l.unitType === 'Kg' ? Math.ceil((l.totalWeight || 0) * l.rate) : Math.ceil(l.quantity * l.rate) 
       })),
       createdAt: new Date().toISOString(),
     };
@@ -212,6 +216,7 @@ export const OrderEntry: React.FC = () => {
     setGstType('GST 18%');
     setTransportationCharges(0); setLoadingUnloadingCharges(0);
     setCustomerPONo(''); setCustomerPODate('');
+    setTc('No'); setUt('No');
     setLines([emptyLine()]);
     toast('Form cleared', { icon: '🔄' });
   };
@@ -300,14 +305,6 @@ export const OrderEntry: React.FC = () => {
             <input type="text" value={contactPerson} onChange={(e) => setContactPerson(e.target.value.toUpperCase())} className="w-full bg-white border border-slate-200 text-slate-800 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 transition" placeholder="Person name" />
           </div>
           <div>
-            <label className="block text-xs font-semibold text-slate-500 mb-1 uppercase tracking-wider">Mobile Number</label>
-            <input type="tel" value={mobileNumber} onChange={(e) => setMobileNumber(e.target.value)} className="w-full bg-white border border-slate-200 text-slate-800 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 transition" placeholder="9876543210" />
-          </div>
-          <div>
-            <label className="block text-xs font-semibold text-slate-500 mb-1 uppercase tracking-wider">Order Date</label>
-            <input type="date" value={orderDate} onChange={(e) => setOrderDate(e.target.value)} className="w-full bg-white border border-slate-200 text-slate-800 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 transition" />
-          </div>
-          <div>
             <label className="block text-xs font-semibold text-slate-500 mb-1 uppercase tracking-wider">Delivery Date *</label>
             <input type="date" value={deliveryDate} onChange={(e) => setDeliveryDate(e.target.value)} className="w-full bg-white border border-slate-200 text-slate-800 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 transition" />
           </div>
@@ -349,23 +346,13 @@ export const OrderEntry: React.FC = () => {
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mt-6 pt-6 border-t border-slate-100">
           <div>
-            <label className="block text-xs font-semibold text-slate-500 mb-1 uppercase tracking-wider">Delivery Option</label>
-            <EditableSelect 
-              value={deliveryOption} 
-              onChange={(v) => setDeliveryOption(v.toUpperCase())} 
-              options={['SAME DAY', 'WITHIN 7 DAYS', 'WITHIN 15 DAYS', 'WITHIN 30 DAYS', 'AFTER 30 DAYS']} 
-              placeholder="Select Delivery Option"
-              className="w-full bg-white border border-slate-200 text-slate-800 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
-            />
-          </div>
-          <div>
             <label className="block text-xs font-semibold text-slate-500 mb-1 uppercase tracking-wider">Payment Terms</label>
-            <input 
-              type="text" 
+            <EditableSelect 
               value={paymentTerms} 
-              onChange={(e) => setPaymentTerms(e.target.value.toUpperCase())} 
-              className="w-full bg-white border border-slate-200 text-slate-800 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 transition" 
-              placeholder="E.G. 30 DAYS" 
+              onChange={(v) => setPaymentTerms(v.toUpperCase())} 
+              options={['100% ADVANCE', '50% ADVANCE', 'PDC', 'CHEQUE', 'IMMEDIATE', '15 DAYS', '30 DAYS', '45 DAYS', '60 DAYS', '90 DAYS']} 
+              placeholder="Select Payment Terms"
+              className="w-full bg-white border border-slate-200 text-slate-800 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
             />
           </div>
           <div>
@@ -385,6 +372,60 @@ export const OrderEntry: React.FC = () => {
           <div>
             <label className="block text-xs font-semibold text-slate-500 mb-1 uppercase tracking-wider">Loading & Unloading Charges (₹)</label>
             <input type="number" value={loadingUnloadingCharges || ''} onChange={(e) => setLoadingUnloadingCharges(Number(e.target.value))} className="w-full bg-white border border-slate-200 text-slate-800 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 transition" placeholder="0" />
+          </div>
+          <div className="flex flex-col">
+            <label className="block text-xs font-semibold text-slate-500 mb-1.5 uppercase tracking-wider">Test Certificate (TC)</label>
+            <div className="flex gap-2">
+              <button
+                type="button"
+                onClick={() => setTc('Yes')}
+                className={`flex-1 py-2 px-4 rounded-lg text-xs font-bold transition-all border ${
+                  tc === 'Yes'
+                    ? 'bg-blue-600 border-blue-600 text-white shadow-sm'
+                    : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50'
+                }`}
+              >
+                Yes
+              </button>
+              <button
+                type="button"
+                onClick={() => setTc('No')}
+                className={`flex-1 py-2 px-4 rounded-lg text-xs font-bold transition-all border ${
+                  tc === 'No'
+                    ? 'bg-slate-700 border-slate-700 text-white shadow-sm'
+                    : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50'
+                }`}
+              >
+                No
+              </button>
+            </div>
+          </div>
+          <div className="flex flex-col">
+            <label className="block text-xs font-semibold text-slate-500 mb-1.5 uppercase tracking-wider">Ultrasonic Test (UT)</label>
+            <div className="flex gap-2">
+              <button
+                type="button"
+                onClick={() => setUt('Yes')}
+                className={`flex-1 py-2 px-4 rounded-lg text-xs font-bold transition-all border ${
+                  ut === 'Yes'
+                    ? 'bg-blue-600 border-blue-600 text-white shadow-sm'
+                    : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50'
+                }`}
+              >
+                Yes
+              </button>
+              <button
+                type="button"
+                onClick={() => setUt('No')}
+                className={`flex-1 py-2 px-4 rounded-lg text-xs font-bold transition-all border ${
+                  ut === 'No'
+                    ? 'bg-slate-700 border-slate-700 text-white shadow-sm'
+                    : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50'
+                }`}
+              >
+                No
+              </button>
+            </div>
           </div>
           <div className="sm:col-span-4">
             <label className="block text-xs font-semibold text-slate-500 mb-1 uppercase tracking-wider">Terms & Conditions</label>
@@ -463,12 +504,12 @@ export const OrderEntry: React.FC = () => {
                     <input type="text" value={line.thickness} onChange={(e) => updateLine(line.id, 'thickness', e.target.value)} placeholder="10mm" className="w-16 bg-white border border-slate-200 rounded-lg p-1.5 text-xs focus:ring-2 focus:ring-blue-500 outline-none" />
                   </td>
                   <td className="p-1.5">
-                    {line.cuttingType === 'Square' ? (
+                    {['Square', 'CNC Profile', 'Plate'].includes(line.cuttingType) ? (
                       <div className="flex gap-1 w-24">
                         <input type="text" value={line.length || ''} onChange={(e) => updateLine(line.id, 'length', e.target.value)} placeholder="L" className="w-1/2 bg-white border border-slate-200 rounded-lg p-1.5 text-xs focus:ring-2 focus:ring-blue-500 outline-none" />
                         <input type="text" value={line.width || ''} onChange={(e) => updateLine(line.id, 'width', e.target.value)} placeholder="W" className="w-1/2 bg-white border border-slate-200 rounded-lg p-1.5 text-xs focus:ring-2 focus:ring-blue-500 outline-none" />
                       </div>
-                    ) : line.cuttingType === 'Circle' ? (
+                    ) : ['Circle', 'Ring'].includes(line.cuttingType) ? (
                       <div className="flex gap-1 w-24">
                         <input type="text" value={line.outerDiameter || ''} onChange={(e) => updateLine(line.id, 'outerDiameter', e.target.value)} placeholder="OD" className="w-1/2 bg-white border border-slate-200 rounded-lg p-1.5 text-xs focus:ring-2 focus:ring-blue-500 outline-none" />
                         <input type="text" value={line.innerDiameter || ''} onChange={(e) => updateLine(line.id, 'innerDiameter', e.target.value)} placeholder="ID" className="w-1/2 bg-white border border-slate-200 rounded-lg p-1.5 text-xs focus:ring-2 focus:ring-blue-500 outline-none" />

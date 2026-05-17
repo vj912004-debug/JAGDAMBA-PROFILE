@@ -234,6 +234,14 @@ export const OrderEntryPrint: React.FC<OrderEntryPrintProps> = ({ order }) => {
                     <span className="info-label">Payment Terms:</span>
                     <span className="info-value">{order.paymentTerms || '-'}</span>
                 </div>
+                <div className="info-row">
+                    <span className="info-label">TC Required:</span>
+                    <span className="info-value" style={{ fontWeight: 'bold' }}>{order.tc || 'No'}</span>
+                </div>
+                <div className="info-row">
+                    <span className="info-label">UT Required:</span>
+                    <span className="info-value" style={{ fontWeight: 'bold' }}>{order.ut || 'No'}</span>
+                </div>
             </div>
         </div>
 
@@ -253,7 +261,7 @@ export const OrderEntryPrint: React.FC<OrderEntryPrintProps> = ({ order }) => {
                         <td>
                             <div style={{ fontWeight: 'bold' }}>{item.partName || '-'}</div>
                             <div style={{ fontSize: '10px', marginTop: '2px' }}>
-                                {item.thickness} | {item.cuttingType} | {item.length ? `${item.length}x${item.width}` : (item.plateSize || '-')}
+                                {item.thickness} | {item.cuttingType} | {item.outerDiameter ? `OD: ${item.outerDiameter} x ID: ${item.innerDiameter || '0'}` : item.length ? `${item.length}x${item.width}` : (item.plateSize || '-')}
                             </div>
                         </td>
                         <td style={{ textAlign: 'center' }}>{item.quantity} {item.unitType}</td>

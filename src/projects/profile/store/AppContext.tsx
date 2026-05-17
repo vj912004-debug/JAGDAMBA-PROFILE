@@ -36,8 +36,8 @@ export const ALL_STAGES: Stage[] = [
   'Payment Received',
 ];
 
-export type CuttingType = 'CNC Profile' | 'Circle' | 'Square' | 'Ring' | 'Plate' | 'Strip' | 'Other';
-export const CUTTING_TYPES: CuttingType[] = ['CNC Profile', 'Circle', 'Square', 'Ring', 'Plate', 'Strip', 'Other'];
+export type CuttingType = 'CNC Profile' | 'Circle' | 'Square' | 'Ring' | 'Plate' | 'Scrap';
+export const CUTTING_TYPES: CuttingType[] = ['CNC Profile', 'Circle', 'Square', 'Ring', 'Plate', 'Scrap'];
 
 export type MaterialType = 'MS' | 'SS' | 'Alloy' | 'Other';
 export const MATERIAL_TYPES: MaterialType[] = ['MS', 'SS', 'Alloy', 'Other'];
@@ -124,6 +124,8 @@ export interface Order {
   loadingUnloadingCharges?: number;
   customerPONo?: string;
   customerPODate?: string;
+  tc?: 'Yes' | 'No';
+  ut?: 'Yes' | 'No';
   items: OrderLineItem[];
   createdAt: string;
 }
@@ -223,6 +225,10 @@ export interface PurchaseReceipt {
   receivedQty: number;
   date: string;
   remark?: string;
+  billNo?: string;
+  transporterName?: string;
+  vehicleNo?: string;
+  tcAvailable?: 'Yes' | 'No';
   items?: { itemId: string; receivedQty: number }[];
 }
 
@@ -623,7 +629,7 @@ const seedOrders: Order[] = [
     location: 'Por Unit', deliveryAddress: 'Tata Haldia', handledBy: 'System', remark: '',
     stage: 'Ready', urgent: false, createdAt: '2026-04-20T11:00:00',
     items: [
-      { id: '4a', cuttingType: 'Strip', materialType: 'SS', materialGrade: 'SS 316', thickness: '12mm', plateSize: '1500 x 6000', drawingNumber: 'DRW-4001', partName: 'Stiffener', quantity: 8, completedQty: 8, dispatchedQty: 0, unitType: 'Set', rate: 1500, amount: 12000, scrapBelongsTo: 'Customer', specialInstructions: '', fileName: null },
+      { id: '4a', cuttingType: 'Scrap', materialType: 'SS', materialGrade: 'SS 316', thickness: '12mm', plateSize: '1500 x 6000', drawingNumber: 'DRW-4001', partName: 'Stiffener', quantity: 8, completedQty: 8, dispatchedQty: 0, unitType: 'Set', rate: 1500, amount: 12000, scrapBelongsTo: 'Customer', specialInstructions: '', fileName: null },
     ],
   },
   {
@@ -671,7 +677,7 @@ const seedChallans: ChallanRecord[] = [
 const seedPurchaseOrders: PurchaseOrder[] = [
   { 
     id: 'PO1', 
-    poNumber: 'PO-2026-001', 
+    poNumber: 'PO-JP-2026-001', 
     supplierName: 'Steel India Ltd', 
     date: '2026-04-20', 
     status: 'Partial',
@@ -958,7 +964,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       const num = parseInt(parts[parts.length - 1], 10);
       return isNaN(num) ? max : Math.max(max, num);
     }, 0);
-    return `PO-${year}-${String(maxNum + 1).padStart(3, '0')}`;
+    return `PO-JP-${year}-${String(maxNum + 1).padStart(3, '0')}`;
   }, [purchaseOrders]);
   
   const addLog = useCallback((log: Omit<ActivityLog, 'id' | 'timestamp' | 'user' | 'role'>) => {

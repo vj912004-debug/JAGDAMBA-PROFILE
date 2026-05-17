@@ -1,16 +1,25 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { ShoppingBag, Save, RotateCcw, Plus, Trash2, Download } from 'lucide-react';
-import { useAppContext, type PurchaseOrder, type POItem } from '../store/AppContext';
+import { useAppContext, type PurchaseOrder, type POItem, MATERIAL_GRADES } from '../store/AppContext';
 import toast from 'react-hot-toast';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { PurchaseOrderPrint } from '../components/PurchaseOrderPrint';
 import { downloadPDF } from '../utils/pdfGenerator';
+import { EditableSelect } from '../components/EditableSelect';
 
 export const PurchaseOrderEntry: React.FC = () => {
   const { t, nextPONo, purchaseOrders, setPurchaseOrders, role } = useAppContext();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const editId = searchParams.get('edit');
 
-  const poNumber = useMemo(() => nextPONo(), [nextPONo, purchaseOrders]);
+  const poNumber = useMemo(() => {
+    if (editId) {
+      const existing = purchaseOrders.find(po => po.id === editId);
+      if (existing) return existing.poNumber;
+    }
+    return nextPONo();
+  }, [editId, nextPONo, purchaseOrders]);
 
   // Header State
   const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
@@ -74,7 +83,7 @@ export const PurchaseOrderEntry: React.FC = () => {
 
         // Recalculate amount if kg or rate changes
         if (field === 'kg' || field === 'rate' || ['thickness', 'width', 'length', 'nos'].includes(field)) {
-          updatedItem.amount = Number(updatedItem.kg) * Number(updatedItem.rate);
+          updatedItem.amount = Math.ceil(Number(updatedItem.kg) * Number(updatedItem.rate));
         }
         return updatedItem;
       }
@@ -90,7 +99,7 @@ export const PurchaseOrderEntry: React.FC = () => {
     }
 
     const newPO: PurchaseOrder = {
-      id: Date.now().toString(),
+      id: editId || Date.now().toString(),
       poNumber,
       date,
       supplierName: supplierName.trim(),
@@ -110,11 +119,16 @@ export const PurchaseOrderEntry: React.FC = () => {
       items,
       totalKg,
       totalAmount,
-      status: 'Pending'
+      status: editId ? (purchaseOrders.find(p => p.id === editId)?.status || 'Pending') : 'Pending'
     };
 
-    setPurchaseOrders(prev => [...prev, newPO]);
-    toast.success(`Purchase Order ${poNumber} saved!`, { icon: '🛍️' });
+    if (editId) {
+      setPurchaseOrders(prev => prev.map(po => po.id === editId ? newPO : po));
+      toast.success(`Purchase Order ${poNumber} updated successfully!`, { icon: '🛍️' });
+    } else {
+      setPurchaseOrders(prev => [...prev, newPO]);
+      toast.success(`Purchase Order ${poNumber} saved!`, { icon: '🛍️' });
+    }
 
     if (downloadAfterSave) {
       setSavedPO(newPO);
@@ -136,6 +150,30 @@ export const PurchaseOrderEntry: React.FC = () => {
       return () => clearTimeout(timer);
     }
   }, [isDownloading, savedPO, navigate]);
+
+  useEffect(() => {
+    if (editId) {
+      const existing = purchaseOrders.find(po => po.id === editId);
+      if (existing) {
+        setDate(existing.date);
+        setSupplierName(existing.supplierName);
+        setSupplierAddress(existing.supplierAddress || '');
+        setSupplierGST(existing.supplierGST || '');
+        setSupplierEmail(existing.supplierEmail || '');
+        setSupplierMobile(existing.supplierMobile || '');
+        setDeliveryAddress(existing.deliveryAddress || '');
+        setTransportName(existing.transportName || '');
+        setTransportNumber(existing.transportNumber || '');
+        setPaymentTerms(existing.paymentTerms || '');
+        setMake(existing.make || '');
+        setUtLevel(existing.utLevel || '');
+        setInvoiceNo(existing.invoiceNo || '');
+        setCustomer(existing.customer || '');
+        setLocation(existing.location || '');
+        setItems(existing.items.map(item => ({ ...item })));
+      }
+    }
+  }, [editId, purchaseOrders]);
 
   const handleReset = () => {
     setSupplierName('');
@@ -163,8 +201,8 @@ export const PurchaseOrderEntry: React.FC = () => {
       {/* Header */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-bold text-slate-800">{t('purchaseOrder')}</h1>
-          <p className="text-sm text-slate-500 mt-0.5">Create new purchase order • <span className="font-semibold text-blue-600">{poNumber}</span></p>
+          <h1 className="text-2xl font-bold text-slate-800">{editId ? 'Edit Purchase Order' : t('purchaseOrder')}</h1>
+          <p className="text-sm text-slate-500 mt-0.5">{editId ? 'Modify existing purchase order' : 'Create new purchase order'} • <span className="font-semibold text-blue-600">{poNumber}</span></p>
         </div>
         <div className="flex gap-2">
           <button onClick={handleReset} className="flex items-center gap-2 text-slate-600 hover:text-slate-800 bg-white border border-slate-200 px-4 py-2 rounded-xl text-sm font-medium transition-colors hover:bg-slate-50">
@@ -254,8 +292,14 @@ export const PurchaseOrderEntry: React.FC = () => {
                 <tbody className="divide-y divide-slate-50">
                   {items.map((item) => (
                     <tr key={item.id} className="group">
-                      <td className="p-2">
-                        <input type="text" value={item.grade} onChange={(e) => updateItem(item.id, 'grade', e.target.value)} className="w-full border-transparent bg-transparent group-hover:bg-white group-hover:border-slate-200 rounded px-2 py-1.5 text-sm transition-all focus:bg-white focus:border-blue-500" placeholder="Grade" />
+                      <td className="p-2 min-w-[150px]">
+                        <EditableSelect
+                          value={item.grade}
+                          onChange={(v) => updateItem(item.id, 'grade', v)}
+                          options={MATERIAL_GRADES}
+                          placeholder="Select Grade"
+                          className="w-full bg-white border border-slate-200 rounded px-2 py-1 text-sm focus:ring-2 focus:ring-blue-500 outline-none"
+                        />
                       </td>
                       <td className="p-2 w-20">
                         <input type="text" value={item.thickness} onChange={(e) => updateItem(item.id, 'thickness', e.target.value)} className="w-full border-transparent bg-transparent group-hover:bg-white group-hover:border-slate-200 rounded px-2 py-1.5 text-sm transition-all" placeholder="10mm" />

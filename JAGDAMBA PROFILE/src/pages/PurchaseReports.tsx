@@ -1,7 +1,8 @@
 import React, { useState, useMemo } from 'react';
-import { PieChart, Clock, CheckCircle, Users, Box, Download, Search, Eye, X, ClipboardCheck } from 'lucide-react';
+import { PieChart, Clock, CheckCircle, Users, Box, Download, Search, Eye, X, ClipboardCheck, Edit } from 'lucide-react';
 import { useAppContext, type PurchaseOrder } from '../store/AppContext';
 import { clsx } from 'clsx';
+import { useNavigate } from 'react-router-dom';
 
 import { PurchaseOrderPrint } from '../components/PurchaseOrderPrint';
 import { downloadPDF, generatePurchaseReportPDF } from '../utils/pdfGenerator';
@@ -9,7 +10,8 @@ import { downloadPDF, generatePurchaseReportPDF } from '../utils/pdfGenerator';
 type TabType = 'pending' | 'completed' | 'supplier' | 'item';
 
 export const PurchaseReports: React.FC = () => {
-  const { t, purchaseOrders, purchaseReceipts } = useAppContext();
+  const { t, purchaseOrders, purchaseReceipts, role } = useAppContext();
+  const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState<TabType>('pending');
   const [search, setSearch] = useState('');
   const [previewPO, setPreviewPO] = useState<PurchaseOrder | null>(null);
@@ -201,6 +203,15 @@ export const PurchaseReports: React.FC = () => {
                           >
                             <Eye className="w-4 h-4" />
                           </button>
+                          {(role === 'Admin' || role === 'Office Entry') && (
+                            <button 
+                              onClick={() => navigate(`/purchase-order-entry?edit=${po.id}`)}
+                              className="p-1.5 text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors"
+                              title="Edit Purchase Order"
+                            >
+                              <Edit className="w-4 h-4" />
+                            </button>
+                          )}
                           <button 
                             onClick={() => setShowReceipts(showReceipts === po.id ? null : po.id)}
                             className={clsx(

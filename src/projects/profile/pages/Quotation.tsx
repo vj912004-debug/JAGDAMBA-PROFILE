@@ -1,7 +1,8 @@
 import React, { useState, useMemo } from 'react';
 import { Calculator, Plus, Trash2, Printer, RotateCcw, FileText, User, Calendar, Hash, Search, List } from 'lucide-react';
-import { useAppContext, type QuotationRecord, type QuotationItem } from '../store/AppContext';
+import { useAppContext, type QuotationRecord, type QuotationItem, MATERIAL_GRADES } from '../store/AppContext';
 import toast from 'react-hot-toast';
+import { EditableSelect } from '../components/EditableSelect';
 
 
 
@@ -74,11 +75,11 @@ export const Quotation: React.FC = () => {
             // Formula: ID Amount = ((ID-10)*(ID-10)*0.7854 * thickness * 8 * ID_Rate) / 1000000
             const odA = ((odVal + 5) * (odVal + 5) * 0.7854 * thicknessVal * 8 * odRateVal) / 1000000;
             const idA = idDimVal > 10 ? (((idDimVal - 10) * (idDimVal - 10) * 0.7854 * thicknessVal * 8 * idRateVal) / 1000000) : 0;
-            updated.amount = parseFloat(((odA - idA) * nosVal).toFixed(2));
+            updated.amount = Math.ceil((odA - idA) * nosVal);
           } else {
             const weightVal = parseFloat(updated.weight as any) || 0;
             const rateVal = parseFloat(updated.rate as any) || 0;
-            updated.amount = parseFloat((weightVal * rateVal).toFixed(2));
+            updated.amount = Math.ceil(weightVal * rateVal);
           }
         }
         
@@ -124,7 +125,7 @@ export const Quotation: React.FC = () => {
   const handleSave = () => {
     if (!partyName) { toast.error('Enter party name'); return; }
     
-    const grandTotal = (totalAmount + loadingCharges + transportCharges) * (1 + gstRate / 100);
+    const grandTotal = Math.ceil((totalAmount + loadingCharges + transportCharges) * (1 + gstRate / 100));
     
     const record: QuotationRecord = {
       id: Date.now().toString(),
@@ -342,11 +343,11 @@ export const Quotation: React.FC = () => {
               </div>
               <div className="flex justify-between items-end">
                 <span className="text-xs opacity-70">GST ({gstRate}%)</span>
-                <span className="text-sm font-bold">₹ {((totalAmount + loadingCharges + transportCharges) * gstRate / 100).toLocaleString()}</span>
+                <span className="text-sm font-bold">₹ {Math.ceil((totalAmount + loadingCharges + transportCharges) * gstRate / 100).toLocaleString()}</span>
               </div>
               <div className="flex justify-between items-end border-t border-white/10 pt-3">
                 <span className="text-xs opacity-70 font-bold uppercase tracking-wider">Grand Total</span>
-                <span className="text-2xl font-black">₹ {( (totalAmount + loadingCharges + transportCharges) * (1 + gstRate / 100) ).toLocaleString()}</span>
+                <span className="text-2xl font-black">₹ {Math.ceil((totalAmount + loadingCharges + transportCharges) * (1 + gstRate / 100)).toLocaleString()}</span>
               </div>
             </div>
           </div>
@@ -384,7 +385,7 @@ export const Quotation: React.FC = () => {
             </div>
 
             <div className="overflow-x-auto">
-              <table className="w-full text-left border-collapse min-w-[900px]">
+              <table className="w-full text-left border-collapse min-w-[1050px]">
                 <thead>
                   <tr className="bg-slate-50 text-[10px] uppercase font-black text-slate-500 print:bg-white print:border-b-2 print:border-slate-300">
                     <th className="p-4">Shape</th>
@@ -392,6 +393,7 @@ export const Quotation: React.FC = () => {
                     <th className="p-4">Thk</th>
                     <th className="p-4">Dimensions (mm)</th>
                     <th className="p-4">Nos</th>
+                    <th className="p-4">Weight (Kg)</th>
                     <th className="p-4 min-w-[160px]">Rate</th>
                     <th className="p-4 text-blue-600">Rate / Nos</th>
                     <th className="p-4 text-right">Amount</th>
@@ -411,8 +413,14 @@ export const Quotation: React.FC = () => {
                           <option value="Ring">Ring / Circle</option>
                         </select>
                       </td>
-                      <td className="p-3">
-                        <input type="text" value={item.grade} onChange={(e) => updateItem(item.id, 'grade', e.target.value)} className="w-full bg-transparent border-transparent focus:ring-0 text-sm font-medium print:placeholder-transparent" placeholder="Grade" />
+                      <td className="p-3 min-w-[150px]">
+                        <EditableSelect
+                          value={item.grade}
+                          onChange={(v) => updateItem(item.id, 'grade', v)}
+                          options={MATERIAL_GRADES}
+                          placeholder="Select Grade"
+                          className="w-full bg-white border border-slate-200 rounded px-2 py-1 text-sm focus:ring-2 focus:ring-blue-500 outline-none"
+                        />
                       </td>
                       <td className="p-3 w-24">
                         <input type="number" value={item.thickness ?? ''} onChange={(e) => updateItem(item.id, 'thickness', e.target.value)} className="w-full bg-transparent border-transparent focus:ring-0 text-sm font-bold text-blue-600" placeholder="0" />
@@ -440,6 +448,9 @@ export const Quotation: React.FC = () => {
                       </td>
                       <td className="p-3 w-20">
                         <input type="number" value={item.nos ?? ''} onChange={(e) => updateItem(item.id, 'nos', e.target.value)} className="w-full bg-transparent border-transparent focus:ring-0 text-sm font-medium" placeholder="1" />
+                      </td>
+                      <td className="p-3">
+                        <span className="text-sm font-semibold text-slate-700">{item.weight} Kg</span>
                       </td>
                       <td className="p-3 w-44 min-w-[160px]">
                         {item.shape === 'Ring' ? (
@@ -477,7 +488,7 @@ export const Quotation: React.FC = () => {
                       </td>
                       <td className="p-3 text-center print:hidden">
                         <button onClick={() => removeItem(item.id)} className="p-1.5 text-slate-300 hover:text-red-500 hover:bg-red-50 rounded-lg transition-all opacity-0 group-hover:opacity-100">
-                          <Trash2 className="w-4 h-4" />
+                           <Trash2 className="w-4 h-4" />
                         </button>
                       </td>
                     </tr>
@@ -485,12 +496,12 @@ export const Quotation: React.FC = () => {
                 </tbody>
                 <tfoot className="bg-slate-50/50 print:bg-white text-slate-800">
                   <tr className="border-t border-slate-200">
-                    <td colSpan={7} className="p-3 text-right text-[10px] font-bold uppercase text-slate-400">Sub Total</td>
+                    <td colSpan={8} className="p-3 text-right text-[10px] font-bold uppercase text-slate-400">Sub Total</td>
                     <td className="p-3 text-right font-bold">₹ {totalAmount.toLocaleString()}</td>
                     <td className="print:hidden"></td>
                   </tr>
                   <tr>
-                    <td colSpan={7} className="p-2 text-right text-[10px] font-bold uppercase text-slate-400">Loading & Unloading Charges</td>
+                    <td colSpan={8} className="p-2 text-right text-[10px] font-bold uppercase text-slate-400">Loading & Unloading Charges</td>
                     <td className="p-2 text-right">
                       <input 
                         type="number" 
@@ -503,7 +514,7 @@ export const Quotation: React.FC = () => {
                     <td className="print:hidden"></td>
                   </tr>
                   <tr>
-                    <td colSpan={7} className="p-2 text-right text-[10px] font-bold uppercase text-slate-400">Transport Charges</td>
+                    <td colSpan={8} className="p-2 text-right text-[10px] font-bold uppercase text-slate-400">Transport Charges</td>
                     <td className="p-2 text-right">
                       <input 
                         type="number" 
@@ -516,7 +527,7 @@ export const Quotation: React.FC = () => {
                     <td className="print:hidden"></td>
                   </tr>
                   <tr>
-                    <td colSpan={7} className="p-2 text-right text-[10px] font-bold uppercase text-slate-400 align-middle">
+                    <td colSpan={8} className="p-2 text-right text-[10px] font-bold uppercase text-slate-400 align-middle">
                       GST 
                       <select 
                         value={gstRate} 
@@ -530,13 +541,13 @@ export const Quotation: React.FC = () => {
                         <option value={28}>28%</option>
                       </select>
                     </td>
-                    <td className="p-2 text-right font-bold text-slate-600">₹ {((totalAmount + loadingCharges + transportCharges) * gstRate / 100).toLocaleString()}</td>
+                    <td className="p-2 text-right font-bold text-slate-600">₹ {Math.ceil((totalAmount + loadingCharges + transportCharges) * gstRate / 100).toLocaleString()}</td>
                     <td className="print:hidden"></td>
                   </tr>
                   <tr className="bg-blue-50/50 print:bg-white">
-                    <td colSpan={7} className="p-4 text-right text-xs font-black uppercase text-blue-600 tracking-wider">Grand Total Amount</td>
+                    <td colSpan={8} className="p-4 text-right text-xs font-black uppercase text-blue-600 tracking-wider">Grand Total Amount</td>
                     <td className="p-4 text-right text-xl font-black text-slate-900 border-t-2 border-blue-600">
-                      ₹ {( (totalAmount + loadingCharges + transportCharges) * (1 + gstRate / 100) ).toLocaleString()}
+                      ₹ {Math.ceil((totalAmount + loadingCharges + transportCharges) * (1 + gstRate / 100)).toLocaleString()}
                     </td>
                     <td className="print:hidden"></td>
                   </tr>
@@ -627,12 +638,13 @@ export const Quotation: React.FC = () => {
           <thead>
             <tr>
               <th className="text-center" style={{ width: '6%' }}>Sr.</th>
-              <th style={{ width: '32%' }}>Description of Material</th>
-              <th style={{ width: '12%' }}>Grade</th>
+              <th style={{ width: '26%' }}>Description of Material</th>
+              <th style={{ width: '10%' }}>Grade</th>
               <th className="text-center" style={{ width: '8%' }}>Thk</th>
-              <th className="text-center" style={{ width: '12%' }}>Qty</th>
+              <th className="text-center" style={{ width: '10%' }}>Qty</th>
+              <th className="text-center" style={{ width: '12%' }}>Weight</th>
               <th className="text-right" style={{ width: '14%' }}>Rate / Nos</th>
-              <th className="text-right" style={{ width: '16%' }}>Amount</th>
+              <th className="text-right" style={{ width: '14%' }}>Amount</th>
             </tr>
           </thead>
           <tbody>
@@ -652,6 +664,7 @@ export const Quotation: React.FC = () => {
                 <td>{item.grade}</td>
                 <td className="text-center">{item.thickness}</td>
                 <td className="text-center">{item.nos} Nos</td>
+                <td className="text-center">{item.weight} Kg</td>
                 <td className="text-right">₹{(item.amount / (item.nos || 1)).toLocaleString(undefined, { minimumFractionDigits: 2 })}</td>
                 <td className="text-right font-bold">₹{item.amount.toLocaleString()}</td>
               </tr>
@@ -665,10 +678,10 @@ export const Quotation: React.FC = () => {
               <tr><td className="text-right font-bold">Sub Total:</td><td>₹{totalAmount.toLocaleString()}</td></tr>
               <tr><td className="text-right font-bold">Loading / Unloading:</td><td>₹{loadingCharges.toLocaleString()}</td></tr>
               <tr><td className="text-right font-bold">Transport Charges:</td><td>₹{transportCharges.toLocaleString()}</td></tr>
-              <tr><td className="text-right font-bold">GST ({gstRate}%):</td><td>₹{((totalAmount + loadingCharges + transportCharges) * gstRate / 100).toLocaleString()}</td></tr>
+              <tr><td className="text-right font-bold">GST ({gstRate}%):</td><td>₹{Math.ceil((totalAmount + loadingCharges + transportCharges) * gstRate / 100).toLocaleString()}</td></tr>
               <tr className="print-grand-total">
                 <td className="text-right uppercase">Grand Total:</td>
-                <td className="font-bold">₹{( (totalAmount + loadingCharges + transportCharges) * (1 + gstRate / 100) ).toLocaleString()}</td>
+                <td className="font-bold">₹{Math.ceil((totalAmount + loadingCharges + transportCharges) * (1 + gstRate / 100)).toLocaleString()}</td>
               </tr>
             </tbody>
           </table>

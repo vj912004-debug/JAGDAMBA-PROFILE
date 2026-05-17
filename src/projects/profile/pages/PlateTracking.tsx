@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { useAppContext, type Plate, type PlateSource } from '../store/AppContext';
+import { useAppContext, type Plate, type PlateSource, MATERIAL_GRADES } from '../store/AppContext';
 import { Database, Link2, Search, Plus, X } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { EditableSelect } from '../components/EditableSelect';
@@ -123,7 +123,13 @@ export const PlateTracking: React.FC = () => {
             </div>
             <div>
               <label className="block text-xs font-semibold text-slate-500 mb-1">Material Grade</label>
-              <input type="text" value={newPlate.grade} onChange={e => setNewPlate({ ...newPlate, grade: e.target.value })} className="w-full bg-white border border-slate-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none" placeholder="IS 2062 E250" />
+              <EditableSelect 
+                value={newPlate.grade} 
+                onChange={v => setNewPlate({ ...newPlate, grade: v })} 
+                options={MATERIAL_GRADES}
+                placeholder="Select Grade"
+                className="w-full bg-white border border-slate-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none"
+              />
             </div>
             <div>
               <label className="block text-xs font-semibold text-slate-500 mb-1">Thickness *</label>
