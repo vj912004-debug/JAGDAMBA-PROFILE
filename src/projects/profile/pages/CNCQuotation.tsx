@@ -59,12 +59,26 @@ export const CNCQuotation: React.FC = () => {
   const [gstRate, setGstRate] = useState(18);
 
   const calculateItem = (item: CNCItem): { finalRate: number, amount: number, plateWeight: number } => {
-    const plateWeight = (item.thickness * item.width * item.length * 8) / 1000000;
+    const thickness = parseFloat(item.thickness as any) || 0;
+    const width = parseFloat(item.width as any) || 0;
+    const length = parseFloat(item.length as any) || 0;
+    const plateRate = parseFloat(item.plateRate as any) || 0;
+    const plateNos = parseInt(item.plateNos as any) || 0;
+    const partOfNos = parseInt(item.partOfNos as any) || 0;
+    const finishGoodWeight = parseFloat(item.finishGoodWeight as any) || 0;
+    const mtr = parseFloat(item.mtr as any) || 0;
+    const burningLossFactor = parseFloat(item.burningLossFactor as any) || 0;
+    const scrapRate = parseFloat(item.scrapRate as any) || 0;
+    const meterFactor = parseFloat(item.meterFactor as any) || 0;
+    const piercing = parseInt(item.piercing as any) || 0;
+    const piercingRate = parseFloat(item.piercingRate as any) || 0;
+
+    const plateWeight = (thickness * width * length * 8) / 1000000;
     
     if (item.shape === 'Square') {
       // Normal Quotation Square Formula: Weight * Rate
-      const totalAmount = plateWeight * item.plateRate * item.plateNos;
-      const finalRatePerPart = item.partOfNos > 0 ? (plateWeight * item.plateRate) / item.partOfNos : 0;
+      const totalAmount = plateWeight * plateRate * plateNos;
+      const finalRatePerPart = partOfNos > 0 ? (plateWeight * plateRate) / partOfNos : 0;
       
       return {
         finalRate: parseFloat(finalRatePerPart.toFixed(2)),
@@ -74,33 +88,33 @@ export const CNCQuotation: React.FC = () => {
     }
 
     // CNC Profile Calculation
-    const plateCost = plateWeight * item.plateRate;
+    const plateCost = plateWeight * plateRate;
     
     // Burning Loss: (Mtr * Thickness * Burning Loss Factor * Density) / 1000 (Density = 8)
-    const burningLoss = (item.mtr * item.thickness * item.burningLossFactor * 8) / 1000;
+    const burningLoss = (mtr * thickness * burningLossFactor * 8) / 1000;
     
     // Final Scrap Weight: Plate Weight - FG Weight - Burning Loss
-    const scrapWeight = Math.max(0, plateWeight - item.finishGoodWeight - burningLoss);
+    const scrapWeight = Math.max(0, plateWeight - finishGoodWeight - burningLoss);
     // Round scrap amount to 0 decimals as per user's Excel (11770.88 -> 11771)
-    const scrapCredit = Math.round(scrapWeight * item.scrapRate);
+    const scrapCredit = Math.round(scrapWeight * scrapRate);
     
     // New CNC Labour Formula: (Thickness * Meter Factor * Mtr) + (Piercing Qty * Piercing Rate)
-    const effectiveMeterRate = item.thickness * item.meterFactor;
+    const effectiveMeterRate = thickness * meterFactor;
     
     let effectivePiercingRate = 0;
     if (item.piercingType === 'Full') {
-      effectivePiercingRate = item.thickness;
+      effectivePiercingRate = thickness;
     } else if (item.piercingType === 'Half') {
-      effectivePiercingRate = item.thickness / 2;
+      effectivePiercingRate = thickness / 2;
     } else {
-      effectivePiercingRate = item.piercingRate;
+      effectivePiercingRate = piercingRate;
     }
 
-    const cuttingCost = Math.round((item.mtr * effectiveMeterRate) + (item.piercing * effectivePiercingRate));
+    const cuttingCost = Math.round((mtr * effectiveMeterRate) + (piercing * effectivePiercingRate));
     
     const totalCostPerPlate = plateCost + cuttingCost - scrapCredit;
-    const finalRatePerPart = item.partOfNos > 0 ? totalCostPerPlate / item.partOfNos : 0;
-    const totalAmount = totalCostPerPlate * item.plateNos;
+    const finalRatePerPart = partOfNos > 0 ? totalCostPerPlate / partOfNos : 0;
+    const totalAmount = totalCostPerPlate * plateNos;
 
     return {
       finalRate: Math.round(finalRatePerPart),
@@ -402,11 +416,11 @@ export const CNCQuotation: React.FC = () => {
                     <td className="p-3 border-r">
                       <div className="flex flex-col gap-1">
                         <div className="flex items-center gap-1">
-                          <input type="number" value={item.length || ''} onChange={(e) => updateItem(item.id, 'length', parseFloat(e.target.value) || 0)} className="w-20 bg-slate-50 border border-slate-200 rounded px-2 py-1 text-sm font-bold" placeholder="L" />
+                          <input type="number" value={item.length ?? ''} onChange={(e) => updateItem(item.id, 'length', e.target.value)} className="w-20 bg-slate-50 border border-slate-200 rounded px-2 py-1 text-sm font-bold" placeholder="L" />
                           <span className="text-slate-400 font-bold">x</span>
-                          <input type="number" value={item.width || ''} onChange={(e) => updateItem(item.id, 'width', parseFloat(e.target.value) || 0)} className="w-20 bg-slate-50 border border-slate-200 rounded px-2 py-1 text-sm font-bold" placeholder="W" />
+                          <input type="number" value={item.width ?? ''} onChange={(e) => updateItem(item.id, 'width', e.target.value)} className="w-20 bg-slate-50 border border-slate-200 rounded px-2 py-1 text-sm font-bold" placeholder="W" />
                           <span className="text-slate-400 font-bold">x</span>
-                          <input type="number" value={item.thickness || ''} onChange={(e) => updateItem(item.id, 'thickness', parseFloat(e.target.value) || 0)} className="w-16 bg-blue-50 border border-blue-200 text-blue-700 font-black rounded px-2 py-1 text-sm" placeholder="T" />
+                          <input type="number" value={item.thickness ?? ''} onChange={(e) => updateItem(item.id, 'thickness', e.target.value)} className="w-16 bg-blue-50 border border-blue-200 text-blue-700 font-black rounded px-2 py-1 text-sm" placeholder="T" />
                         </div>
                         <input type="text" value={item.grade} onChange={(e) => updateItem(item.id, 'grade', e.target.value)} className="text-[10px] uppercase font-bold text-slate-400 bg-transparent outline-none" placeholder="GRADE" />
                       </div>
@@ -418,23 +432,23 @@ export const CNCQuotation: React.FC = () => {
                       <div className="flex flex-col gap-1">
                         <div className="flex items-center gap-1">
                           <span className="text-[10px] font-bold text-slate-400">QTY</span>
-                          <input type="number" value={item.plateNos || ''} onChange={(e) => updateItem(item.id, 'plateNos', parseInt(e.target.value) || 0)} className="w-16 bg-slate-50 border border-slate-200 rounded px-2 py-1 text-sm font-bold" />
+                          <input type="number" value={item.plateNos ?? ''} onChange={(e) => updateItem(item.id, 'plateNos', e.target.value)} className="w-16 bg-slate-50 border border-slate-200 rounded px-2 py-1 text-sm font-bold" />
                         </div>
                         <div className="flex items-center gap-1">
                           <span className="text-[10px] font-bold text-slate-400">RATE</span>
-                          <input type="number" value={item.plateRate || ''} onChange={(e) => updateItem(item.id, 'plateRate', parseFloat(e.target.value) || 0)} className="w-full bg-emerald-50 text-emerald-600 font-bold rounded px-1.5 py-0.5" />
+                          <input type="number" value={item.plateRate ?? ''} onChange={(e) => updateItem(item.id, 'plateRate', e.target.value)} className="w-full bg-emerald-50 text-emerald-600 font-bold rounded px-1.5 py-0.5" />
                         </div>
                       </div>
                     </td>
                     <td className="p-3 border-r">
-                      <input type="number" value={item.partOfNos || ''} onChange={(e) => updateItem(item.id, 'partOfNos', parseInt(e.target.value) || 0)} className="w-16 bg-blue-50/50 rounded px-2 py-1 font-bold text-center" placeholder="1" />
+                      <input type="number" value={item.partOfNos ?? ''} onChange={(e) => updateItem(item.id, 'partOfNos', e.target.value)} className="w-16 bg-blue-50/50 rounded px-2 py-1 font-bold text-center" placeholder="1" />
                     </td>
                     <td className="p-3 border-r">
                       {item.shape === 'Square' ? (
                         <span className="text-slate-400 font-medium italic">Included in Square</span>
                       ) : (
                         <div className="flex flex-col gap-1.5">
-                          <input type="number" value={item.finishGoodWeight || ''} onChange={(e) => updateItem(item.id, 'finishGoodWeight', parseFloat(e.target.value) || 0)} className="w-24 bg-slate-50 rounded px-2 py-1 font-bold text-right" placeholder="0.00" />
+                          <input type="number" value={item.finishGoodWeight ?? ''} onChange={(e) => updateItem(item.id, 'finishGoodWeight', e.target.value)} className="w-24 bg-slate-50 rounded px-2 py-1 font-bold text-right" placeholder="0.00" />
                           <div className="flex flex-col gap-1 text-xs text-slate-500 font-bold border-t border-slate-100 pt-1">
                             <div className="flex justify-between">
                               <span>Per Part:</span>
@@ -455,17 +469,17 @@ export const CNCQuotation: React.FC = () => {
                         <div className="flex flex-col gap-1.5">
                           <div className="flex items-center gap-1">
                             <span className="text-xs font-bold text-slate-500 w-12 uppercase">MTR</span>
-                            <input type="number" value={item.mtr || ''} onChange={(e) => updateItem(item.id, 'mtr', parseFloat(e.target.value) || 0)} className="w-24 bg-blue-50 border border-blue-100 rounded px-2 py-1 text-sm font-bold" />
+                            <input type="number" value={item.mtr ?? ''} onChange={(e) => updateItem(item.id, 'mtr', e.target.value)} className="w-24 bg-blue-50 border border-blue-100 rounded px-2 py-1 text-sm font-bold" />
                             <div className="flex flex-col ml-1">
                               <span className="text-xs font-black text-slate-500">FACTOR</span>
-                              <input type="number" value={item.meterFactor || ''} onChange={(e) => updateItem(item.id, 'meterFactor', parseFloat(e.target.value) || 0)} className="w-14 bg-slate-100 border border-slate-200 rounded px-1 text-xs font-bold" />
+                              <input type="number" value={item.meterFactor ?? ''} onChange={(e) => updateItem(item.id, 'meterFactor', e.target.value)} className="w-14 bg-slate-100 border border-slate-200 rounded px-1 text-xs font-bold" />
                             </div>
                           </div>
                           <div className="border-t border-slate-100 my-1"></div>
                           <div className="flex flex-col gap-1.5">
                             <div className="flex items-center gap-1">
                               <span className="text-xs font-bold text-slate-500 w-12 uppercase">PIER QTY</span>
-                              <input type="number" value={item.piercing || ''} onChange={(e) => updateItem(item.id, 'piercing', parseInt(e.target.value) || 0)} className="w-24 bg-blue-50 border border-blue-100 rounded px-2 py-1 text-sm font-bold" />
+                              <input type="number" value={item.piercing ?? ''} onChange={(e) => updateItem(item.id, 'piercing', e.target.value)} className="w-24 bg-blue-50 border border-blue-100 rounded px-2 py-1 text-sm font-bold" />
                             </div>
                             <div className="flex items-center gap-1">
                               <span className="text-xs font-black text-slate-500 w-12 uppercase">TYPE</span>
@@ -482,7 +496,7 @@ export const CNCQuotation: React.FC = () => {
                             {item.piercingType === 'Manual' && (
                               <div className="flex items-center gap-1">
                                 <span className="text-xs font-black text-slate-500 w-12 uppercase">RATE</span>
-                                <input type="number" value={item.piercingRate || ''} onChange={(e) => updateItem(item.id, 'piercingRate', parseFloat(e.target.value) || 0)} className="w-24 bg-amber-50 border border-amber-200 rounded px-2 py-1 text-sm font-bold text-amber-700" />
+                                <input type="number" value={item.piercingRate ?? ''} onChange={(e) => updateItem(item.id, 'piercingRate', e.target.value)} className="w-24 bg-amber-50 border border-amber-200 rounded px-2 py-1 text-sm font-bold text-amber-700" />
                               </div>
                             )}
                           </div>
@@ -500,11 +514,11 @@ export const CNCQuotation: React.FC = () => {
                         <div className="flex flex-col gap-1.5">
                           <div className="flex items-center gap-1">
                             <span className="text-xs font-bold text-slate-500 w-14 uppercase">Scrap Rate</span>
-                            <input type="number" value={item.scrapRate || ''} onChange={(e) => updateItem(item.id, 'scrapRate', parseFloat(e.target.value) || 0)} className="w-24 bg-amber-50 border border-amber-200 rounded px-2 py-1 font-black text-amber-700 text-sm" />
+                            <input type="number" value={item.scrapRate ?? ''} onChange={(e) => updateItem(item.id, 'scrapRate', e.target.value)} className="w-24 bg-amber-50 border border-amber-200 rounded px-2 py-1 font-black text-amber-700 text-sm" />
                           </div>
                           <div className="flex items-center gap-1">
                             <span className="text-xs font-bold text-slate-500 w-14 uppercase">Loss Factor</span>
-                            <input type="number" value={item.burningLossFactor || ''} onChange={(e) => updateItem(item.id, 'burningLossFactor', parseFloat(e.target.value) || 0)} className="w-24 bg-slate-50 border border-slate-200 rounded px-2 py-1 font-black text-slate-700 text-sm" />
+                            <input type="number" value={item.burningLossFactor ?? ''} onChange={(e) => updateItem(item.id, 'burningLossFactor', e.target.value)} className="w-24 bg-slate-50 border border-slate-200 rounded px-2 py-1 font-black text-slate-700 text-sm" />
                           </div>
                           <div className="flex flex-col gap-1 text-xs text-slate-500 font-bold border-t border-slate-100 pt-1">
                             <div className="flex justify-between">
