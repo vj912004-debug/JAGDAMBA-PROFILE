@@ -20,7 +20,7 @@ def deploy():
         "curl -fsSL https://deb.nodesource.com/setup_20.x | bash -",
         "apt install -y nodejs",
         "npm install -g pm2",
-        "sudo -u postgres psql -c \"CREATE DATABASE Jagdamba_final;\" || true",
+        "sudo -u postgres psql -c \"CREATE DATABASE jagdamba_final;\" || true",
         "sudo -u postgres psql -c \"ALTER USER postgres WITH PASSWORD 'Vraj@2003';\" || true",
         "rm -rf JAGDAMBA-PROFILE",
         "git clone --depth 1 https://github.com/vj912004-debug/JAGDAMBA-PROFILE.git",

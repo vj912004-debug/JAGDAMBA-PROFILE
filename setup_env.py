@@ -10,7 +10,7 @@ def setup_env():
     client.connect(host, username=user, password=pw)
 
     # Database URL for Production (Postgres is local)
-    db_url = "postgresql://postgres:Vraj@2003@localhost:5432/Jagdamba_final"
+    db_url = "postgresql://postgres:Vraj@2003@localhost:5432/jagdamba_final"
     
     env_content = f"DATABASE_URL={db_url}\nPORT=5000\n"
     
@@ -21,8 +21,8 @@ def setup_env():
     # Run DB init again
     print("Running DB init...")
     stdin, stdout, stderr = client.exec_command("cd /root/JAGDAMBA-PROFILE/backend && node run_init.js")
-    print(stdout.read().decode())
-    print(stderr.read().decode())
+    print(stdout.read().decode('utf-8', errors='ignore').encode('ascii', errors='ignore').decode('ascii'))
+    print(stderr.read().decode('utf-8', errors='ignore').encode('ascii', errors='ignore').decode('ascii'))
 
     # Restart API
     print("Restarting API...")
