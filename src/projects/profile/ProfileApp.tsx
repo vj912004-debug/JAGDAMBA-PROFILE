@@ -19,6 +19,7 @@ import { TCManagement } from './pages/TCManagement';
 import { Quotation } from './pages/Quotation';
 import { CNCQuotation } from './pages/CNCQuotation';
 import { LoginPage } from './pages/LoginPage';
+import { PartyMasterPage } from './pages/PartyMaster';
 import { useAppContext, AppProvider } from './store/AppContext';
 import './index.css';
 
@@ -45,6 +46,7 @@ export default function ProfileApp() {
           <Route element={<ProtectedRoute><Layout /></ProtectedRoute>}>
             <Route path="/" element={<Dashboard />} />
             <Route path="/order-entry" element={<OrderEntry />} />
+            <Route path="/party-master" element={<PartyMasterPage />} />
             <Route path="/production-list" element={<ProductionList />} />
             <Route path="/production-status" element={<ProductionStatus />} />
             <Route path="/quotation" element={<Quotation />} />

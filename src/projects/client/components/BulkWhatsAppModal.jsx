@@ -50,6 +50,20 @@ export default function BulkWhatsAppModal({ isOpen, onClose }) {
     }
   };
 
+  const handleDisconnect = async () => {
+    setLoading(true);
+    try {
+      await api.whatsapp.disconnect();
+      toast.success('WhatsApp disconnected');
+      setStatus('DISCONNECTED');
+      setQr(null);
+    } catch (error) {
+      toast.error('Failed to disconnect');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleSend = async () => {
     if (!message) return toast.error('Please enter a message');
     
@@ -119,11 +133,15 @@ export default function BulkWhatsAppModal({ isOpen, onClose }) {
                   {status.replace('_', ' ')}
                 </div>
               </div>
-              {status === 'DISCONNECTED' && (
+              {status === 'DISCONNECTED' ? (
                 <button className="btn btn-primary btn-sm" onClick={handleInit} disabled={loading}>
                   {loading ? <RefreshCw className="spin" size={14} /> : 'Initialize WhatsApp'}
                 </button>
-              )}
+              ) : status === 'CONNECTED' ? (
+                <button className="btn btn-sm" style={{ background: 'var(--bg-card-hover)', color: '#ef4444' }} onClick={handleDisconnect} disabled={loading}>
+                  {loading ? <RefreshCw className="spin" size={14} /> : 'Disconnect'}
+                </button>
+              ) : null}
             </div>
 
             {status === 'QR_READY' && qr && (

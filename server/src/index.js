@@ -50,6 +50,12 @@ app.post('/api/whatsapp/init', (req, res) => {
   res.json({ message: 'WhatsApp initialization started' });
 });
 
+// Disconnect WhatsApp
+app.post('/api/whatsapp/disconnect', async (req, res) => {
+  await whatsappService.disconnect();
+  res.json({ message: 'WhatsApp disconnected successfully' });
+});
+
 // Send Bulk Messages (Hybrid Mode: Contacts sent from frontend)
 app.post('/api/whatsapp/send-bulk', async (req, res) => {
   const { message, contacts } = req.body;

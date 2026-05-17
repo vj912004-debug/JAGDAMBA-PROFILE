@@ -8,6 +8,7 @@ import { OrderEntryPrint } from '../components/OrderEntryPrint';
 import { SalesOrderPrint } from '../components/SalesOrderPrint';
 import { generateOrderEntryPDF, generateSalesOrderPDF } from '../utils/pdfGenerator';
 import { EditableSelect } from '../components/EditableSelect';
+import { PartyAutocomplete } from '../components/PartyAutocomplete';
 
 const emptyLine = (): OrderLineItem => ({
   id: Date.now().toString() + Math.random().toString(36).slice(2),
@@ -37,7 +38,7 @@ const emptyLine = (): OrderLineItem => ({
 });
 
 export const OrderEntry: React.FC = () => {
-  const { t, addOrder, nextOrderNo, role, branch } = useAppContext();
+  const { t, addOrder, nextOrderNo, role, branch, parties, addParty } = useAppContext();
   const navigate = useNavigate();
 
   const orderNo = useMemo(() => nextOrderNo(), [nextOrderNo]);
@@ -62,6 +63,16 @@ export const OrderEntry: React.FC = () => {
   const [customerPONo, setCustomerPONo] = useState('');
   const [customerPODate, setCustomerPODate] = useState('');
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const handleSelectParty = (party: any) => {
+    setPartyName(party.partyName);
+    if (party.contactPerson) setContactPerson(party.contactPerson);
+    if (party.mobileNumber) setMobileNumber(party.mobileNumber);
+    if (party.deliveryAddress) setDeliveryAddress(party.deliveryAddress);
+    if (party.location) setLocation(party.location);
+    if (party.paymentTerms) setPaymentTerms(party.paymentTerms);
+    toast.success('Details auto-filled from Party Master', { icon: '✨' });
+  };
 
   const [showReceiptModal, setShowReceiptModal] = useState(false);
   const [currentOrder, setCurrentOrder] = useState<Order | null>(null);
@@ -173,6 +184,20 @@ export const OrderEntry: React.FC = () => {
       createdAt: new Date().toISOString(),
     };
 
+    // Auto-save new party in Master if it doesn't exist
+    const partyNameUpper = partyName.trim().toUpperCase();
+    const exactMatch = parties.find(p => p.partyName === partyNameUpper);
+    if (!exactMatch) {
+      addParty({
+        partyName: partyNameUpper,
+        contactPerson: contactPerson.trim().toUpperCase(),
+        mobileNumber: mobileNumber.trim(),
+        location,
+        deliveryAddress: deliveryAddress.trim().toUpperCase(),
+        paymentTerms: paymentTerms.trim().toUpperCase()
+      });
+    }
+
     addOrder(newOrder);
     setCurrentOrder(newOrder);
     setShowReceiptModal(true);
@@ -257,8 +282,18 @@ export const OrderEntry: React.FC = () => {
             <input type="date" value={customerPODate} onChange={(e) => setCustomerPODate(e.target.value)} className="w-full bg-white border border-slate-200 text-slate-800 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 transition" />
           </div>
           <div>
-            <label className="block text-xs font-semibold text-slate-500 mb-1 uppercase tracking-wider">Party Name *</label>
-            <input type="text" value={partyName} onChange={(e) => setPartyName(e.target.value.toUpperCase())} className="w-full bg-white border border-slate-200 text-slate-800 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition" placeholder="Enter party name" />
+            <label className="block text-xs font-semibold text-slate-500 mb-1 uppercase tracking-wider flex items-center justify-between">
+              <span>Party Name *</span>
+              {partyName && parties.some(p => p.partyName === partyName) && (
+                <span className="text-[10px] text-blue-500 font-bold lowercase normal-case tracking-normal">✨ Linked to Master</span>
+              )}
+            </label>
+            <PartyAutocomplete 
+              value={partyName} 
+              onChange={setPartyName} 
+              onSelectParty={handleSelectParty} 
+              placeholder="Search or Create Party (Tally Style)"
+            />
           </div>
           <div>
             <label className="block text-xs font-semibold text-slate-500 mb-1 uppercase tracking-wider">Contact Person</label>

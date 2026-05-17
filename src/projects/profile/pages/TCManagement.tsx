@@ -19,6 +19,7 @@ export const TCManagement: React.FC = () => {
   const [showAdvancedSearch, setShowAdvancedSearch] = useState(false);
   const [showMailModal, setShowMailModal] = useState(false);
   const [showWhatsAppModal, setShowWhatsAppModal] = useState(false);
+  const [showGlobalWAModal, setShowGlobalWAModal] = useState(false);
   const [mailData, setMailData] = useState({ to: '', subject: '', message: '' });
   const [whatsAppData, setWhatsAppData] = useState({ number: '', message: '' });
   
@@ -26,6 +27,13 @@ export const TCManagement: React.FC = () => {
   const [waStatus, setWaStatus] = useState<string>('DISCONNECTED');
   const [waQr, setWaQr] = useState<string | null>(null);
   const [isWaLoading, setIsWaLoading] = useState(false);
+
+  const getWhatsAppApiUrl = (path: string) => {
+    const base = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+      ? 'http://localhost:5001'
+      : '';
+    return `${base}${path}`;
+  };
   
   // Advanced Search Filters
   const [filters, setFilters] = useState({
@@ -120,35 +128,52 @@ export const TCManagement: React.FC = () => {
 
   // Poll WhatsApp Status
   useEffect(() => {
-    let interval: NodeJS.Timeout;
-    if (showWhatsAppModal) {
-      const fetchStatus = async () => {
-        try {
-          const res = await fetch('/api/whatsapp/status');
-          const data = await res.json();
-          setWaStatus(data.status);
-          if (data.status === 'QR_READY') {
-            const qrRes = await fetch('/api/whatsapp/qr');
-            const qrData = await qrRes.json();
-            if (qrData.qr) setWaQr(qrData.qr);
-          }
-        } catch (e) {
-          console.error('Failed to fetch WA status', e);
+    const fetchStatus = async () => {
+      try {
+        const res = await fetch(getWhatsAppApiUrl('/api/whatsapp/status'));
+        const data = await res.json();
+        setWaStatus(data.status);
+        if (data.status === 'QR_READY') {
+          const qrRes = await fetch(getWhatsAppApiUrl('/api/whatsapp/qr'));
+          const qrData = await qrRes.json();
+          if (qrData.qr) setWaQr(qrData.qr);
+        } else {
+          setWaQr(null);
         }
-      };
-      fetchStatus();
-      interval = setInterval(fetchStatus, 3000);
-    }
+      } catch (e) {
+        console.error('Failed to fetch WA status', e);
+      }
+    };
+
+    fetchStatus(); // immediate check
+    
+    // Poll fast (3s) if any modal is open, otherwise slower (10s)
+    const intervalTime = (showWhatsAppModal || showGlobalWAModal) ? 3000 : 10000;
+    const interval = setInterval(fetchStatus, intervalTime);
     return () => clearInterval(interval);
-  }, [showWhatsAppModal]);
+  }, [showWhatsAppModal, showGlobalWAModal]);
 
   const handleWaInit = async () => {
     setIsWaLoading(true);
     try {
-      await fetch('/api/whatsapp/init', { method: 'POST' });
+      await fetch(getWhatsAppApiUrl('/api/whatsapp/init'), { method: 'POST' });
       toast.success('Initializing WhatsApp... please wait');
     } catch (error) {
       toast.error('Failed to initialize WhatsApp');
+    } finally {
+      setIsWaLoading(false);
+    }
+  };
+
+  const handleWaDisconnect = async () => {
+    setIsWaLoading(true);
+    try {
+      await fetch(getWhatsAppApiUrl('/api/whatsapp/disconnect'), { method: 'POST' });
+      toast.success('Disconnected from WhatsApp');
+      setWaStatus('DISCONNECTED');
+      setWaQr(null);
+    } catch (error) {
+      toast.error('Failed to disconnect WhatsApp');
     } finally {
       setIsWaLoading(false);
     }
@@ -281,7 +306,7 @@ export const TCManagement: React.FC = () => {
 
     const loadingToast = toast.loading('Sending WhatsApp...');
     try {
-      const response = await fetch('/api/whatsapp/send-media', {
+      const response = await fetch(getWhatsAppApiUrl('/api/whatsapp/send-media'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -308,23 +333,42 @@ export const TCManagement: React.FC = () => {
     <>
     <div className="max-w-[1600px] mx-auto p-4 space-y-6 fade-in">
       {/* Header Section */}
-      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 bg-white p-6 rounded-3xl shadow-sm border border-slate-100">
+      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 bg-white dark:bg-slate-900 p-6 rounded-3xl shadow-sm border border-slate-100 dark:border-slate-800 transition-colors">
         <div>
-          <h1 className="text-3xl font-black bg-gradient-to-r from-slate-900 to-slate-600 bg-clip-text text-transparent flex items-center gap-3">
-            <FileSearch className="w-8 h-8 text-blue-600" />
+          <h1 className="text-3xl font-black bg-gradient-to-r from-slate-905 to-slate-600 dark:from-slate-100 dark:to-slate-400 bg-clip-text text-transparent flex items-center gap-3">
+            <FileSearch className="w-8 h-8 text-blue-600 dark:text-blue-400" />
             {t('tcManagement')}
           </h1>
-          <p className="text-slate-500 font-medium mt-1">Manage Test Certificates & Material History</p>
+          <p className="text-slate-500 dark:text-slate-400 font-medium mt-1">Manage Test Certificates & Material History</p>
         </div>
         
-        <div className="flex items-center gap-3">
-          <div className="flex flex-col items-end px-4 border-r border-slate-100">
-            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Total Certificates</span>
-            <span className="text-xl font-black text-slate-800">{tcRecords.length}</span>
+        <div className="flex flex-wrap items-center gap-3">
+          {/* WhatsApp Connection Control */}
+          <button 
+            onClick={() => setShowGlobalWAModal(true)}
+            className={cn(
+              "flex items-center gap-2 px-4 py-3 rounded-2xl font-bold text-sm shadow-sm transition-all active:scale-95 border",
+              waStatus === 'CONNECTED' 
+                ? "bg-green-50 dark:bg-green-950/20 border-green-200 dark:border-green-900/30 text-green-700 dark:text-green-400 hover:bg-green-100 dark:hover:bg-green-900/30" 
+                : waStatus === 'QR_READY'
+                ? "bg-amber-50 dark:bg-amber-950/20 border-amber-200 dark:border-amber-900/30 text-amber-700 dark:text-amber-400 hover:bg-amber-100 dark:hover:bg-amber-900/30 animate-pulse"
+                : waStatus === 'INITIALIZING'
+                ? "bg-blue-50 dark:bg-blue-950/20 border-blue-200 dark:border-blue-900/30 text-blue-700 dark:text-blue-400 hover:bg-blue-100 dark:hover:bg-blue-900/30 animate-pulse"
+                : "bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-350 hover:bg-slate-100 dark:hover:bg-slate-700/50"
+            )}
+          >
+            <MessageSquare className="w-4 h-4" />
+            WhatsApp: {waStatus === 'CONNECTED' ? 'Connected' : waStatus === 'QR_READY' ? 'Scan QR' : waStatus === 'INITIALIZING' ? 'Initializing...' : 'Disconnected'}
+          </button>
+
+          <div className="flex flex-col items-end px-4 border-r border-slate-100 dark:border-slate-800">
+            <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest">Total Certificates</span>
+            <span className="text-xl font-black text-slate-800 dark:text-slate-100">{tcRecords.length}</span>
           </div>
+          
           <button 
             onClick={() => { setIsAdding(true); setSelectedTC(null); setFormData({ ...formData, id: '', heatNumber: '', plateNumber: '', tcNumber: '' }); }}
-            className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-2xl font-bold shadow-lg shadow-blue-200 transition-all active:scale-95"
+            className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-2xl font-bold shadow-lg shadow-blue-200 dark:shadow-none transition-all active:scale-95"
           >
             <Plus className="w-5 h-5" />
             Add New TC
@@ -899,9 +943,20 @@ export const TCManagement: React.FC = () => {
                 <MessageSquare className="w-8 h-8" />
                 WhatsApp TC
               </h3>
-              <button onClick={() => setShowWhatsAppModal(false)} className="p-2 hover:bg-white/10 rounded-full transition-colors">
-                <X className="w-6 h-6" />
-              </button>
+              <div className="flex items-center gap-2">
+                {waStatus === 'CONNECTED' && (
+                  <button 
+                    onClick={handleWaDisconnect} 
+                    disabled={isWaLoading} 
+                    className="text-xs font-bold text-red-100 hover:text-white bg-red-600/50 hover:bg-red-600 px-3 py-1.5 rounded-lg transition-colors"
+                  >
+                    {isWaLoading ? 'Disconnecting...' : 'Disconnect'}
+                  </button>
+                )}
+                <button onClick={() => setShowWhatsAppModal(false)} className="p-2 hover:bg-white/10 rounded-full transition-colors">
+                  <X className="w-6 h-6" />
+                </button>
+              </div>
             </div>
             <p className="text-green-100 text-sm font-medium">Sending TC to WhatsApp: {selectedTC?.heatNumber}</p>
           </div>
@@ -980,6 +1035,116 @@ export const TCManagement: React.FC = () => {
                 >
                   {(isWaLoading || waStatus === 'INITIALIZING') ? 'Initializing... please wait' : 'Initialize WhatsApp'}
                 </button>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+    )}
+
+    {/* Global WhatsApp Connection Modal */}
+    {showGlobalWAModal && (
+      <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in">
+        <div className="bg-white dark:bg-slate-900 w-full max-w-md rounded-[2.5rem] shadow-2xl overflow-hidden slide-up border border-slate-100 dark:border-slate-800 transition-colors">
+          <div className="bg-green-600 p-8 text-white">
+            <div className="flex justify-between items-center">
+              <h3 className="text-2xl font-black flex items-center gap-3">
+                <MessageSquare className="w-8 h-8" />
+                WhatsApp Web
+              </h3>
+              <button onClick={() => setShowGlobalWAModal(false)} className="p-2 hover:bg-white/10 rounded-full transition-colors">
+                <X className="w-6 h-6" />
+              </button>
+            </div>
+            <p className="text-green-100 text-sm font-medium mt-1">Connect or Disconnect WhatsApp Web Service</p>
+          </div>
+          
+          <div className="p-8 space-y-6 bg-white dark:bg-slate-900 transition-colors">
+            <div className="flex items-center justify-between p-4 bg-slate-50 dark:bg-slate-800/50 rounded-2xl border border-slate-100 dark:border-slate-800">
+              <div>
+                <p className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest">Connection Status</p>
+                <p className={cn(
+                  "text-lg font-black mt-0.5",
+                  waStatus === 'CONNECTED' ? "text-green-600 dark:text-green-400" :
+                  waStatus === 'QR_READY' ? "text-amber-500" :
+                  waStatus === 'INITIALIZING' ? "text-blue-500" : "text-slate-500"
+                )}>
+                  {waStatus}
+                </p>
+              </div>
+              <div className={cn(
+                "w-3.5 h-3.5 rounded-full",
+                waStatus === 'CONNECTED' ? "bg-green-500 shadow-lg shadow-green-200" :
+                waStatus === 'QR_READY' ? "bg-amber-500 animate-pulse" :
+                waStatus === 'INITIALIZING' ? "bg-blue-500 animate-pulse" : "bg-slate-300 dark:bg-slate-700"
+              )}></div>
+            </div>
+
+            {waStatus === 'CONNECTED' ? (
+              <div className="text-center space-y-4">
+                <div className="w-20 h-20 bg-green-50 dark:bg-green-950/20 rounded-full flex items-center justify-center mx-auto">
+                  <CheckCircle2 className="w-10 h-10 text-green-600 dark:text-green-400" />
+                </div>
+                <div>
+                  <h4 className="text-lg font-bold text-slate-800 dark:text-slate-100">WhatsApp is Connected</h4>
+                  <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">Your account is ready to send certificates and messages.</p>
+                </div>
+                <button 
+                  onClick={handleWaDisconnect} 
+                  disabled={isWaLoading}
+                  className="w-full bg-red-600 hover:bg-red-700 text-white py-4 rounded-2xl text-sm font-black shadow-lg shadow-red-200 dark:shadow-none transition-all active:scale-95 disabled:opacity-50"
+                >
+                  {isWaLoading ? 'Disconnecting...' : 'Disconnect WhatsApp'}
+                </button>
+              </div>
+            ) : waStatus === 'QR_READY' && waQr ? (
+              <div className="text-center space-y-4">
+                <p className="text-sm font-bold text-slate-600 dark:text-slate-400">Scan this QR code with WhatsApp Web on your phone:</p>
+                <div className="inline-block p-4 bg-white rounded-2xl border border-slate-200 shadow-sm mx-auto">
+                  <img src={waQr} alt="WhatsApp QR" className="w-48 h-48" />
+                </div>
+                <div className="flex gap-3">
+                  <button 
+                    onClick={handleWaDisconnect} 
+                    disabled={isWaLoading}
+                    className="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-700 dark:bg-slate-800 dark:text-slate-350 py-3 rounded-xl text-xs font-bold transition-all"
+                  >
+                    Reset/Disconnect
+                  </button>
+                  <button 
+                    onClick={() => setShowGlobalWAModal(false)}
+                    className="flex-1 bg-green-600 hover:bg-green-700 text-white py-3 rounded-xl text-xs font-bold shadow-md transition-all"
+                  >
+                    Done
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <div className="text-center space-y-4">
+                <div className="w-20 h-20 bg-slate-50 dark:bg-slate-800 rounded-full flex items-center justify-center mx-auto">
+                  <MessageSquare className="w-10 h-10 text-slate-400 dark:text-slate-500" />
+                </div>
+                <div>
+                  <h4 className="text-lg font-bold text-slate-800 dark:text-slate-100">WhatsApp is Disconnected</h4>
+                  <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">Initialize the client to generate a connection QR code.</p>
+                </div>
+                <div className="flex gap-3">
+                  <button 
+                    onClick={handleWaInit} 
+                    disabled={isWaLoading || waStatus === 'INITIALIZING'}
+                    className="flex-1 bg-green-600 hover:bg-green-700 text-white py-4 rounded-2xl text-sm font-black shadow-lg shadow-green-200 dark:shadow-none transition-all active:scale-95 disabled:opacity-50"
+                  >
+                    {(isWaLoading || waStatus === 'INITIALIZING') ? 'Initializing...' : 'Connect WhatsApp'}
+                  </button>
+                  {(waStatus === 'INITIALIZING' || isWaLoading) && (
+                    <button 
+                      onClick={handleWaDisconnect}
+                      className="px-4 bg-slate-100 dark:bg-slate-850 text-slate-650 dark:text-slate-300 py-4 rounded-2xl text-sm font-bold"
+                    >
+                      Cancel
+                    </button>
+                  )}
+                </div>
               </div>
             )}
           </div>

@@ -5,6 +5,10 @@ import qrcode from 'qrcode';
 class WhatsAppService {
   constructor() {
     console.log('Initializing WhatsApp Client...');
+    this.setupClient();
+  }
+
+  setupClient() {
     this.client = new Client({
       authStrategy: new LocalAuth(),
       puppeteer: {
@@ -12,7 +16,6 @@ class WhatsAppService {
         executablePath: process.env.PUPPETEER_EXECUTABLE_PATH || null
       }
     });
-    console.log('Client object created');
 
     this.qr = null;
     this.status = 'DISCONNECTED'; 
@@ -34,9 +37,11 @@ class WhatsAppService {
       console.error('WhatsApp Auth failure', msg);
     });
 
-    this.client.on('disconnected', (reason) => {
+    this.client.on('disconnected', async (reason) => {
       this.status = 'DISCONNECTED';
       console.log('WhatsApp Disconnected', reason);
+      try { await this.client.destroy(); } catch(e) {}
+      this.setupClient();
     });
   }
 
@@ -49,6 +54,19 @@ class WhatsAppService {
         this.status = 'DISCONNECTED';
         console.error('Failed to initialize WhatsApp', err);
       }
+    }
+  }
+
+  async disconnect() {
+    console.log('Disconnecting WhatsApp manually...');
+    try {
+      await this.client.logout();
+    } catch (e) {
+      console.error('Logout failed:', e.message);
+      try { await this.client.destroy(); } catch (err) {}
+      this.status = 'DISCONNECTED';
+      this.qr = null;
+      this.setupClient();
     }
   }
 

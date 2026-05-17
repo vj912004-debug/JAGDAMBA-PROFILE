@@ -346,6 +346,18 @@ export interface CNCQuotationRecord {
   grandTotal: number;
 }
 
+export interface PartyMaster {
+  id: string;
+  partyName: string;
+  contactPerson: string;
+  mobileNumber: string;
+  location: string;
+  deliveryAddress: string;
+  paymentTerms?: string;
+  gstNumber?: string;
+  email?: string;
+}
+
 // ─── Context Type ─────────────────────────────────────────────
 
 export interface User {
@@ -364,6 +376,8 @@ interface AppContextType {
   branch: string;
   setBranch: (b: string) => void;
   t: (key: string) => string;
+  theme: 'light' | 'dark';
+  setTheme: (theme: 'light' | 'dark') => void;
 
   orders: Order[];
   setOrders: React.Dispatch<React.SetStateAction<Order[]>>;
@@ -412,6 +426,12 @@ interface AppContextType {
   nextOrderNo: () => string;
   nextChallanNo: () => string;
   nextPONo: () => string;
+
+  parties: PartyMaster[];
+  setParties: React.Dispatch<React.SetStateAction<PartyMaster[]>>;
+  addParty: (party: Omit<PartyMaster, 'id'>) => Promise<PartyMaster>;
+  updateParty: (party: PartyMaster) => Promise<void>;
+  deleteParty: (id: string) => Promise<void>;
 }
 
 // ─── Translations ─────────────────────────────────────────────
@@ -502,6 +522,7 @@ const translations: Record<Language, Record<string, string>> = {
     duplicateAlert: 'Duplicate Alert',
     quotation: 'Quotation',
     cncQuotation: 'CNC Quotation',
+    partyMaster: 'Party Master',
   },
   Gujarati: {
     dashboard: 'ડેશબોર્ડ',
@@ -557,6 +578,7 @@ const translations: Record<Language, Record<string, string>> = {
     make: 'કંપની / મેક',
     quotation: 'કોટેશન',
     cncQuotation: 'CNC ક્વોટેશન',
+    partyMaster: 'પાર્ટી માસ્ટર',
   },
 };
 
@@ -725,6 +747,14 @@ const seedTCRecords: TCRecord[] = [
   }
 ];
 
+const seedParties: PartyMaster[] = [
+  { id: '1', partyName: 'LARSEN & TOUBRO', contactPerson: 'RAHUL MEHTA', mobileNumber: '9876543210', location: 'Makarpura Unit', deliveryAddress: 'L&T GATE 4, VADODARA', paymentTerms: '30 DAYS' },
+  { id: '2', partyName: 'RELIANCE INDUSTRIES', contactPerson: 'AMIT PATEL', mobileNumber: '9876541111', location: 'Por Unit', deliveryAddress: 'RELIANCE JAMNAGAR', paymentTerms: '15 DAYS' },
+  { id: '3', partyName: 'ADANI POWER', contactPerson: 'VIJAY SHAH', mobileNumber: '9876542222', location: 'Makarpura Unit', deliveryAddress: 'ADANI MUNDRA', paymentTerms: '30 DAYS' },
+  { id: '4', partyName: 'TATA STEEL', contactPerson: 'DEEPAK JOSHI', mobileNumber: '9876543333', location: 'Por Unit', deliveryAddress: 'TATA HALDIA', paymentTerms: '45 DAYS' },
+  { id: '5', partyName: 'BHEL', contactPerson: 'SURESH KUMAR', mobileNumber: '9876544444', location: 'Makarpura Unit', deliveryAddress: 'BHEL HARIDWAR', paymentTerms: '30 DAYS' },
+];
+
 // ─── LocalStorage Helpers ─────────────────────────────────────
 
 const STORAGE_KEY = 'jagdamba_erp_data';
@@ -742,6 +772,7 @@ interface StoredData {
   quotations: QuotationRecord[];
   cncQuotations: CNCQuotationRecord[];
   logs: ActivityLog[];
+  parties: PartyMaster[];
 }
 
 function loadAuth(): User | null {
@@ -784,6 +815,23 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   const [role, setRole] = useState<Role>('Admin');
   const [language, setLanguage] = useState<Language>('English');
   const [branch, setBranch] = useState<string>('All');
+  const [theme, setTheme] = useState<'light' | 'dark'>(() => {
+    if (typeof window !== 'undefined') {
+      return (localStorage.getItem('jagdamba_theme') as 'light' | 'dark') || 'light';
+    }
+    return 'light';
+  });
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('jagdamba_theme', theme);
+      if (theme === 'dark') {
+        document.documentElement.classList.add('dark');
+      } else {
+        document.documentElement.classList.remove('dark');
+      }
+    }
+  }, [theme]);
 
   const [orders, setOrders] = useState<Order[]>([]);
   const [plates, setPlates] = useState<Plate[]>([]);
@@ -796,6 +844,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   const [quotations, setQuotations] = useState<QuotationRecord[]>([]);
   const [cncQuotations, setCNCQuotations] = useState<CNCQuotationRecord[]>([]);
   const [logs, setLogs] = useState<ActivityLog[]>([]);
+  const [parties, setParties] = useState<PartyMaster[]>([]);
 
   const fetchData = useCallback(async () => {
     try {
@@ -811,6 +860,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         setQuotations(stored.quotations ?? []);
         setCNCQuotations(stored.cncQuotations ?? []);
         setLogs(stored.logs ?? []);
+        setParties(stored.parties ?? seedParties);
       } else {
         // Fallback to seed data on first load
         setOrders(seedOrders);
@@ -821,6 +871,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         setPurchaseOrders(seedPurchaseOrders);
         setPurchaseReceipts(seedPurchaseReceipts);
         setTCRecords(seedTCRecords);
+        setParties(seedParties);
         
         saveToStorage({
           orders: seedOrders,
@@ -833,7 +884,8 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
           tcRecords: seedTCRecords,
           quotations: [],
           cncQuotations: [],
-          logs: []
+          logs: [],
+          parties: seedParties
         });
       }
     } catch (error) {
@@ -872,8 +924,8 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
 
   // Sync to local storage on every state change
   useEffect(() => {
-    saveToStorage({ orders, plates, usages, dispatches, challans, purchaseOrders, purchaseReceipts, tcRecords, quotations, cncQuotations, logs });
-  }, [orders, plates, usages, dispatches, challans, purchaseOrders, purchaseReceipts, tcRecords, quotations, cncQuotations, logs]);
+    saveToStorage({ orders, plates, usages, dispatches, challans, purchaseOrders, purchaseReceipts, tcRecords, quotations, cncQuotations, logs, parties });
+  }, [orders, plates, usages, dispatches, challans, purchaseOrders, purchaseReceipts, tcRecords, quotations, cncQuotations, logs, parties]);
 
   const t = useCallback((key: string) => {
     return translations[language][key] || key;
@@ -1090,10 +1142,74 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     toast.success(`Dispatched ${totalDispatchQty} items & Created Challan ${newChallan.challanNo}`);
   }, [orders, nextChallanNo, addLog]);
 
+  const addParty = useCallback(async (party: Omit<PartyMaster, 'id'>) => {
+    const newParty: PartyMaster = {
+      ...party,
+      id: Date.now().toString(),
+      partyName: party.partyName.trim().toUpperCase(),
+      contactPerson: party.contactPerson.trim().toUpperCase(),
+      mobileNumber: party.mobileNumber.trim(),
+      deliveryAddress: party.deliveryAddress.trim().toUpperCase(),
+      paymentTerms: party.paymentTerms?.trim().toUpperCase(),
+      gstNumber: party.gstNumber?.trim().toUpperCase(),
+      email: party.email?.trim()
+    };
+    
+    // Prevent duplicates by checking name
+    let addedParty = newParty;
+    setParties(prev => {
+      const existing = prev.find(p => p.partyName === newParty.partyName);
+      if (existing) {
+        addedParty = existing;
+        return prev;
+      }
+      return [...prev, newParty];
+    });
+
+    addLog({
+      action: 'Party Created',
+      details: `New party '${newParty.partyName}' registered in Master.`,
+      type: 'info'
+    });
+    return addedParty;
+  }, [addLog]);
+
+  const updateParty = useCallback(async (party: PartyMaster) => {
+    const updated: PartyMaster = {
+      ...party,
+      partyName: party.partyName.trim().toUpperCase(),
+      contactPerson: party.contactPerson.trim().toUpperCase(),
+      mobileNumber: party.mobileNumber.trim(),
+      deliveryAddress: party.deliveryAddress.trim().toUpperCase(),
+      paymentTerms: party.paymentTerms?.trim().toUpperCase(),
+      gstNumber: party.gstNumber?.trim().toUpperCase(),
+      email: party.email?.trim()
+    };
+    setParties(prev => prev.map(p => p.id === updated.id ? updated : p));
+    addLog({
+      action: 'Party Updated',
+      details: `Party '${updated.partyName}' details updated.`,
+      type: 'info'
+    });
+    toast.success('Party master updated');
+  }, [addLog]);
+
+  const deleteParty = useCallback(async (id: string) => {
+    const party = parties.find(p => p.id === id);
+    setParties(prev => prev.filter(p => p.id !== id));
+    addLog({
+      action: 'Party Deleted',
+      details: `Party '${party?.partyName}' removed from Master.`,
+      type: 'warning'
+    });
+    toast.success('Party removed from Master');
+  }, [parties, addLog]);
+
   return (
     <AppContext.Provider value={{
       user, setUser, logout,
       role, language, setLanguage, branch, setBranch, t,
+      theme, setTheme,
       orders, setOrders, addOrder, updateOrderStage, updateItemStatus, updateItemCompletedQty, dispatchItems,
       plates, setPlates,
       usages, setUsages,
@@ -1117,6 +1233,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       deleteCNCQuotation: (id: string) => setCNCQuotations(prev => prev.filter(q => q.id !== id)),
 
       nextOrderNo, nextChallanNo, nextPONo,
+      parties, setParties, addParty, updateParty, deleteParty,
     }}>
       {children}
     </AppContext.Provider>

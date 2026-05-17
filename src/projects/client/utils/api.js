@@ -103,6 +103,7 @@ export const api = {
     getStatus: () => fetch('/api/whatsapp/status').then(r => r.json()),
     getQr: () => fetch('/api/whatsapp/qr').then(r => r.json()),
     init: () => fetch('/api/whatsapp/init', { method: 'POST' }).then(r => r.json()),
+    disconnect: () => fetch('/api/whatsapp/disconnect', { method: 'POST' }).then(r => r.json()),
     sendBulk: (message, contacts) => fetch('/api/whatsapp/send-bulk', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
