@@ -12,7 +12,7 @@ interface UserCredential {
 }
 
 export const USERS: UserCredential[] = [
-  { username: 'admin', password: 'admin123', role: 'Admin', displayName: 'Admin (Owner)' },
+  { username: 'mukesh@jagdamba,com', password: 'Mukesh@123', role: 'Admin', displayName: 'Mukesh (Owner)' },
   { username: 'office', password: 'office123', role: 'Office Entry', displayName: 'Office Entry Operator' },
   { username: 'production', password: 'prod123', role: 'Production Supervisor', displayName: 'Production Supervisor' },
   { username: 'nesting', password: 'nest123', role: 'Nesting Operator', displayName: 'Nesting Operator' },

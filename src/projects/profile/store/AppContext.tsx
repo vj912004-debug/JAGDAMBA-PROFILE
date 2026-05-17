@@ -592,8 +592,6 @@ const translations: Record<Language, Record<string, string>> = {
 
 // ─── Seed Data ────────────────────────────────────────────────
 
-const today = new Date().toISOString().split('T')[0];
-
 const seedOrders: Order[] = [];
 const seedPlates: Plate[] = [];
 const seedUsages: Usage[] = [];
