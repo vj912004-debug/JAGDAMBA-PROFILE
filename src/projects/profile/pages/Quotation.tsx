@@ -417,31 +417,31 @@ export const Quotation: React.FC = () => {
                         <input type="text" value={item.grade} onChange={(e) => updateItem(item.id, 'grade', e.target.value)} className="w-full bg-transparent border-transparent focus:ring-0 text-sm font-medium print:placeholder-transparent" placeholder="Grade" />
                       </td>
                       <td className="p-3 w-20">
-                        <input type="number" value={item.thickness || ''} onChange={(e) => updateItem(item.id, 'thickness', e.target.value)} className="w-full bg-transparent border-transparent focus:ring-0 text-sm font-bold text-blue-600" placeholder="0" />
+                        <input type="number" value={item.thickness ?? ''} onChange={(e) => updateItem(item.id, 'thickness', e.target.value)} className="w-full bg-transparent border-transparent focus:ring-0 text-sm font-bold text-blue-600" placeholder="0" />
                       </td>
                       <td className="p-3 min-w-[180px]">
                         {item.shape === 'Ring' ? (
                           <div className="flex items-center gap-2">
                             <div className="flex flex-col">
                               <span className="text-[8px] font-bold text-slate-400 uppercase">OD</span>
-                              <input type="number" value={item.od || ''} onChange={(e) => updateItem(item.id, 'od', e.target.value)} className="w-16 bg-slate-50 rounded px-2 py-1 text-xs focus:ring-1 focus:ring-blue-500 outline-none print:bg-transparent print:font-bold" placeholder="OD" />
+                              <input type="number" value={item.od ?? ''} onChange={(e) => updateItem(item.id, 'od', e.target.value)} className="w-16 bg-slate-50 rounded px-2 py-1 text-xs focus:ring-1 focus:ring-blue-500 outline-none print:bg-transparent print:font-bold" placeholder="OD" />
                             </div>
                             <span className="text-slate-300 mt-3">x</span>
                             <div className="flex flex-col">
                               <span className="text-[8px] font-bold text-slate-400 uppercase">ID</span>
-                              <input type="number" value={item.id_dim || ''} onChange={(e) => updateItem(item.id, 'id_dim', e.target.value)} className="w-16 bg-slate-50 rounded px-2 py-1 text-xs focus:ring-1 focus:ring-blue-500 outline-none print:bg-transparent print:font-bold" placeholder="ID" />
+                              <input type="number" value={item.id_dim ?? ''} onChange={(e) => updateItem(item.id, 'id_dim', e.target.value)} className="w-16 bg-slate-50 rounded px-2 py-1 text-xs focus:ring-1 focus:ring-blue-500 outline-none print:bg-transparent print:font-bold" placeholder="ID" />
                             </div>
                           </div>
                         ) : (
                           <div className="flex items-center gap-2">
-                            <input type="number" value={item.length || ''} onChange={(e) => updateItem(item.id, 'length', e.target.value)} className="w-16 bg-slate-50 rounded px-2 py-1 text-xs focus:ring-1 focus:ring-blue-500 outline-none print:bg-transparent print:font-bold" placeholder="L" />
+                            <input type="number" value={item.length ?? ''} onChange={(e) => updateItem(item.id, 'length', e.target.value)} className="w-16 bg-slate-50 rounded px-2 py-1 text-xs focus:ring-1 focus:ring-blue-500 outline-none print:bg-transparent print:font-bold" placeholder="L" />
                             <span className="text-slate-300">x</span>
-                            <input type="number" value={item.width || ''} onChange={(e) => updateItem(item.id, 'width', e.target.value)} className="w-16 bg-slate-50 rounded px-2 py-1 text-xs focus:ring-1 focus:ring-blue-500 outline-none print:bg-transparent print:font-bold" placeholder="W" />
+                            <input type="number" value={item.width ?? ''} onChange={(e) => updateItem(item.id, 'width', e.target.value)} className="w-16 bg-slate-50 rounded px-2 py-1 text-xs focus:ring-1 focus:ring-blue-500 outline-none print:bg-transparent print:font-bold" placeholder="W" />
                           </div>
                         )}
                       </td>
                       <td className="p-3 w-16">
-                        <input type="number" value={item.nos || ''} onChange={(e) => updateItem(item.id, 'nos', e.target.value)} className="w-full bg-transparent border-transparent focus:ring-0 text-sm font-medium" placeholder="1" />
+                        <input type="number" value={item.nos ?? ''} onChange={(e) => updateItem(item.id, 'nos', e.target.value)} className="w-full bg-transparent border-transparent focus:ring-0 text-sm font-medium" placeholder="1" />
                       </td>
                       <td className="p-3">
                         <span className="text-sm font-black text-blue-600">{item.weight.toFixed(3)}</span>
@@ -451,15 +451,15 @@ export const Quotation: React.FC = () => {
                           <div className="flex flex-col gap-1">
                             <div className="flex items-center gap-1">
                               <span className="text-[8px] font-bold text-slate-400 w-4">OD</span>
-                              <input type="number" value={item.odRate || ''} onChange={(e) => updateItem(item.id, 'odRate', e.target.value)} className="w-full bg-blue-50/50 rounded px-1.5 py-0.5 text-xs font-bold text-blue-600 outline-none" placeholder="OD Rate" />
+                              <input type="number" value={item.odRate ?? ''} onChange={(e) => updateItem(item.id, 'odRate', e.target.value)} className="w-full bg-blue-50/50 rounded px-1.5 py-0.5 text-xs font-bold text-blue-600 outline-none" placeholder="OD Rate" />
                             </div>
                             <div className="flex items-center gap-1">
                               <span className="text-[8px] font-bold text-slate-400 w-4">ID</span>
-                              <input type="number" value={item.idRate || ''} onChange={(e) => updateItem(item.id, 'idRate', e.target.value)} className="w-full bg-amber-50/50 rounded px-1.5 py-0.5 text-xs font-bold text-amber-600 outline-none" placeholder="ID Rate" />
+                              <input type="number" value={item.idRate ?? ''} onChange={(e) => updateItem(item.id, 'idRate', e.target.value)} className="w-full bg-amber-50/50 rounded px-1.5 py-0.5 text-xs font-bold text-amber-600 outline-none" placeholder="ID Rate" />
                             </div>
                           </div>
                         ) : (
-                          <input type="number" value={item.rate || ''} onChange={(e) => updateItem(item.id, 'rate', e.target.value)} className="w-full bg-transparent border-transparent focus:ring-0 text-sm font-bold text-emerald-600" placeholder="0.00" />
+                          <input type="number" value={item.rate ?? ''} onChange={(e) => updateItem(item.id, 'rate', e.target.value)} className="w-full bg-transparent border-transparent focus:ring-0 text-sm font-bold text-emerald-600" placeholder="0.00" />
                         )}
                       </td>
                       <td className="p-3">
