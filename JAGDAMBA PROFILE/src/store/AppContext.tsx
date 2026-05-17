@@ -422,118 +422,21 @@ const translations: Record<Language, Record<string, string>> = {
 
 const today = new Date().toISOString().split('T')[0];
 
-const seedOrders: Order[] = [
-  {
-    id: '1', orderNo: 'JP-0001', orderDate: '2026-04-18', deliveryDate: '2026-04-25',
-    partyName: 'Larsen & Toubro', contactPerson: 'Rahul Mehta', mobileNumber: '9876543210',
-    location: 'Makarpura Unit', deliveryAddress: 'L&T Gate 4, Vadodara', handledBy: 'System', remark: 'Urgent order',
-    stage: 'Cutting In Process', urgent: true, createdAt: '2026-04-18T09:00:00',
-    items: [
-      { id: '1a', cuttingType: 'CNC Profile', materialType: 'MS', materialGrade: 'IS 2062 E250', thickness: '10mm', plateSize: '1250 x 2500', drawingNumber: 'DRW-1001', partName: 'Base Plate', quantity: 15, completedQty: 5, dispatchedQty: 0, unitType: 'Nos', rate: 350, amount: 5250, scrapBelongsTo: 'Our Company', specialInstructions: 'Finish edges', fileName: null },
-      { id: '1b', cuttingType: 'Circle', materialType: 'MS', materialGrade: 'IS 2062 E250', thickness: '10mm', plateSize: '1250 x 2500', drawingNumber: 'DRW-1002', partName: 'Flange Ring', quantity: 30, completedQty: 10, dispatchedQty: 0, unitType: 'Nos', rate: 120, amount: 3600, scrapBelongsTo: 'Our Company', specialInstructions: '', fileName: null },
-    ],
-  },
-  {
-    id: '2', orderNo: 'JP-0002', orderDate: '2026-04-19', deliveryDate: '2026-04-28',
-    partyName: 'Reliance Industries', contactPerson: 'Amit Patel', mobileNumber: '9876541111',
-    location: 'Por Unit', deliveryAddress: 'Reliance Jamnagar', handledBy: 'System', remark: '',
-    stage: 'Nesting Done', urgent: false, createdAt: '2026-04-19T10:30:00',
-    items: [
-      { id: '2a', cuttingType: 'Square', materialType: 'SS', materialGrade: 'SS 304', thickness: '5mm', plateSize: '1500 x 3000', drawingNumber: 'DRW-2001', partName: 'Cover Plate', quantity: 50, completedQty: 0, dispatchedQty: 0, unitType: 'Kg', rate: 45, amount: 2250, scrapBelongsTo: 'Customer', specialInstructions: '', fileName: null },
-    ],
-  },
-  {
-    id: '3', orderNo: 'JP-0003', orderDate: '2026-04-20', deliveryDate: '2026-04-23',
-    partyName: 'Adani Power', contactPerson: 'Vijay Shah', mobileNumber: '9876542222',
-    location: 'Makarpura Unit', deliveryAddress: 'Adani Mundra', handledBy: 'System', remark: 'Very urgent',
-    stage: 'Order Received', urgent: true, createdAt: '2026-04-20T08:00:00',
-    items: [
-      { id: '3a', cuttingType: 'Ring', materialType: 'MS', materialGrade: 'SA 516 Gr 70', thickness: '20mm', plateSize: '2000 x 6000', drawingNumber: 'DRW-3001', partName: 'Ring Flange', quantity: 120, completedQty: 0, dispatchedQty: 0, unitType: 'Nos', rate: 250, amount: 30000, scrapBelongsTo: 'Our Company', specialInstructions: 'Heat number required on each piece', fileName: null },
-    ],
-  },
-  {
-    id: '4', orderNo: 'JP-0004', orderDate: '2026-04-20', deliveryDate: '2026-04-30',
-    partyName: 'Tata Steel', contactPerson: 'Deepak Joshi', mobileNumber: '9876543333',
-    location: 'Por Unit', deliveryAddress: 'Tata Haldia', handledBy: 'System', remark: '',
-    stage: 'Ready', urgent: false, createdAt: '2026-04-20T11:00:00',
-    items: [
-      { id: '4a', cuttingType: 'Scrap', materialType: 'SS', materialGrade: 'SS 316', thickness: '12mm', plateSize: '1500 x 6000', drawingNumber: 'DRW-4001', partName: 'Stiffener', quantity: 8, completedQty: 8, dispatchedQty: 0, unitType: 'Set', rate: 1500, amount: 12000, scrapBelongsTo: 'Customer', specialInstructions: '', fileName: null },
-    ],
-  },
-  {
-    id: '5', orderNo: 'JP-0005', orderDate: today, deliveryDate: '2026-04-26',
-    partyName: 'BHEL', contactPerson: 'Suresh Kumar', mobileNumber: '9876544444',
-    location: 'Makarpura Unit', deliveryAddress: 'BHEL Haridwar', handledBy: 'System', remark: 'TC copy needed',
-    stage: 'Order Received', urgent: false, createdAt: new Date().toISOString(),
-    items: [
-      { id: '5a', cuttingType: 'CNC Profile', materialType: 'Alloy', materialGrade: 'SA 387 Gr 11', thickness: '25mm', plateSize: '2500 x 6000', drawingNumber: 'DRW-5001', partName: 'Saddle Plate', quantity: 4, completedQty: 0, dispatchedQty: 0, unitType: 'Job', rate: 8500, amount: 34000, scrapBelongsTo: 'Our Company', specialInstructions: 'Mill finish required', fileName: null },
-      { id: '5b', cuttingType: 'Circle', materialType: 'Alloy', materialGrade: 'SA 387 Gr 11', thickness: '25mm', plateSize: '2500 x 6000', drawingNumber: 'DRW-5002', partName: 'End Cap', quantity: 2, completedQty: 0, dispatchedQty: 0, unitType: 'Nos', rate: 4200, amount: 8400, scrapBelongsTo: 'Our Company', specialInstructions: '', fileName: null },
-    ],
-  },
-  {
-    id: '6', orderNo: 'JP-0006', orderDate: today, deliveryDate: '2026-04-24',
-    partyName: 'Larsen & Toubro', contactPerson: 'Rahul Mehta', mobileNumber: '9876543210',
-    location: 'Makarpura Unit', deliveryAddress: 'L&T Gate 4, Vadodara', handledBy: 'System', remark: '',
-    stage: 'Dispatch Done', urgent: false, createdAt: new Date().toISOString(),
-    items: [
-      { id: '6a', cuttingType: 'Plate', materialType: 'MS', materialGrade: 'IS 2062 E250', thickness: '16mm', plateSize: '1500 x 3000', drawingNumber: 'DRW-6001', partName: 'Gusset Plate', quantity: 200, completedQty: 200, dispatchedQty: 200, unitType: 'Kg', rate: 38, amount: 7600, scrapBelongsTo: 'Our Company', specialInstructions: '', fileName: null },
-    ],
-  },
-];
-
-const seedPlates: Plate[] = [
-  { id: 'PLT-1001', grade: 'IS 2062 E250', thickness: '10mm', size: '1250 x 2500', weight: 2500, heatNumber: 'TC-89234', source: 'Stock', initialWeight: 2500 },
-  { id: 'PLT-1002', grade: 'SS 304', thickness: '5mm', size: '1500 x 3000', weight: 1200, heatNumber: 'TC-89235', source: 'Customer', initialWeight: 1200 },
-  { id: 'PLT-1003', grade: 'SA 516 Gr 70', thickness: '20mm', size: '2000 x 6000', weight: 5600, heatNumber: 'TC-89236', source: 'Stock', initialWeight: 5600 },
-  { id: 'PLT-1004', grade: 'SS 316', thickness: '12mm', size: '1500 x 6000', weight: 3400, heatNumber: 'TC-89237', source: 'Customer', initialWeight: 3400 },
-];
-
-const seedUsages: Usage[] = [
-  { id: 'U1', plateId: 'PLT-1001', orderId: '1', orderNo: 'JP-0001', usedWeight: 1800, scrapQuantity: 150, scrapOwner: 'Our Company' },
-  { id: 'U2', plateId: 'PLT-1002', orderId: '2', orderNo: 'JP-0002', usedWeight: 600, scrapQuantity: 80, scrapOwner: 'Customer' },
-];
-
-const seedDispatches: DispatchRecord[] = [
-  { id: 'D1', orderId: '4', orderNo: 'JP-0004', partyName: 'Tata Steel', readyQty: 8, dispatchQty: 0, dispatchDate: '', vehicleNo: '', deliveryNote: '', pendingQty: 8, remark: '' },
-  { id: 'D2', orderId: '6', orderNo: 'JP-0006', partyName: 'Larsen & Toubro', readyQty: 200, dispatchQty: 200, dispatchDate: today, vehicleNo: 'GJ-06-AB-7890', deliveryNote: 'DN-5001', pendingQty: 0, remark: 'Full dispatch' },
-];
-
-const seedChallans: ChallanRecord[] = [
-  { id: 'C1', challanNo: 'CH-2026-001', challanDate: today, orderNo: 'JP-0006', partyName: 'Larsen & Toubro', taxableAmount: 7600, gstAmount: 1368, totalAmount: 8968, amountPaid: 0, balanceAmount: 8968, dueDate: '2026-05-21', status: 'Pending' },
-];
-
-const seedPurchaseOrders: PurchaseOrder[] = [
-  { 
-    id: 'PO1', 
-    poNumber: 'PO-JP-2026-001', 
-    supplierName: 'Steel India Ltd', 
-    date: '2026-04-20', 
-    status: 'Partial',
-    items: [
-      { id: 'item1', grade: 'IS 2062', thickness: '10mm', width: '1250', length: '2500', nos: 1, kg: 10, rate: 55000, amount: 550000 }
-    ],
-    totalKg: 10,
-    totalAmount: 550000
-  },
-];
-
-
-const seedPurchaseReceipts: PurchaseReceipt[] = [
-  { id: 'PR1', poId: 'PO1', receivedQty: 6, date: '2026-04-22', remark: 'First lot' },
-];
-
-const seedParties: PartyMaster[] = [
-  { id: '1', partyName: 'LARSEN & TOUBRO', contactPerson: 'RAHUL MEHTA', mobileNumber: '9876543210', location: 'Makarpura Unit', deliveryAddress: 'L&T GATE 4, VADODARA', paymentTerms: '30 DAYS' },
-  { id: '2', partyName: 'RELIANCE INDUSTRIES', contactPerson: 'AMIT PATEL', mobileNumber: '9876541111', location: 'Por Unit', deliveryAddress: 'RELIANCE JAMNAGAR', paymentTerms: '15 DAYS' },
-  { id: '3', partyName: 'ADANI POWER', contactPerson: 'VIJAY SHAH', mobileNumber: '9876542222', location: 'Makarpura Unit', deliveryAddress: 'ADANI MUNDRA', paymentTerms: '30 DAYS' },
-  { id: '4', partyName: 'TATA STEEL', contactPerson: 'DEEPAK JOSHI', mobileNumber: '9876543333', location: 'Por Unit', deliveryAddress: 'TATA HALDIA', paymentTerms: '45 DAYS' },
-  { id: '5', partyName: 'BHEL', contactPerson: 'SURESH KUMAR', mobileNumber: '9876544444', location: 'Makarpura Unit', deliveryAddress: 'BHEL HARIDWAR', paymentTerms: '30 DAYS' },
-];
+const seedOrders: Order[] = [];
+const seedPlates: Plate[] = [];
+const seedUsages: Usage[] = [];
+const seedDispatches: DispatchRecord[] = [];
+const seedChallans: ChallanRecord[] = [];
+const seedPurchaseOrders: PurchaseOrder[] = [];
+const seedPurchaseReceipts: PurchaseReceipt[] = [];
+const seedParties: PartyMaster[] = [];
 
 // ─── LocalStorage Helpers ─────────────────────────────────────
 
 const STORAGE_KEY = 'jagdamba_erp_data';
 const AUTH_KEY = 'jagdamba_erp_auth';
+const STORAGE_VERSION_KEY = 'jagdamba_erp_data_version';
+const CURRENT_VERSION = 'v3_empty_live';
 
 interface StoredData {
   orders: Order[];
@@ -566,6 +469,14 @@ function saveAuth(user: User | null) {
 function loadFromStorage(): StoredData | null {
   if (typeof window === 'undefined') return null;
   try {
+    const version = localStorage.getItem(STORAGE_VERSION_KEY);
+    if (version !== CURRENT_VERSION) {
+      localStorage.removeItem(STORAGE_KEY);
+      localStorage.removeItem(AUTH_KEY);
+      localStorage.removeItem('jagdamba_erp_token');
+      localStorage.setItem(STORAGE_VERSION_KEY, CURRENT_VERSION);
+      return null;
+    }
     const raw = localStorage.getItem(STORAGE_KEY);
     if (raw) return JSON.parse(raw);
   } catch { /* ignore */ }
