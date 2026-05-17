@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useApp } from '../context/AppContext';
 import { Lock, Eye, EyeOff } from 'lucide-react';
 
-const VALID_PASSWORD = 'steel123';
+const VALID_PASSWORDS = ['Mukesh@123', 'Dilip@123'];
 
 export default function Login() {
   const { dispatch } = useApp();
@@ -17,11 +17,11 @@ export default function Login() {
     e.preventDefault();
     setLoading(true);
     setTimeout(() => {
-      if (password === VALID_PASSWORD) {
+      if (VALID_PASSWORDS.includes(password)) {
         dispatch({ type: 'LOGIN' });
         navigate('/');
       } else {
-        setError('Incorrect password. Try: steel123');
+        setError('Incorrect password. Try: Mukesh@123 or Dilip@123');
         setLoading(false);
       }
     }, 600);
@@ -61,7 +61,7 @@ export default function Login() {
             {loading ? 'Signing in...' : 'Sign In →'}
           </button>
           <p style={{ textAlign: 'center', fontSize: 12, color: 'var(--text-muted)' }}>
-            Default password: <strong style={{ color: 'var(--gold)' }}>steel123</strong>
+            Default passwords: <strong style={{ color: 'var(--gold)' }}>Mukesh@123 / Dilip@123</strong>
           </p>
         </form>
       </div>
