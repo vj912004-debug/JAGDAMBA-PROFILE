@@ -441,7 +441,7 @@ export const Quotation: React.FC = () => {
                       <td className="p-3 w-20">
                         <input type="number" value={item.nos ?? ''} onChange={(e) => updateItem(item.id, 'nos', e.target.value)} className="w-full bg-transparent border-transparent focus:ring-0 text-sm font-medium" placeholder="1" />
                       </td>
-                      <td className="p-3 w-36">
+                      <td className="p-3 w-44">
                         {item.shape === 'Ring' ? (
                           <div className="flex flex-col gap-1.5">
                             <div className="flex items-center gap-1">
