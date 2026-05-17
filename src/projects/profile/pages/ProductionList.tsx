@@ -4,7 +4,7 @@ import { LayoutList, Search, CheckCircle2, Clock, User, ClipboardList, AlertCirc
 import { generateOrderEntryPDF, generateSalesOrderPDF } from '../utils/pdfGenerator';
 
 export const ProductionList: React.FC = () => {
-  const { t, orders, updateItemCompletedQty, role } = useAppContext();
+   const { t, orders, updateItemCompletedQty, updateItemWorker, role } = useAppContext();
   const [search, setSearch] = useState('');
   const [workerFilter, setWorkerFilter] = useState('All');
   const [statusFilter, setStatusFilter] = useState('All');
@@ -181,10 +181,25 @@ export const ProductionList: React.FC = () => {
                       </div>
                     </div>
                   </td>
-                  <td className="p-4">
+                  <td className="p-4" onClick={(e) => e.stopPropagation()}>
                     <div className="flex items-center gap-1.5">
-                      <User className="w-3 h-3 text-slate-400" />
-                      <span className="text-xs text-slate-600">{item.assignedWorker || 'Unassigned'}</span>
+                      <User className="w-3.5 h-3.5 text-slate-400" />
+                      {canEdit ? (
+                        <select
+                          value={item.assignedWorker || ''}
+                          onChange={(e) => updateItemWorker(orderId, item.id, e.target.value)}
+                          className="bg-slate-50 border border-slate-200 rounded-lg px-2 py-1 text-xs font-semibold text-slate-700 focus:ring-2 focus:ring-blue-500 outline-none"
+                        >
+                          <option value="">Unassigned</option>
+                          {EMPLOYEES.map(emp => (
+                            <option key={emp} value={emp}>{emp}</option>
+                          ))}
+                        </select>
+                      ) : (
+                        <span className="text-xs font-semibold text-slate-600">
+                          {item.assignedWorker || 'Unassigned'}
+                        </span>
+                      )}
                     </div>
                   </td>
                   <td className="p-4 text-center">
@@ -335,7 +350,22 @@ export const ProductionList: React.FC = () => {
                         </span>
                       </td>
                       <td className="p-3">
-                        <span className="text-xs text-slate-600">{item.assignedWorker || 'Unassigned'}</span>
+                        {canEdit ? (
+                          <select
+                            value={item.assignedWorker || ''}
+                            onChange={(e) => updateItemWorker(selectedOrder.id, item.id, e.target.value)}
+                            className="bg-slate-50 border border-slate-200 rounded-lg px-2 py-1 text-xs font-semibold text-slate-700 focus:ring-2 focus:ring-blue-500 outline-none"
+                          >
+                            <option value="">Unassigned</option>
+                            {EMPLOYEES.map(emp => (
+                              <option key={emp} value={emp}>{emp}</option>
+                            ))}
+                          </select>
+                        ) : (
+                          <span className="text-xs font-semibold text-slate-600">
+                            {item.assignedWorker || 'Unassigned'}
+                          </span>
+                        )}
                       </td>
                       <td className="p-3 text-center">
                         <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-wider

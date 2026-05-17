@@ -385,6 +385,7 @@ interface AppContextType {
   updateOrderStage: (id: string, stage: Stage) => Promise<void>;
   updateItemStatus: (orderId: string, itemId: string, status: 'Pending' | 'In Progress' | 'Completed') => Promise<void>;
   updateItemCompletedQty: (orderId: string, itemId: string, qty: number) => Promise<void>;
+  updateItemWorker: (orderId: string, itemId: string, workerName: string) => Promise<void>;
   dispatchItems: (orderId: string, itemDispatches: { itemId: string; qty: number }[], vehicleNo: string, remark: string) => Promise<void>;
 
   plates: Plate[];
@@ -1064,6 +1065,30 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     toast.success(`Completed quantity updated`);
   }, [orders, addLog]);
 
+  const updateItemWorker = useCallback(async (orderId: string, itemId: string, workerName: string) => {
+    const order = orders.find(o => o.id === orderId);
+    const item = order?.items.find(i => i.id === itemId);
+
+    setOrders(prev => prev.map(o => {
+      if (o.id === orderId) {
+        return {
+          ...o,
+          items: o.items.map(item => item.id === itemId ? { ...item, assignedWorker: workerName } : item)
+        };
+      }
+      return o;
+    }));
+
+    addLog({
+      action: 'Worker Assigned',
+      details: `Order ${order?.orderNo}: Assigned '${workerName}' to Item '${item?.partName || item?.drawingNumber}'`,
+      type: 'info',
+      orderNo: order?.orderNo
+    });
+
+    toast.success(`Worker assigned successfully`);
+  }, [orders, addLog]);
+
   const dispatchItems = useCallback(async (orderId: string, itemDispatches: { itemId: string; qty: number }[], vehicleNo: string, remark: string) => {
     const order = orders.find(o => o.id === orderId);
     if (!order) return;
@@ -1210,7 +1235,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       user, setUser, logout,
       role, language, setLanguage, branch, setBranch, t,
       theme, setTheme,
-      orders, setOrders, addOrder, updateOrderStage, updateItemStatus, updateItemCompletedQty, dispatchItems,
+      orders, setOrders, addOrder, updateOrderStage, updateItemStatus, updateItemCompletedQty, updateItemWorker, dispatchItems,
       plates, setPlates,
       usages, setUsages,
       dispatches, setDispatches,

@@ -419,7 +419,6 @@ export const OrderEntry: React.FC = () => {
                 <th className="p-2.5 text-[10px] font-bold tracking-wider text-slate-500 uppercase">Grade</th>
                 <th className="p-2.5 text-[10px] font-bold tracking-wider text-slate-500 uppercase">Thickness</th>
                 <th className="p-2.5 text-[10px] font-bold tracking-wider text-slate-500 uppercase">Dimensions</th>
-                <th className="p-2.5 text-[10px] font-bold tracking-wider text-slate-500 uppercase">Worker</th>
                 <th className="p-2.5 text-[10px] font-bold tracking-wider text-slate-500 uppercase">Drawing No</th>
                 <th className="p-2.5 text-[10px] font-bold tracking-wider text-slate-500 uppercase">Part Name</th>
                 <th className="p-2.5 text-[10px] font-bold tracking-wider text-slate-500 uppercase">Unit</th>
@@ -477,16 +476,6 @@ export const OrderEntry: React.FC = () => {
                     ) : (
                       <input type="text" value={line.plateSize} onChange={(e) => updateLine(line.id, 'plateSize', e.target.value)} placeholder="1250x2500" className="w-24 bg-white border border-slate-200 rounded-lg p-1.5 text-xs focus:ring-2 focus:ring-blue-500 outline-none" />
                     )}
-                  </td>
-                  <td className="p-1.5">
-                    <EditableSelect 
-                      value={line.assignedWorker || ''} 
-                      onChange={(v) => updateLine(line.id, 'assignedWorker', v)} 
-                      options={EMPLOYEES}
-                      placeholder="Worker"
-                      displayTransform={(e) => e.split(' ')[0]}
-                      className="w-20 bg-white border border-slate-200 rounded-lg p-1.5 text-xs focus:ring-2 focus:ring-blue-500 outline-none" 
-                    />
                   </td>
                   <td className="p-1.5">
                     <input type="text" value={line.drawingNumber} onChange={(e) => updateLine(line.id, 'drawingNumber', e.target.value)} placeholder="DRW-..." className="w-22 bg-white border border-slate-200 rounded-lg p-1.5 text-xs focus:ring-2 focus:ring-blue-500 outline-none" />
