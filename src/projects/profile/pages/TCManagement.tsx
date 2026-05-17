@@ -189,7 +189,7 @@ export const TCManagement: React.FC = () => {
 
     const loadingToast = toast.loading('Sending email...');
     try {
-      const response = await fetch('http://localhost:5000/api/mail/send-tc', {
+      const response = await fetch('/api/mail/send-tc', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -240,7 +240,7 @@ export const TCManagement: React.FC = () => {
 
     const loadingToast = toast.loading('Sending WhatsApp...');
     try {
-      const response = await fetch('http://localhost:5001/api/whatsapp/send-media', {
+      const response = await fetch('/api/whatsapp/send-media', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
