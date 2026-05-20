@@ -238,160 +238,310 @@ export const generateOrderEntryPDF = (order: Order) => {
   doc.save(`Order_${order.orderNo}.pdf`);
 };
 
-export const generateSalesOrderPDF = (order: Order) => {
-  const doc = new jsPDF();
-  const pageWidth = doc.internal.pageSize.width;
-  const pageHeight = doc.internal.pageSize.height;
+export const generateSalesOrderPDF = async (order: Order) => {
+  const sanitizeFilename = (name: string): string => {
+    return name.replace(/[\\/:*?"<>|]/g, '_').replace(/\s+/g, '_');
+  };
 
-  // Outer Border
-  doc.setDrawColor(0, 0, 0);
-  doc.setLineWidth(0.5);
-  doc.rect(5, 5, pageWidth - 10, pageHeight - 10);
+  const tempDiv = document.createElement('div');
+  tempDiv.style.position = 'absolute';
+  tempDiv.style.left = '-9999px';
+  tempDiv.style.top = '0';
+  tempDiv.style.width = '1000px';
+  tempDiv.style.background = '#ffffff';
 
-  // Header Section
-  doc.setFontSize(22);
-  doc.setFont('helvetica', 'bold');
-  doc.text('JAGDAMBA PROFILE', pageWidth / 2, 20, { align: 'center' });
-
-  doc.setFontSize(10);
-  doc.setFont('helvetica', 'normal');
-  doc.text('504/1/A, GIDC Makarpura, Vadodara - 390010', pageWidth / 2, 26, { align: 'center' });
-  doc.text('GST No: 24AJGPP9863R1Z5', pageWidth / 2, 31, { align: 'center' });
-
-  // Document Title Banner
-  doc.setFillColor(0, 0, 0);
-  doc.rect(pageWidth / 2 - 25, 35, 50, 8, 'F');
-  doc.setTextColor(255, 255, 255);
-  doc.setFontSize(14);
-  doc.setFont('helvetica', 'bold');
-  doc.text('SALES ORDER', pageWidth / 2, 41, { align: 'center' });
-  doc.setTextColor(0, 0, 0);
-
-  // Info Sections Borders
-  doc.setLineWidth(0.3);
-  doc.line(5, 48, pageWidth - 5, 48); // Top line
-  doc.line(pageWidth / 2, 48, pageWidth / 2, 95); // Middle divider
-  doc.line(5, 95, pageWidth - 5, 95); // Bottom line
-
-  doc.setFontSize(9);
-  let y = 55;
-  const leftX = 10;
-  const rightX = pageWidth / 2 + 5;
-
-  // Left Column (Party Details)
-  doc.text('Party Name:', leftX, y);
-  doc.setFont('helvetica', 'bold');
-  doc.text(order.partyName, leftX + 25, y);
-  doc.setFont('helvetica', 'normal');
-  y += 7;
-  doc.text('Address:', leftX, y);
-  doc.text(order.deliveryAddress || '-', leftX + 25, y, { maxWidth: 60 });
-  y += 12; // Adjusted from 14
-  doc.text('GST:', leftX, y);
-  y += 7;
-  doc.text('Email ID:', leftX, y);
-  y += 7;
-  doc.text('Mobile No:', leftX, y);
-  doc.text(order.mobileNumber || '-', leftX + 25, y);
-
-  // Right Column (Order Details)
-  y = 55;
-  doc.text('SO No:', rightX, y);
-  doc.setFont('helvetica', 'bold');
-  doc.text(order.orderNo, rightX + 25, y);
-  doc.setFont('helvetica', 'normal');
-  y += 7;
-  doc.text('SO Date:', rightX, y);
-  doc.text(order.orderDate, rightX + 25, y);
-  y += 7;
-  doc.text('PO No:', rightX, y);
-  y += 7;
-  doc.text('PO Date:', rightX, y);
-
-  // Delivery & Other Details
-  doc.setFont('helvetica', 'bold');
-  doc.text('DELIVERY & OTHER DETAILS', pageWidth / 2, 102, { align: 'center' });
-  doc.line(pageWidth / 2 - 30, 103, pageWidth / 2 + 30, 103);
-  
-  doc.setFont('helvetica', 'normal');
-  y = 108;
-  doc.text('Delivery Address:', leftX, y);
-  doc.text(`${order.partyName} - ${order.deliveryAddress}`, leftX + 35, y);
-  
-  y += 7;
-  doc.text('Burning Loss:', leftX, y);
-  doc.text('Loading & Unloading:', rightX, y);
-  doc.text(`Rs. ${(order.loadingUnloadingCharges || 0).toLocaleString()}`, rightX + 35, y);
-  
-  y += 7;
-  doc.text('Payment Term:', leftX, y);
-  doc.text(order.paymentTerms || '-', leftX + 25, y);
-  doc.text('Status:', rightX, y);
-  doc.text(order.stage, rightX + 25, y);
-  
-  y += 7;
-  doc.text('TC:', leftX, y);
-  doc.text('UT:', rightX, y);
-
-  y += 10;
-  doc.text('Note:', leftX, y);
-  doc.text(order.remark || '-', leftX + 15, y, { maxWidth: pageWidth - 30 });
-
-  // Items Table
-  const tableData = order.items.map((item, index) => [
-    index + 1,
-    item.partName || item.cuttingType,
-    item.materialGrade,
-    (item.thickness || '').replace(/mm/gi, '') + 'mm',
-    item.width || item.innerDiameter || '-',
-    item.length || item.outerDiameter || '-',
-    item.quantity,
-    '-',
-    (item.rate || 0).toLocaleString(),
-    (item.amount || 0).toLocaleString()
-  ]);
-
-  while (tableData.length < 12) {
-    tableData.push(['', '', '', '', '', '', '', '', '', '']);
-  }
-
-  autoTable(doc, {
-    startY: y + 5,
-    margin: { left: 5, right: 5 },
-    head: [['Sr', 'Item', 'Grade', 'Thk', 'Width', 'Length', 'Nos', 'Kg', 'Rate', 'Amount']],
-    body: tableData,
-    theme: 'grid',
-    headStyles: { fillColor: [240, 240, 240], textColor: [0, 0, 0], lineWidth: 0.1, lineColor: [0, 0, 0], halign: 'center' },
-    styles: { fontSize: 7, cellPadding: 2, lineWidth: 0.1, lineColor: [0, 0, 0], textColor: [0, 0, 0] },
-    columnStyles: {
-      0: { cellWidth: 8, halign: 'center' },
-      1: { cellWidth: 35, halign: 'left' },
-      6: { cellWidth: 10, halign: 'center' },
-      7: { cellWidth: 12, halign: 'center' },
-      9: { cellWidth: 20, halign: 'right' }
+  const styleStr = `
+    .order-container-dl {
+        width: 1000px;
+        margin: auto;
+        background: #fff;
+        border: 2px solid #000;
+        padding: 10px;
+        color: #000;
+        font-family: Arial, sans-serif;
+        box-sizing: border-box;
     }
-  });
 
-  const finalY = (doc as any).lastAutoTable.finalY;
+    .header-dl {
+        text-align: center;
+        border-bottom: 2px solid #000;
+        padding-bottom: 10px;
+    }
 
-  // Footer Totals
-  doc.setFont('helvetica', 'bold');
-  const totalItemsAmount = order.items.reduce((sum, item) => sum + (item.amount || 0), 0);
-  const totalAmount = totalItemsAmount + (order.transportationCharges || 0) + (order.loadingUnloadingCharges || 0);
-  doc.text('Total Amount:', pageWidth - 60, finalY + 8);
-  doc.text(`Rs. ${totalAmount.toLocaleString()}`, pageWidth - 10, finalY + 8, { align: 'right' });
+    .header-dl h1 {
+        font-size: 42px;
+        font-weight: bold;
+        margin: 0;
+        padding: 0;
+    }
 
-  // Signatures
-  const footerY = pageHeight - 20;
-  doc.line(10, footerY, 60, footerY);
-  doc.line(pageWidth / 2 - 25, footerY, pageWidth / 2 + 25, footerY);
-  doc.line(pageWidth - 60, footerY, pageWidth - 10, footerY);
-  
-  doc.text('Prepared By', 35, footerY + 5, { align: 'center' });
-  doc.text('Checked By', pageWidth / 2, footerY + 5, { align: 'center' });
-  doc.text('Authorized Sign', pageWidth - 35, footerY + 5, { align: 'center' });
+    .header-dl h3 {
+        margin-top: 5px;
+        font-size: 20px;
+        margin: 5px 0 0 0;
+        padding: 0;
+    }
 
-  doc.save(`SalesOrder_${order.orderNo}.pdf`);
+    .company-info-dl {
+        margin-top: 10px;
+        font-size: 14px;
+        border-top: 1px solid #000;
+        padding-top: 10px;
+    }
+
+    .gst-dl {
+        margin-top: 10px;
+        font-size: 14px;
+    }
+
+    .sales-title-dl {
+        text-align: center;
+        font-size: 36px;
+        font-weight: bold;
+        margin: 20px 0;
+        border: 2px solid #000;
+        padding: 10px;
+    }
+
+    .info-table-dl {
+        width: 100%;
+        border-collapse: collapse;
+        margin-bottom: 10px;
+    }
+
+    .info-table-dl td {
+        border: 1px solid #000;
+        padding: 12px;
+        height: 50px;
+        font-size: 14px;
+    }
+
+    .main-table-dl {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+    .main-table-dl th,
+    .main-table-dl td {
+        border: 1px solid #000;
+        padding: 10px;
+        text-align: center;
+        height: 45px;
+        font-size: 13px;
+    }
+
+    .main-table-dl th {
+        background: #eaeaea;
+        font-weight: bold;
+    }
+
+    .footer-table-dl {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 10px;
+    }
+
+    .footer-table-dl td {
+        border: 1px solid #000;
+        padding: 12px;
+        height: 55px;
+        font-size: 14px;
+    }
+
+    .signature-table-dl {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 10px;
+    }
+
+    .signature-table-dl td {
+        border: 1px solid #000;
+        padding: 20px;
+        text-align: center;
+        font-weight: bold;
+        height: 70px;
+        vertical-align: bottom;
+        font-size: 14px;
+    }
+  `;
+
+  const items = order.items || [];
+  const rows = Array.from({ length: 12 }).map((_, idx) => {
+    const item = items[idx];
+    if (item) {
+      return `
+        <tr>
+          <td>${idx + 1}</td>
+          <td style="text-align: left;">${item.partName || item.cuttingType}</td>
+          <td>${item.materialGrade || '-'}</td>
+          <td>${item.thickness || '-'}</td>
+          <td>${item.width || item.innerDiameter || '-'}</td>
+          <td>${item.length || item.outerDiameter || '-'}</td>
+          <td>${item.quantity || '0'}</td>
+          <td>${item.rate || '0'}</td>
+          <td>${item.unitType || 'Nos'}</td>
+        </tr>
+      `;
+    } else {
+      return `
+        <tr>
+          <td>${idx + 1}</td>
+          <td></td>
+          <td></td>
+          <td></td>
+          <td></td>
+          <td></td>
+          <td></td>
+          <td></td>
+          <td></td>
+        </tr>
+      `;
+    }
+  }).join('');
+
+  const tcVal = order.tc || 'No';
+  const utVal = order.ut || 'No';
+  const transportVal = (order.transportationCharges && order.transportationCharges > 0) ? 'YES' : 'NO';
+  const loadingVal = (order.loadingUnloadingCharges && order.loadingUnloadingCharges > 0) ? 'YES' : 'NO';
+
+  tempDiv.innerHTML = `
+    <style>${styleStr}</style>
+    <div class="order-container-dl">
+      <div class="header-dl">
+          <h1>JAGDAMBA PROFILE</h1>
+          <h3>MS & SS CNC Profile Cutting Works | Steel Traders</h3>
+
+          <div class="company-info-dl">
+              Address: Makarpura GIDC / Por GIDC, Vadodara |
+              Mobile: 9824917250 |
+              Email: jagdambaprofile@gmail.com
+          </div>
+
+          <div class="gst-dl">
+              GST No: 24AJGPP9863R1Z5
+          </div>
+      </div>
+
+      <div class="sales-title-dl">
+          SALES ORDER
+      </div>
+
+      <!-- Top Info -->
+      <table class="info-table-dl">
+          <tr>
+              <td style="width: 20%;"><b>Sales Order No</b></td>
+              <td style="width: 30%; font-weight: bold; color: #1e3a8a;">${order.orderNo}</td>
+              <td style="width: 20%;"><b>Date</b></td>
+              <td style="width: 30%;">${order.orderDate}</td>
+          </tr>
+
+          <tr>
+              <td><b>Party PO No</b></td>
+              <td>${order.customerPONo || ''}</td>
+              <td><b>PO Date</b></td>
+              <td>${order.customerPODate || ''}</td>
+          </tr>
+
+          <tr>
+              <td><b>Party Name</b></td>
+              <td style="font-weight: bold;">${order.partyName}</td>
+              <td><b>Contact Person</b></td>
+              <td>${order.contactPerson || ''}</td>
+          </tr>
+
+          <tr>
+              <td><b>Party Address</b></td>
+              <td>${order.deliveryAddress || ''}</td>
+              <td><b>GST No</b></td>
+              <td></td>
+          </tr>
+      </table>
+
+      <!-- Main Table -->
+      <table class="main-table-dl">
+          <thead>
+              <tr>
+                  <th>Sr</th>
+                  <th>Item</th>
+                  <th>Grade</th>
+                  <th>Thickness</th>
+                  <th>Width</th>
+                  <th>Length</th>
+                  <th>Nos</th>
+                  <th>Rate</th>
+                  <th>Rate Type</th>
+              </tr>
+          </thead>
+          <tbody>
+              ${rows}
+          </tbody>
+      </table>
+
+      <!-- Footer -->
+      <table class="footer-table-dl">
+          <tr>
+              <td style="width: 20%;"><b>Delivery Address</b></td>
+              <td style="width: 30%;">${order.partyName} - ${order.deliveryAddress || ''}</td>
+              <td style="width: 20%;"><b>Payment Terms</b></td>
+              <td style="width: 30%;">${order.paymentTerms || ''}</td>
+          </tr>
+
+          <tr>
+              <td><b>TC</b></td>
+              <td>${tcVal.toUpperCase()}</td>
+              <td><b>UT</b></td>
+              <td>${utVal.toUpperCase()}</td>
+          </tr>
+
+          <tr>
+              <td><b>Transport</b></td>
+              <td>${transportVal}</td>
+              <td><b>Loading</b></td>
+              <td>${loadingVal}</td>
+          </tr>
+
+          <tr>
+              <td><b>Remarks</b></td>
+              <td colspan="3">${order.remark || ''}</td>
+          </tr>
+      </table>
+
+      <!-- Signature -->
+      <table class="signature-table-dl">
+          <tr>
+              <td style="width: 33%;">Prepared By</td>
+              <td style="width: 33%;">Checked By</td>
+              <td style="width: 34%;">Authorized Signature</td>
+          </tr>
+      </table>
+    </div>
+  `;
+
+  document.body.appendChild(tempDiv);
+
+  try {
+    const canvas = await html2canvas(tempDiv, {
+      scale: 2.5,
+      useCORS: true,
+      logging: false,
+      backgroundColor: '#ffffff'
+    });
+
+    const imgData = canvas.toDataURL('image/png');
+    const pdf = new jsPDF('p', 'mm', 'a4');
+    const pdfWidth = pdf.internal.pageSize.getWidth();
+    
+    const margin = 5;
+    const width = pdfWidth - 2 * margin;
+    const height = (canvas.height * width) / canvas.width;
+
+    pdf.addImage(imgData, 'PNG', margin, margin, width, height);
+    pdf.save(`SalesOrder_${sanitizeFilename(order.orderNo)}.pdf`);
+  } catch (error) {
+    console.error('Error generating sales order PDF:', error);
+  } finally {
+    document.body.removeChild(tempDiv);
+  }
 };
 
 /**
