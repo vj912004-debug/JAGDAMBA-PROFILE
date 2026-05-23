@@ -6,9 +6,10 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import { PurchaseOrderPrint } from '../components/PurchaseOrderPrint';
 import { downloadPDF } from '../utils/pdfGenerator';
 import { EditableSelect } from '../components/EditableSelect';
+import { PartyAutocomplete } from '../components/PartyAutocomplete';
 
 export const PurchaseOrderEntry: React.FC = () => {
-  const { t, nextPONo, purchaseOrders, setPurchaseOrders, role } = useAppContext();
+  const { t, nextPONo, purchaseOrders, setPurchaseOrders, role, parties, addParty } = useAppContext();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const editId = searchParams.get('edit');
@@ -46,6 +47,16 @@ export const PurchaseOrderEntry: React.FC = () => {
   const [items, setItems] = useState<POItem[]>([
     { id: '1', grade: '', thickness: '', width: '', length: '', nos: 0, kg: 0, rate: 0, amount: 0, heatNo: '', actualWeight: 0 }
   ]);
+
+  const handleSelectParty = (party: any) => {
+    setSupplierName(party.partyName);
+    if (party.deliveryAddress) setSupplierAddress(party.deliveryAddress);
+    if (party.gstNumber) setSupplierGST(party.gstNumber);
+    if (party.email) setSupplierEmail(party.email);
+    if (party.mobileNumber) setSupplierMobile(party.mobileNumber);
+    if (party.paymentTerms) setPaymentTerms(party.paymentTerms);
+    toast.success('Details auto-filled from Party Master', { icon: '✨' });
+  };
 
   const [savedPO, setSavedPO] = useState<PurchaseOrder | null>(null);
   const [isDownloading, setIsDownloading] = useState(false);
@@ -121,6 +132,22 @@ export const PurchaseOrderEntry: React.FC = () => {
       totalAmount,
       status: editId ? (purchaseOrders.find(p => p.id === editId)?.status || 'Pending') : 'Pending'
     };
+
+    // Auto-save new party in Master if it doesn't exist
+    const partyNameUpper = supplierName.trim().toUpperCase();
+    const exactMatch = parties.find(p => p.partyName === partyNameUpper);
+    if (!exactMatch) {
+      addParty({
+        partyName: partyNameUpper,
+        contactPerson: '',
+        mobileNumber: supplierMobile.trim(),
+        location: location || '',
+        deliveryAddress: supplierAddress.trim().toUpperCase(),
+        paymentTerms: paymentTerms.trim().toUpperCase(),
+        gstNumber: supplierGST.trim().toUpperCase(),
+        email: supplierEmail.trim()
+      });
+    }
 
     if (editId) {
       setPurchaseOrders(prev => prev.map(po => po.id === editId ? newPO : po));
@@ -246,8 +273,18 @@ export const PurchaseOrderEntry: React.FC = () => {
             </h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="sm:col-span-2">
-                <label className="block text-[10px] font-bold text-slate-400 mb-1 uppercase tracking-wider">Party Name *</label>
-                <input type="text" value={supplierName} onChange={(e) => setSupplierName(e.target.value)} className="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-sm focus:bg-white focus:ring-2 focus:ring-blue-500 transition" placeholder="Enter supplier name" />
+                <label className="block text-[10px] font-bold text-slate-400 mb-1 uppercase tracking-wider flex items-center justify-between">
+                  <span>Party Name *</span>
+                  {supplierName && parties.some(p => p.partyName === supplierName) && (
+                    <span className="text-[10px] text-blue-500 font-bold normal-case tracking-normal">✨ Linked to Master</span>
+                  )}
+                </label>
+                <PartyAutocomplete 
+                  value={supplierName} 
+                  onChange={setSupplierName} 
+                  onSelectParty={handleSelectParty} 
+                  placeholder="Enter supplier name"
+                />
               </div>
               <div className="sm:col-span-2">
                 <label className="block text-[10px] font-bold text-slate-400 mb-1 uppercase tracking-wider">Address</label>
