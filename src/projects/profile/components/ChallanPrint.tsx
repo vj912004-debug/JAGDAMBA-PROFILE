@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useAppContext, type ChallanRecord, type Order } from '../store/AppContext';
+import { LOGO_BASE64 } from '../utils/logoBase64';
 
 interface ChallanPrintProps {
   challan: ChallanRecord;
@@ -371,7 +372,7 @@ export const ChallanPrint: React.FC<ChallanPrintProps> = ({ challan, order }) =>
             
             <div className="header-orig">
                 <div className="logo-container-orig">
-                    <img src="/logo.png" alt="Jagdamba Profile Logo" className="company-logo-orig" />
+                    <img src={LOGO_BASE64} alt="Jagdamba Profile Logo" className="company-logo-orig" />
                     <div className="logo-text-orig">Jagdamba Profile</div>
                 </div>
                 <div className="company-info-container-orig">
@@ -549,7 +550,7 @@ export const ChallanPrint: React.FC<ChallanPrintProps> = ({ challan, order }) =>
 
           <div className="header">
             <div className="logo-container">
-              <img src="/logo.png" alt="Shree Jagdamba Steel Profiles" style={{ width: '140px', height: 'auto' }} />
+              <img src={LOGO_BASE64} alt="Shree Jagdamba Steel Profiles" style={{ width: '140px', height: 'auto' }} />
             </div>
             <div className="header-text">
               <div className="company-title">SHREE JAGDAMBA STEEL PROFILES</div>
