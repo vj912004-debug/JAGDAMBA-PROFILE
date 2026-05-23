@@ -948,7 +948,7 @@ export const generateChallanPDF = async (
             </tr>
             <tr>
               <td style="width: 50%; border-right: 1px solid #000; padding: 6px;"><label style="font-weight:bold;margin-right:5px;">State:</label> ${party?.state || ''}</td>
-              <td style="width: 50%; border-left: 1px solid #000; padding: 6px;"><label style="font-weight:bold;margin-right:5px;">Vehicle No:</label> ${challan.vehicleNo}</td>
+              <td style="width: 50%; border-left: 1px solid #000; padding: 6px;"><label style="font-weight:bold;margin-right:5px;">Vehicle No:</label> ${vehicleNo}</td>
             </tr>
           </table>
 
