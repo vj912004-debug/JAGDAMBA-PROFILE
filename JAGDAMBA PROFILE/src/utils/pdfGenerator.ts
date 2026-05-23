@@ -108,9 +108,14 @@ export const generateChallanPDF = async (
   const tempDiv = document.createElement('div');
   tempDiv.style.width = '1000px';
   tempDiv.style.background = '#ffffff';
+  tempDiv.style.color = '#000000';
   hiddenWrapper.appendChild(tempDiv);
 
   const styleStr = `
+    .challan-container-dl, .challan-container-dl * {
+        color: #000000;
+        border-color: #000000;
+    }
     .challan-container-dl {
         width: 1000px;
         margin: auto;
@@ -213,7 +218,7 @@ export const generateChallanPDF = async (
     /* Dark Headers */
     .dark-header-dl {
         background-color: #2b2b2b;
-        color: white;
+        color: white !important;
         font-weight: bold;
         text-align: left;
         padding: 6px 8px;
@@ -595,8 +600,12 @@ export const generateChallanPDF = async (
     `).join('');
 
     return `
-      <style>${origStyleStr}</style>
-      <div class="challan-container-orig" style="position: relative;">
+      <style>
+        .challan-container-orig, .challan-container-orig * { color: #000000; border-color: #000000; }
+        .dark-header-orig, .dark-header-orig * { color: #ffffff !important; }
+        ${origStyleStr}
+      </style>
+      <div class="challan-container-orig" style="position: relative; color: #000;">
         <div class="copy-stamp-orig">${copyLabel} COPY</div>
         <div class="inner-border-orig">
             
@@ -748,7 +757,7 @@ export const generateChallanPDF = async (
   // Separate template for Duplicate copy — matches user-specified "SHREE JAGDAMBA STEEL PROFILES" design
   const buildChallanDuplicateHtml = () => {
     const duplicateStyleStr = `
-      .challan-container-dup, .challan-container-dup * { box-sizing: border-box; margin: 0; padding: 0; font-family: Arial, sans-serif; }
+      .challan-container-dup, .challan-container-dup * { box-sizing: border-box; margin: 0; padding: 0; font-family: Arial, sans-serif; color: #000000; border-color: #000000; }
       .challan-container-dup {
         width: 1000px;
         background-color: white;
@@ -807,7 +816,7 @@ export const generateChallanPDF = async (
       }
       .section-header-dup {
         background-color: #000;
-        color: #fff;
+        color: #fff !important;
         font-size: 12px;
         font-weight: bold;
         padding: 6px 10px;
