@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useAppContext, type ChallanRecord, type Order } from '../store/AppContext';
-import { ScrollText, Plus, X, CheckCircle, Clock, Download, Eye } from 'lucide-react';
+import { ScrollText, Plus, X, CheckCircle, Clock, Download, Eye, Trash2 } from 'lucide-react';
 import { generateChallanPDF, downloadPDF } from '../utils/pdfGenerator';
 import toast from 'react-hot-toast';
 import { ChallanPrint } from '../components/ChallanPrint';
@@ -54,6 +54,13 @@ export const ChallanPage: React.FC = () => {
     toast.success('Status updated');
   };
 
+  const handleDelete = (id: string) => {
+    if (!canEdit) { toast.error('Only Admin or Accounts can delete challans'); return; }
+    if (window.confirm('Are you sure you want to delete this challan?')) {
+      setChallans(prev => prev.filter(c => c.id !== id));
+      toast.success('Challan deleted');
+    }
+  };
 
   const totalPending = challans.reduce((sum, c) => sum + (c.balanceAmount ?? 0), 0);
 
@@ -208,6 +215,15 @@ export const ChallanPage: React.FC = () => {
                       >
                         <Download className="w-4 h-4" />
                       </button>
+                      {canEdit && (
+                        <button
+                          onClick={() => handleDelete(item.id)}
+                          className="p-1.5 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                          title="Delete Challan"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      )}
                     </div>
                   </td>
                 </tr>
