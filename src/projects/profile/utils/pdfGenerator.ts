@@ -929,7 +929,7 @@ export const generateChallanPDF = async (
             </div>
           </div>
 
-          <div class="document-title-dup">DELIVERY CHALLAN &nbsp;&nbsp;|&nbsp;&nbsp; <span style="color:#f26522;">DUPLICATE COPY</span></div>
+          <div class="document-title-dup">DELIVERY CHALLAN</div>
 
           <table style="width: 100%; border-collapse: collapse; border-bottom: 1px solid #000; text-align: left;">
             <tr>
