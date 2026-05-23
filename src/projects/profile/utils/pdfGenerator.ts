@@ -1057,16 +1057,34 @@ export const generateChallanPDF = async (
     `;
   };
 
-  document.body.appendChild(hiddenWrapper);
+  const hiddenIframe = document.createElement('iframe');
+  hiddenIframe.style.position = 'absolute';
+  hiddenIframe.style.left = '-9999px';
+  hiddenIframe.style.top = '0px';
+  hiddenIframe.style.width = '1000px';
+  hiddenIframe.style.height = '1500px';
+  hiddenIframe.style.border = 'none';
+  document.body.appendChild(hiddenIframe);
 
   try {
+    const iframeDoc = hiddenIframe.contentWindow?.document;
+    if (!iframeDoc) throw new Error("Could not access iframe document");
+
     const pdfWidth = new jsPDF('p', 'mm', 'a4').internal.pageSize.getWidth();
     const margin = 5;
     const width = pdfWidth - 2 * margin;
 
     // --- Download 1: Original ---
-    tempDiv.innerHTML = buildChallanHtml('Original');
-    const canvasOriginal = await html2canvas(tempDiv, {
+    iframeDoc.open();
+    iframeDoc.write('<html><head><style>body { margin: 0; padding: 0; background: white; }</style></head><body><div id="pdf-content-original">' + buildChallanHtml('Original') + '</div></body></html>');
+    iframeDoc.close();
+    
+    await new Promise(r => setTimeout(r, 100)); // allow DOM to settle
+
+    const targetElementOriginal = iframeDoc.getElementById('pdf-content-original');
+    if (!targetElementOriginal) throw new Error("Could not find original content");
+
+    const canvasOriginal = await html2canvas(targetElementOriginal, {
       scale: 2.5,
       useCORS: true,
       logging: false,
@@ -1081,9 +1099,17 @@ export const generateChallanPDF = async (
     // Small delay so the browser doesn't block the second download
     await new Promise(resolve => setTimeout(resolve, 500));
 
-    // --- Download 2: Duplicate (new Shree Jagdamba Steel Profiles design) ---
-    tempDiv.innerHTML = buildChallanDuplicateHtml();
-    const canvasDuplicate = await html2canvas(tempDiv, {
+    // --- Download 2: Duplicate ---
+    iframeDoc.open();
+    iframeDoc.write('<html><head><style>body { margin: 0; padding: 0; background: white; }</style></head><body><div id="pdf-content-duplicate">' + buildChallanDuplicateHtml() + '</div></body></html>');
+    iframeDoc.close();
+
+    await new Promise(r => setTimeout(r, 100)); // allow DOM to settle
+
+    const targetElementDuplicate = iframeDoc.getElementById('pdf-content-duplicate');
+    if (!targetElementDuplicate) throw new Error("Could not find duplicate content");
+
+    const canvasDuplicate = await html2canvas(targetElementDuplicate, {
       scale: 2.5,
       useCORS: true,
       logging: false,
@@ -1094,11 +1120,12 @@ export const generateChallanPDF = async (
     const heightDuplicate = (canvasDuplicate.height * width) / canvasDuplicate.width;
     pdfDuplicate.addImage(imgDuplicate, 'PNG', margin, margin, width, heightDuplicate);
     pdfDuplicate.save(`Challan_${sanitizeFilename(challan.challanNo)}_Duplicate.pdf`);
+
   } catch (error) {
     console.error('Error generating challan PDF:', error);
     alert('PDF Generation Error: ' + (error as Error).message + '\n\n' + (error as Error).stack);
   } finally {
-    document.body.removeChild(hiddenWrapper);
+    document.body.removeChild(hiddenIframe);
   }
 };
 
