@@ -1,3 +1,4 @@
+import { LOGO2_BASE64 } from './logo2Base64';
 import { LOGO_BASE64 } from './logoBase64';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
@@ -913,7 +914,7 @@ export const generateChallanPDF = async (
 
           <div class="header-dup">
             <div class="logo-container-dup">
-              <img src="${LOGO_BASE64}" alt="Shree Jagdamba Steel Profiles" style="width: 140px; height: auto;" />
+              <img src="${LOGO2_BASE64}" alt="Shree Jagdamba Steel Profiles" style="width: 140px; height: auto;" />
             </div>
             <div class="header-text-dup">
               <div class="company-title-dup">SHREE JAGDAMBA STEEL PROFILES</div>
