@@ -356,7 +356,7 @@ export const generateChallanPDF = async (
 
             <div class="header-container-dl">
                 <div class="logo-area-dl">
-                    <img src="/logo.jpg" alt="Jagdamba Profile Logo" class="company-logo-dl" onerror="this.style.display='none'; if (this.nextElementSibling) this.nextElementSibling.style.display='block';" />
+                    <img src="/logo.png" alt="Jagdamba Profile Logo" class="company-logo-dl" onerror="this.style.display='none'; if (this.nextElementSibling) this.nextElementSibling.style.display='block';" />
                     <svg width="55" height="55" viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg" style="display: none; margin: 0 auto;">
                       <defs>
                         <radialGradient id="redSpherePDF" cx="35%" cy="35%" r="65%">

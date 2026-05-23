@@ -348,6 +348,186 @@ export const generateChallanPDF = async (
     }
   `;
 
+  tempDiv.innerHTML = `
+    <style>${styleStr}</style>
+    <div class="challan-container-dl">
+      <div class="border-outer-dl">
+        <div class="border-inner-dl">
+
+            <div class="header-container-dl">
+                <div class="logo-area-dl">
+                    <img src="/logo.png" alt="Jagdamba Profile Logo" class="company-logo-dl" onerror="this.style.display='none'; if (this.nextElementSibling) this.nextElementSibling.style.display='block';" />
+                    <svg width="55" height="55" viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg" style="display: none; margin: 0 auto;">
+                      <defs>
+                        <radialGradient id="redSpherePDF" cx="35%" cy="35%" r="65%">
+                          <stop offset="0%" stop-color="#ff8888" />
+                          <stop offset="40%" stop-color="#ff0000" />
+                          <stop offset="100%" stop-color="#aa0000" />
+                        </radialGradient>
+                        <radialGradient id="blueGlowPDF" cx="35%" cy="35%" r="65%">
+                          <stop offset="0%" stop-color="#3b82f6" />
+                          <stop offset="100%" stop-color="#1d4ed8" />
+                        </radialGradient>
+                      </defs>
+                      <path d="M30 40 C30 20, 80 15, 80 50 C80 85, 45 95, 30 75 L30 105" fill="none" stroke="url(#blueGlowPDF)" stroke-width="16" stroke-linecap="round" stroke-linejoin="round" />
+                      <circle cx="30" cy="30" r="16" fill="url(#redSpherePDF)" />
+                    </svg>
+                </div>
+                <div class="company-title-dl">Jagdamba Profile</div>
+                <div style="width: 80px;"></div>
+            </div>
+
+            <div class="contact-info-bar-dl">
+                <div>504/1A, GIDC Makarpura, Vadodara -390010.</div>
+                <div>GST No: 24AJGPP9863R1Z5</div>
+                <div class="contact-row-flex-dl">
+                    <div>Mo: 8799617251, 8799617252, 8799617254, 9824025001</div>
+                    <div>Email: jagdambaprofile@gmail.com</div>
+                </div>
+            </div>
+
+            <div class="document-title-dl">DELIVERY CHALLAN</div>
+
+            <table class="flush-table-dl details-table-dl">
+              <tbody>
+                <tr>
+                    <th class="dark-header-dl" style="border-right: 1px solid white;">PARTY DETAILS</th>
+                    <th class="dark-header-dl">CHALLAN / ORDER DETAILS</th>
+                </tr>
+                <tr>
+                    <td>Party Name: <strong style="margin-left: 4px;">${challan.partyName}</strong></td>
+                    <td>Challan No: <strong style="margin-left: 4px; color: #1e3a8a;">${challan.challanNo}</strong></td>
+                </tr>
+                <tr>
+                    <td rowspan="2">Address: <span style="margin-left: 4px;">${party?.deliveryAddress || order?.deliveryAddress || ''}</span></td>
+                    <td>Challan Date: <span style="margin-left: 4px;">${challan.challanDate}</span></td>
+                </tr>
+                <tr>
+                    <td>PO No: <span style="margin-left: 4px;">${order?.orderNo || ''}</span></td>
+                </tr>
+                <tr>
+                    <td>GST Number: <span style="margin-left: 4px;">${party?.gstNumber || order?.gstType || ''}</span></td>
+                    <td>PO Date: <span style="margin-left: 4px;">${order?.orderDate || ''}</span></td>
+                </tr>
+                <tr>
+                    <td>Mobile Number: <span style="margin-left: 4px;">${party?.mobileNumber || order?.mobileNumber || ''}</span></td>
+                    <td rowspan="2">Order Page Number: <span style="margin-left: 4px;">1 of 1</span></td>
+                </tr>
+                <tr>
+                    <td>Email ID : <span style="margin-left: 4px;">${party?.email || ''}</span></td>
+                </tr>
+              </tbody>
+            </table>
+
+            <table class="flush-table-dl vehicle-table-dl" style="border-top: 1px solid black;">
+              <tbody>
+                <tr>
+                    <th colspan="3" class="dark-header-dl center">VEHICLE TRANSPORT DETAILS</th>
+                </tr>
+                <tr>
+                    <td>Vehicle Number: <strong style="margin-left: 4px;">${vehicleNo}</strong></td>
+                    <td>Driver Mobile No: <span style="margin-left: 4px;">${driverMobile}</span></td>
+                    <td>Payment Terms : <span style="margin-left: 4px;">${order?.paymentTerms || ''}</span></td>
+                </tr>
+              </tbody>
+            </table>
+
+            <table class="flush-table-dl items-table-dl">
+                <thead>
+                    <tr>
+                        <th class="dark-header-dl center">Sr No</th>
+                        <th class="dark-header-dl center">Item</th>
+                        <th class="dark-header-dl center">Grade</th>
+                        <th class="dark-header-dl center">Thickness</th>
+                        <th class="dark-header-dl center">Width</th>
+                        <th class="dark-header-dl center">Length</th>
+                        <th class="dark-header-dl center">Nos</th>
+                        <th class="dark-header-dl center">Kg</th>
+                        <th class="dark-header-dl center">Rate</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    ${rowsHtml}
+                    ${emptyRowsHtml}
+                    <tr class="total-row-dl">
+                        <td colspan="6" style="text-align: center; font-weight: bold;">Total</td>
+                        <td style="font-weight: bold; text-align: center;">${totalNos > 0 ? totalNos : ''}</td>
+                        <td style="font-weight: bold; text-align: center;">${totalKg > 0 ? totalKg.toLocaleString('en-IN') : ''}</td>
+                        <td></td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <div class="dark-header-dl" style="border-top: 1px solid black; border-bottom: 1px solid black;">
+                COMMERCIAL / QUALITY DETAILS
+            </div>
+            
+            <div class="commercial-container-dl">
+                <div class="commercial-left-dl">
+                    <div class="commercial-cell-dl border-bot-dl" style="min-height: 40px;">
+                      Delivery Address : <span style="font-weight: bold; margin-left: 6px;">${order?.deliveryAddress || party?.deliveryAddress || ''}</span>
+                    </div>
+                    <div class="commercial-cell-dl" style="min-height: 40px; display: flex; align-items: flex-end;">
+                      TC : &nbsp;<strong style="border-bottom: 1px solid black; min-width: 150px; display: inline-block; text-align: center;">${tcVal}</strong>
+                      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                      UT : &nbsp;<strong style="border-bottom: 1px solid black; min-width: 150px; display: inline-block; text-align: center;">${utVal}</strong>
+                    </div>
+                </div>
+                <div class="commercial-right-dl">
+                    <div class="commercial-cell-dl border-bot-dl">
+                      Loading Charge: &nbsp;<strong style="border-bottom: 1px solid black; min-width: 130px; display: inline-block; text-align: center;">${loadingVal}</strong>
+                    </div>
+                    <div class="commercial-cell-dl border-bot-dl">
+                      Transport Charge: &nbsp;<strong style="border-bottom: 1px solid black; min-width: 120px; display: inline-block; text-align: center;">${transportVal}</strong>
+                    </div>
+                    <div class="commercial-cell-dl" style="flex-grow: 1;"></div>
+                </div>
+            </div>
+
+            <div class="dark-header-dl" style="border-bottom: 1px solid black;">
+                GENERAL TERMS AND CONDITIONS
+            </div>
+            <div class="terms-section-dl">
+                <div class="terms-row-dl">
+                    <span>1. Material should be supplied strictly as per challan details.</span>
+                    <span>2. Final weight / quantity will be considered as mutually agreed.</span>
+                </div>
+                <div class="terms-row-dl">
+                    <span>3. Loading and transport charges as mentioned above.</span>
+                    <span>4. Please verify material at the time of delivery.</span>
+                </div>
+            </div>
+
+            <div class="signature-wrapper-dl">
+                <table class="signature-table-fixed-dl">
+                  <tbody>
+                    <tr>
+                        <td>
+                            <div class="sig-content-dl">
+                                <span class="sig-title-dl">Receiver's Signature</span>
+                            </div>
+                        </td>
+                        <td>
+                            <div class="sig-content-dl">
+                                <span class="sig-title-dl">Dispatch</span>
+                            </div>
+                        </td>
+                        <td>
+                            <div class="sig-content-dl">
+                                <span class="sig-title-dl">For</span>
+                                <span class="sig-company-dl">For Jagdamba Profile</span>
+                            </div>
+                        </td>
+                    </tr>
+                  </tbody>
+                </table>
+            </div>
+
+        </div>
+      </div>
+    </div>
+  `;
+
   // Helper to build the challan HTML with a given copy label (e.g., "Original" or "Duplicate")
   const buildChallanHtml = (copyLabel: string) => {
     const origStyleStr = `
@@ -569,39 +749,150 @@ export const generateChallanPDF = async (
   const buildChallanDuplicateHtml = () => {
     const duplicateStyleStr = `
       .challan-container-dup, .challan-container-dup * { box-sizing: border-box; margin: 0; padding: 0; font-family: Arial, sans-serif; }
-      .challan-container-dup { width: 1000px; background-color: white; border: 2px solid #000; padding: 4px; margin: auto; }
-      .inner-border-dup { border: 1px solid #000; display: flex; flex-direction: column; }
-      .header-dup { display: flex; align-items: center; padding: 15px; border-bottom: 1px solid #000; }
-      .logo-container-dup { display: flex; flex-direction: column; align-items: center; margin-right: 20px; min-width: 80px; }
-      .logo-mark-dup { font-size: 60px; color: #f26522; font-weight: bold; line-height: 1; text-align: center; }
-      .logo-text-small-dup { font-size: 9px; text-align: center; font-weight: bold; color: #333; }
+      .challan-container-dup {
+        width: 1000px;
+        background-color: white;
+        border: 2px solid #000;
+        padding: 4px;
+        margin: auto;
+      }
+      .inner-border-dup {
+        border: 1px solid #000;
+        display: flex;
+        flex-direction: column;
+      }
+      .header-dup {
+        display: flex;
+        align-items: center;
+        padding: 15px;
+        border-bottom: 1px solid #000;
+      }
+      .logo-container-dup {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        margin-right: 20px;
+        min-width: 80px;
+      }
+      .logo-mark-dup {
+        font-size: 60px;
+        color: #f26522;
+        font-weight: bold;
+        line-height: 1;
+        text-align: center;
+      }
+      .logo-text-small-dup {
+        font-size: 9px;
+        text-align: center;
+        font-weight: bold;
+        color: #333;
+      }
       .header-text-dup { flex-grow: 1; }
-      .company-title-dup { color: #f26522; font-size: 32px; font-weight: bold; margin-bottom: 10px; text-transform: uppercase; }
+      .company-title-dup {
+        color: #f26522;
+        font-size: 32px;
+        font-weight: bold;
+        margin-bottom: 10px;
+        text-transform: uppercase;
+      }
       .company-details-dup { font-size: 12px; line-height: 1.5; }
       .contact-row-dup { display: flex; justify-content: space-between; }
-      .document-title-dup { text-align: center; font-size: 16px; font-weight: bold; padding: 8px; border-bottom: 1px solid #000; background-color: #f9f9f9; }
-      .section-header-dup { background-color: #000; color: #fff; font-size: 12px; font-weight: bold; padding: 6px 10px; border-bottom: 1px solid #000; }
-      .grid-2-col-dup { display: grid; grid-template-columns: 1fr 1fr; }
-      .grid-cell-dup { border-bottom: 1px solid #000; border-right: 1px solid #000; padding: 8px 10px; font-size: 12px; min-height: 35px; display: flex; align-items: center; }
+      .document-title-dup {
+        text-align: center;
+        font-size: 16px;
+        font-weight: bold;
+        padding: 8px;
+        border-bottom: 1px solid #000;
+        background-color: #f9f9f9;
+      }
+      .section-header-dup {
+        background-color: #000;
+        color: #fff;
+        font-size: 12px;
+        font-weight: bold;
+        padding: 6px 10px;
+        border-bottom: 1px solid #000;
+      }
+      .grid-2-col-dup {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+      }
+      .grid-cell-dup {
+        border-bottom: 1px solid #000;
+        border-right: 1px solid #000;
+        padding: 8px 10px;
+        font-size: 12px;
+        min-height: 35px;
+        display: flex;
+        align-items: center;
+      }
       .grid-cell-dup.no-right { border-right: none; }
       .grid-cell-dup label { font-weight: bold; margin-right: 8px; white-space: nowrap; }
       .grid-cell-dup .val { flex-grow: 1; }
-      .transport-grid-dup { display: grid; grid-template-columns: 1fr 1fr 1fr; border-bottom: 1px solid #000; }
-      .items-table-dup { width: 100%; border-collapse: collapse; }
-      .items-table-dup th, .items-table-dup td { border: 1px solid #000; padding: 6px; text-align: center; font-size: 12px; }
-      .items-table-dup th { background-color: #000; color: #fff; font-weight: bold; border-top: none; }
+      .transport-grid-dup {
+        display: grid;
+        grid-template-columns: 1fr 1fr 1fr;
+        border-bottom: 1px solid #000;
+      }
+      .items-table-dup {
+        width: 100%;
+        border-collapse: collapse;
+      }
+      .items-table-dup th, .items-table-dup td {
+        border: 1px solid #000;
+        padding: 6px;
+        text-align: center;
+        font-size: 12px;
+      }
+      .items-table-dup th {
+        background-color: #000;
+        color: #fff;
+        font-weight: bold;
+        border-top: none;
+      }
       .items-table-dup tr.empty-row-dup td { height: 25px; }
       .items-table-dup th:first-child, .items-table-dup td:first-child { border-left: none; }
       .items-table-dup th:last-child, .items-table-dup td:last-child { border-right: none; }
       .total-row-dup td { font-weight: bold; }
-      .commercial-grid-dup { display: grid; grid-template-columns: 1fr 1fr; border-bottom: 1px solid #000; }
-      .terms-content-dup { padding: 10px 15px; font-size: 11px; border-bottom: 1px solid #000; }
-      .terms-list-dup { list-style-type: none; display: flex; flex-wrap: wrap; gap: 6px 20px; }
-      .signatures-section-dup { display: grid; grid-template-columns: 1fr 1fr 1.5fr; min-height: 90px; }
-      .signature-box-dup { padding: 10px; font-size: 12px; font-weight: bold; border-right: 1px solid #000; display: flex; flex-direction: column; justify-content: space-between; }
+      .commercial-grid-dup {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        border-bottom: 1px solid #000;
+      }
+      .terms-content-dup {
+        padding: 10px 15px;
+        font-size: 11px;
+        border-bottom: 1px solid #000;
+      }
+      .terms-list-dup {
+        list-style-type: none;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px 20px;
+      }
+      .signatures-section-dup {
+        display: grid;
+        grid-template-columns: 1fr 1fr 1.5fr;
+        min-height: 90px;
+      }
+      .signature-box-dup {
+        padding: 10px;
+        font-size: 12px;
+        font-weight: bold;
+        border-right: 1px solid #000;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+      }
       .signature-box-dup:last-child { border-right: none; align-items: flex-end; }
       .sig-label-bottom-dup { align-self: flex-end; width: 100%; text-align: right; }
-      .underline-input-dup { flex-grow: 1; border-bottom: 1px solid #000; height: 15px; margin-left: 5px; min-width: 50px; }
+      .underline-input-dup {
+        flex-grow: 1;
+        border-bottom: 1px solid #000;
+        height: 15px;
+        margin-left: 5px;
+        min-width: 50px;
+      }
     `;
 
     const rowsHtmlDup = items.map((item, index) => `
@@ -630,6 +921,7 @@ export const generateChallanPDF = async (
       <style>${duplicateStyleStr}</style>
       <div class="challan-container-dup">
         <div class="inner-border-dup">
+
           <div class="header-dup">
             <div class="logo-container-dup">
               <img src="/logo.png" alt="Shree Jagdamba Steel Profiles" style="width: 140px; height: auto;" />
@@ -646,36 +938,49 @@ export const generateChallanPDF = async (
               </div>
             </div>
           </div>
+
           <div class="document-title-dup">DELIVERY CHALLAN &nbsp;&nbsp;|&nbsp;&nbsp; <span style="color:#f26522;">DUPLICATE COPY</span></div>
+
           <div style="display: flex;">
             <div class="section-header-dup" style="flex: 1; border-right: 1px solid #fff;">PARTY DETAILS</div>
             <div class="section-header-dup" style="flex: 1;">CHALLAN / ORDER DETAILS</div>
           </div>
           <div class="grid-2-col-dup">
+
             <div class="grid-cell-dup"><label>Party Name:</label><span class="val">${challan.partyName}</span></div>
             <div class="grid-cell-dup no-right"><label>Challan No:</label><span class="val" style="color:#1e3a8a; font-weight:bold;">${challan.challanNo}</span></div>
+
             <div class="grid-cell-dup" style="align-items: flex-start; padding-top: 8px;"><label>Address:</label><span class="val">${party?.deliveryAddress || order?.deliveryAddress || ''}</span></div>
             <div class="grid-cell-dup no-right"><label>Challan Date:</label><span class="val">${challan.challanDate}</span></div>
+
             <div class="grid-cell-dup"><label>GST Number:</label><span class="val">${party?.gstNumber || order?.gstType || ''}</span></div>
             <div class="grid-cell-dup no-right"><label>PO No:</label><span class="val">${order?.orderNo || ''}</span></div>
+
             <div class="grid-cell-dup"><label>Mobile Number:</label><span class="val">${party?.mobileNumber || order?.mobileNumber || ''}</span></div>
             <div class="grid-cell-dup no-right"><label>PO Date:</label><span class="val">${order?.orderDate || ''}</span></div>
+
             <div class="grid-cell-dup"><label>Email ID :</label><span class="val">${party?.email || ''}</span></div>
             <div class="grid-cell-dup no-right"><label>Order Page Number:</label><span class="val">1 of 1</span></div>
           </div>
+
           <div class="section-header-dup" style="text-align: center;">VEHICLE TRANSPORT DETAILS</div>
           <div class="transport-grid-dup">
             <div class="grid-cell-dup" style="border-bottom: none;"><label>Vehicle Number:</label><span class="val">${vehicleNo}</span></div>
             <div class="grid-cell-dup" style="border-bottom: none;"><label>Driver Mobile No:</label><span class="val">${driverMobile}</span></div>
             <div class="grid-cell-dup no-right" style="border-bottom: none;"><label>Payment Terms :</label><span class="val">${order?.paymentTerms || ''}</span></div>
           </div>
+
           <table class="items-table-dup">
             <thead>
               <tr>
-                <th style="width:5%;">Sr No</th><th style="width:25%;">Item</th>
-                <th style="width:10%;">Grade</th><th style="width:10%;">Thickness</th>
-                <th style="width:10%;">Width</th><th style="width:10%;">Length</th>
-                <th style="width:10%;">Nos</th><th style="width:10%;">Kg</th>
+                <th style="width:5%;">Sr No</th>
+                <th style="width:25%;">Item</th>
+                <th style="width:10%;">Grade</th>
+                <th style="width:10%;">Thickness</th>
+                <th style="width:10%;">Width</th>
+                <th style="width:10%;">Length</th>
+                <th style="width:10%;">Nos</th>
+                <th style="width:10%;">Kg</th>
                 <th style="width:10%;">Rate</th>
               </tr>
             </thead>
@@ -690,6 +995,7 @@ export const generateChallanPDF = async (
               </tr>
             </tbody>
           </table>
+
           <div class="section-header-dup" style="border-top: 1px solid #000;">COMMERCIAL / QUALITY DETAILS</div>
           <div class="commercial-grid-dup">
             <div class="grid-cell-dup" style="grid-row: span 2; align-items: flex-start; padding-top: 10px;">
@@ -713,6 +1019,7 @@ export const generateChallanPDF = async (
               <div style="flex-grow: 1; border-bottom: 1px solid #000; margin-left: 5px; padding-bottom: 2px;">${utVal}</div>
             </div>
           </div>
+
           <div class="section-header-dup">GENERAL TERMS AND CONDITIONS</div>
           <div class="terms-content-dup">
             <ul class="terms-list-dup">
@@ -722,14 +1029,20 @@ export const generateChallanPDF = async (
               <li>4. Please verify material at the time of delivery.</li>
             </ul>
           </div>
+
           <div class="signatures-section-dup">
-            <div class="signature-box-dup"><span>Receiver's Signature</span></div>
-            <div class="signature-box-dup"><span>Dispatch</span></div>
+            <div class="signature-box-dup">
+              <span>Receiver's Signature</span>
+            </div>
+            <div class="signature-box-dup">
+              <span>Dispatch</span>
+            </div>
             <div class="signature-box-dup">
               <span style="align-self: flex-start;">For</span>
               <span class="sig-label-bottom-dup">For Shree Jagdamba Steel Profiles</span>
             </div>
           </div>
+
         </div>
       </div>
     `;
@@ -759,7 +1072,7 @@ export const generateChallanPDF = async (
     // Small delay so the browser doesn't block the second download
     await new Promise(resolve => setTimeout(resolve, 500));
 
-    // --- Download 2: Duplicate (Shree Jagdamba Steel Profiles design) ---
+    // --- Download 2: Duplicate (new Shree Jagdamba Steel Profiles design) ---
     tempDiv.innerHTML = buildChallanDuplicateHtml();
     const canvasDuplicate = await html2canvas(tempDiv, {
       scale: 2.5,
@@ -877,7 +1190,7 @@ export const generateOrderEntryPDF = (order: Order) => {
   doc.text("Customer Signature", 30, footerY);
   doc.text("Authorized Signatory", pageWidth - 60, footerY);
 
-  doc.save(`Order_${order.orderNo}.pdf`);
+  doc.save(`Order_${sanitizeFilename(order.orderNo)}.pdf`);
 };
 
 export const generateSalesOrderPDF = async (order: Order, parties: any[] = []) => {
@@ -1232,7 +1545,7 @@ export const generateWorkerTaskPDF = (workerName: string, items: any[]) => {
     headStyles: { fillColor: [79, 70, 229] }, // Indigo-600
   });
 
-  doc.save(`Tasks_${workerName}_${new Date().toISOString().split('T')[0]}.pdf`);
+  doc.save(`Tasks_${sanitizeFilename(workerName)}_${new Date().toISOString().split('T')[0]}.pdf`);
 };
 
 /**
@@ -1251,7 +1564,6 @@ export const generateWorkerPerformancePDF = (workerName: string, items: any[]) =
   doc.text(`Report Generated: ${new Date().toLocaleDateString()}`, pageWidth - 15, 30, { align: 'right' });
 
   const completed = items.filter(i => i.itemStatus === 'Completed');
-  const inProgress = items.filter(i => i.itemStatus === 'In Progress');
   const totalItems = items.length;
 
   doc.setFontSize(10);
@@ -1273,7 +1585,7 @@ export const generateWorkerPerformancePDF = (workerName: string, items: any[]) =
     headStyles: { fillColor: [16, 185, 129] }, // Emerald-600
   });
 
-  doc.save(`Report_${workerName}_${new Date().toISOString().split('T')[0]}.pdf`);
+  doc.save(`Report_${sanitizeFilename(workerName)}_${new Date().toISOString().split('T')[0]}.pdf`);
 };
 
 /**
@@ -1345,3 +1657,69 @@ export const generatePurchaseReportPDF = (orders: PurchaseOrder[]) => {
 
   doc.save(`Purchase_Report_${new Date().toISOString().split('T')[0]}.pdf`);
 };
+
+/**
+ * Generate Test Certificate (TC) as Base64 Data URL
+ */
+export const generateTCPDFBase64 = (tc: any): string => {
+  const doc = new jsPDF();
+  const pageWidth = doc.internal.pageSize.width;
+
+  doc.setDrawColor(0, 0, 0);
+  doc.setLineWidth(0.5);
+  doc.rect(5, 5, pageWidth - 10, doc.internal.pageSize.height - 10);
+
+  doc.setFontSize(22);
+  doc.setFont('helvetica', 'bold');
+  doc.text('TEST CERTIFICATE', pageWidth / 2, 20, { align: 'center' });
+
+  doc.setFontSize(12);
+  doc.text(`TC No: ${tc.tcNumber || '-'}`, 15, 30);
+  doc.text(`Date: ${tc.tcDate || '-'}`, pageWidth - 15, 30, { align: 'right' });
+
+  doc.line(5, 35, pageWidth - 5, 35);
+
+  doc.setFontSize(11);
+  doc.setFont('helvetica', 'normal');
+  let y = 45;
+  const leftX = 15;
+  const rightX = pageWidth / 2 + 5;
+
+  doc.setFont('helvetica', 'bold');
+  doc.text('Core Details', leftX, y);
+  doc.setFont('helvetica', 'normal');
+  y += 8;
+  doc.text(`Heat Number: ${tc.heatNumber || '-'}`, leftX, y);
+  doc.text(`Plate Number: ${tc.plateNumber || '-'}`, rightX, y);
+  y += 8;
+  doc.text(`Grade: ${tc.grade || '-'}`, leftX, y);
+  doc.text(`Thickness: ${tc.thickness || '-'}`, rightX, y);
+  y += 8;
+  doc.text(`Width: ${tc.width || '-'}`, leftX, y);
+  doc.text(`Length: ${tc.length || '-'}`, rightX, y);
+  y += 8;
+  doc.text(`Weight: ${tc.plateWeight || '-'} Kg`, leftX, y);
+  doc.text(`Make: ${tc.make || '-'}`, rightX, y);
+  y += 8;
+  doc.text(`Standard: ${tc.standard || '-'}`, leftX, y);
+
+  y += 15;
+  doc.setFont('helvetica', 'bold');
+  doc.text('Order Details', leftX, y);
+  doc.setFont('helvetica', 'normal');
+  y += 8;
+  doc.text(`Sales Order No: ${tc.salesOrderNumber || '-'}`, leftX, y);
+  doc.text(`SO Date: ${tc.salesOrderDate || '-'}`, rightX, y);
+  y += 8;
+  doc.text(`Purchase Order No: ${tc.purchaseOrderNumber || '-'}`, leftX, y);
+  doc.text(`PO Date: ${tc.purchaseOrderDate || '-'}`, rightX, y);
+  y += 8;
+  doc.text(`Supplier Invoice No: ${tc.supplierInvoiceNumber || '-'}`, leftX, y);
+  doc.text(`Invoice Date: ${tc.supplierInvoiceDate || '-'}`, rightX, y);
+
+  doc.setFontSize(9);
+  doc.text('This is a system generated summary of the Test Certificate.', pageWidth / 2, doc.internal.pageSize.height - 20, { align: 'center' });
+
+  return doc.output('datauristring');
+};
+
