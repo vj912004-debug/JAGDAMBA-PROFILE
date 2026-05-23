@@ -647,11 +647,11 @@ export const ChallanPrint: React.FC<ChallanPrintProps> = ({ challan, order }) =>
             <div style={{ width: '50%', display: 'flex', flexWrap: 'wrap' }}>
                 <div className="grid-cell no-right" style={{ width: '50%', display: 'flex', alignItems: 'center', borderBottom: '1px solid #000' }}>
                   <label>Loading Charge:</label>
-                  <div style={{ flexGrow: 1, borderBottom: '1px solid #000', marginLeft: '5px', paddingBottom: '2px' }}>{order?.loadingUnloadingCharges && order.loadingUnloadingCharges > 0 ? \?\ + order.loadingUnloadingCharges.toLocaleString('en-IN') : ''}</div>
+                  <div style={{ flexGrow: 1, borderBottom: '1px solid #000', marginLeft: '5px', paddingBottom: '2px' }}>{order?.loadingUnloadingCharges && order.loadingUnloadingCharges > 0 ? '₹' + order.loadingUnloadingCharges.toLocaleString('en-IN') : ''}</div>
                 </div>
                 <div className="grid-cell no-right" style={{ width: '50%', display: 'flex', alignItems: 'center', borderBottom: '1px solid #000' }}>
                   <label>Transport Charge:</label>
-                  <div style={{ flexGrow: 1, borderBottom: '1px solid #000', marginLeft: '5px', paddingBottom: '2px' }}>{order?.transportationCharges && order.transportationCharges > 0 ? \?\ + order.transportationCharges.toLocaleString('en-IN') : ''}</div>
+                  <div style={{ flexGrow: 1, borderBottom: '1px solid #000', marginLeft: '5px', paddingBottom: '2px' }}>{order?.transportationCharges && order.transportationCharges > 0 ? '₹' + order.transportationCharges.toLocaleString('en-IN') : ''}</div>
                 </div>
                 <div className="grid-cell" style={{ width: '50%', borderBottom: 'none', display: 'flex', alignItems: 'center' }}>
                   <label>TC :</label>
