@@ -601,12 +601,11 @@ export const generateChallanPDF = async (
 
     return `
       <style>
-        .challan-container-orig, .challan-container-orig * { color: #000000; border-color: #000000; }
+        .challan-container-orig, .challan-container-orig * { color: #000000; border-color: #000000; line-height: 1.5; }
         .dark-header-orig, .dark-header-orig * { color: #ffffff !important; }
         ${origStyleStr}
       </style>
       <div class="challan-container-orig" style="position: relative; color: #000;">
-        <div class="copy-stamp-orig">${copyLabel} COPY</div>
         <div class="inner-border-orig">
             
             <div class="header-orig">
@@ -715,15 +714,15 @@ export const generateChallanPDF = async (
                 <div class="section-header-orig" style="padding: 6px;">COMMERCIAL / QUALITY DETAILS</div>
                 <div style="display: flex;">
                     <div style="flex: 6; border-right: 1px solid #000;">
-                        <div style="padding: 6px; height: 50px; border-bottom: 1px solid #000; display: flex; align-items: center;"><b>Delivery Address :</b> <span style="margin-left: 8px;">${order?.deliveryAddress || party?.deliveryAddress || ''}</span></div>
-                        <div style="padding: 6px; display: flex; align-items: center;">
+                        <div style="padding: 6px; height: 50px; border-bottom: 1px solid #000; display: flex; align-items: flex-start;"><b>Delivery Address :</b> <span style="margin-left: 8px;">${order?.deliveryAddress || party?.deliveryAddress || ''}</span></div>
+                        <div style="padding: 6px; display: flex; align-items: flex-end; height: 30px;">
                           <b>TC :</b> <div style="flex-grow: 1; border-bottom: 1px solid #000; margin: 0 15px; text-align: center;">${tcVal}</div> 
                           <b>UT :</b> <div style="flex-grow: 1; border-bottom: 1px solid #000; margin: 0 15px; text-align: center;">${utVal}</div>
                         </div>
                     </div>
                     <div style="flex: 4;">
-                        <div style="padding: 6px; border-bottom: 1px solid #000; display: flex; align-items: center;"><b>Loading Charge:</b> <div style="flex-grow: 1; border-bottom: 1px solid #000; margin-left: 10px; text-align: center;">${loadingVal}</div></div>
-                        <div style="padding: 6px; display: flex; align-items: center;"><b>Transport Charge:</b> <div style="flex-grow: 1; border-bottom: 1px solid #000; margin-left: 10px; text-align: center;">${transportVal}</div></div>
+                        <div style="padding: 6px; border-bottom: 1px solid #000; display: flex; align-items: flex-end; height: 40px;"><b>Loading Charge:</b> <div style="flex-grow: 1; border-bottom: 1px solid #000; margin-left: 10px; text-align: center;">${loadingVal}</div></div>
+                        <div style="padding: 6px; display: flex; align-items: flex-end; height: 40px;"><b>Transport Charge:</b> <div style="flex-grow: 1; border-bottom: 1px solid #000; margin-left: 10px; text-align: center;">${transportVal}</div></div>
                     </div>
                 </div>
             </div>
@@ -745,11 +744,12 @@ export const generateChallanPDF = async (
                 </div>
                 <div class="sig-box-orig right-align-orig">
                     <div style="align-self: flex-start;">For</div>
-                    <div style="font-size: 14px;">For Jagdamba Profile</div>
+                    <div style="font-size: 14px; margin-bottom: 4px;">For Jagdamba Profile</div>
                 </div>
             </div>
 
         </div>
+        <div class="copy-stamp-orig">${copyLabel} COPY</div>
       </div>
     `;
   };
@@ -757,7 +757,7 @@ export const generateChallanPDF = async (
   // Separate template for Duplicate copy — matches user-specified "SHREE JAGDAMBA STEEL PROFILES" design
   const buildChallanDuplicateHtml = () => {
     const duplicateStyleStr = `
-      .challan-container-dup, .challan-container-dup * { box-sizing: border-box; margin: 0; padding: 0; font-family: Arial, sans-serif; color: #000000; border-color: #000000; }
+      .challan-container-dup, .challan-container-dup * { box-sizing: border-box; margin: 0; padding: 0; font-family: Arial, sans-serif; color: #000000; border-color: #000000; line-height: 1.5; }
       .challan-container-dup {
         width: 1000px;
         background-color: white;
@@ -1011,19 +1011,19 @@ export const generateChallanPDF = async (
               <label>Delivery Address :</label>
               <span class="val">${order?.deliveryAddress || party?.deliveryAddress || ''}</span>
             </div>
-            <div class="grid-cell-dup no-right" style="display: flex; align-items: center;">
+            <div class="grid-cell-dup no-right" style="display: flex; align-items: flex-end; padding-top: 6px;">
               <label>Loading Charge:</label>
               <div style="flex-grow: 1; border-bottom: 1px solid #000; margin-left: 5px; padding-bottom: 2px;">${loadingVal}</div>
             </div>
-            <div class="grid-cell-dup no-right" style="display: flex; align-items: center;">
+            <div class="grid-cell-dup no-right" style="display: flex; align-items: flex-end; padding-top: 6px;">
               <label>Transport Charge:</label>
               <div style="flex-grow: 1; border-bottom: 1px solid #000; margin-left: 5px; padding-bottom: 2px;">${transportVal}</div>
             </div>
-            <div class="grid-cell-dup" style="border-bottom: none; display: flex; align-items: center;">
+            <div class="grid-cell-dup" style="border-bottom: none; display: flex; align-items: flex-end; padding-top: 6px;">
               <label>TC :</label>
               <div style="flex-grow: 1; border-bottom: 1px solid #000; margin-left: 5px; padding-bottom: 2px;">${tcVal}</div>
             </div>
-            <div class="grid-cell-dup no-right" style="border-bottom: none; display: flex; align-items: center;">
+            <div class="grid-cell-dup no-right" style="border-bottom: none; display: flex; align-items: flex-end; padding-top: 6px;">
               <label>UT :</label>
               <div style="flex-grow: 1; border-bottom: 1px solid #000; margin-left: 5px; padding-bottom: 2px;">${utVal}</div>
             </div>
