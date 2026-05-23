@@ -501,16 +501,16 @@ export const ChallanPrint: React.FC<ChallanPrintProps> = ({ challan, order }) =>
                           <b>Delivery Address :</b> <span style={{ marginLeft: '8px' }}>{order?.deliveryAddress || party?.deliveryAddress || ''}</span>
                         </div>
                         <div style={{ padding: '6px', display: 'flex', alignItems: 'center' }}>
-                          <b>TC :</b> <div style={{ flexGrow: 1, borderBottom: '1px solid #000', margin: '0 15px', textAlign: 'center' }}>{tcVal}</div> 
-                          <b>UT :</b> <div style={{ flexGrow: 1, borderBottom: '1px solid #000', margin: '0 15px', textAlign: 'center' }}>{utVal}</div>
+                          <b>TC :</b> <div style={{ flexGrow: 1, borderBottom: '1px solid #000', margin: '0 15px', textAlign: 'center' }}>{order?.tc === 'Yes' ? 'YES' : ''}</div> 
+                          <b>UT :</b> <div style={{ flexGrow: 1, borderBottom: '1px solid #000', margin: '0 15px', textAlign: 'center' }}>{order?.ut === 'Yes' ? 'YES' : ''}</div>
                         </div>
                     </div>
                     <div style={{ flex: 4 }}>
                         <div style={{ padding: '6px', borderBottom: '1px solid #000', display: 'flex', alignItems: 'center' }}>
-                          <b>Loading Charge:</b> <div style={{ flexGrow: 1, borderBottom: '1px solid #000', marginLeft: '10px', textAlign: 'center' }}>{loadingVal}</div>
+                          <b>Loading Charge:</b> <div style={{ flexGrow: 1, borderBottom: '1px solid #000', marginLeft: '10px', textAlign: 'center' }}>{order?.loadingUnloadingCharges && order.loadingUnloadingCharges > 0 ? '₹' + order.loadingUnloadingCharges.toLocaleString('en-IN') : ''}</div>
                         </div>
                         <div style={{ padding: '6px', display: 'flex', alignItems: 'center' }}>
-                          <b>Transport Charge:</b> <div style={{ flexGrow: 1, borderBottom: '1px solid #000', marginLeft: '10px', textAlign: 'center' }}>{transportVal}</div>
+                          <b>Transport Charge:</b> <div style={{ flexGrow: 1, borderBottom: '1px solid #000', marginLeft: '10px', textAlign: 'center' }}>{order?.transportationCharges && order.transportationCharges > 0 ? '₹' + order.transportationCharges.toLocaleString('en-IN') : ''}</div>
                         </div>
                     </div>
                 </div>
@@ -639,33 +639,28 @@ export const ChallanPrint: React.FC<ChallanPrintProps> = ({ challan, order }) =>
           </table>
 
           <div className="section-header" style={{ borderTop: '1px solid #000' }}>COMMERCIAL / QUALITY DETAILS</div>
-          <div className="commercial-grid">
-            <div className="grid-cell" style={{ gridRow: 'span 2', alignItems: 'flex-start', paddingTop: '10px' }}>
-              <label>Delivery Address :</label> {order?.deliveryAddress || party?.deliveryAddress || ''}
+          <div className="commercial-grid" style={{ display: 'flex' }}>
+            <div className="grid-cell" style={{ width: '50%', alignItems: 'flex-start', paddingTop: '10px' }}>
+              <label>Delivery Address :</label>
+              <span className="val">{order?.deliveryAddress || party?.deliveryAddress || ''}</span>
             </div>
-            <div className="grid-cell no-right-border" style={{ display: 'flex' }}>
-              <label>Loading Charge:</label>
-              <div className="underline-input">
-                {order?.loadingUnloadingCharges && order.loadingUnloadingCharges > 0 ? `₹${order.loadingUnloadingCharges.toLocaleString('en-IN')}` : ''}
-              </div>
-            </div>
-            <div className="grid-cell no-right-border" style={{ display: 'flex' }}>
-              <label>Transport Charge:</label>
-              <div className="underline-input">
-                {order?.transportationCharges && order.transportationCharges > 0 ? `₹${order.transportationCharges.toLocaleString('en-IN')}` : ''}
-              </div>
-            </div>
-            <div className="grid-cell" style={{ borderBottom: 'none', display: 'flex' }}>
-              <label>TC :</label>
-              <div className="underline-input">
-                {order?.tc === 'Yes' ? 'YES' : ''}
-              </div>
-            </div>
-            <div className="grid-cell no-right-border" style={{ borderBottom: 'none', display: 'flex' }}>
-              <label>UT :</label>
-              <div className="underline-input">
-                {order?.ut === 'Yes' ? 'YES' : ''}
-              </div>
+            <div style={{ width: '50%', display: 'flex', flexWrap: 'wrap' }}>
+                <div className="grid-cell no-right" style={{ width: '50%', display: 'flex', alignItems: 'center', borderBottom: '1px solid #000' }}>
+                  <label>Loading Charge:</label>
+                  <div style={{ flexGrow: 1, borderBottom: '1px solid #000', marginLeft: '5px', paddingBottom: '2px' }}>{order?.loadingUnloadingCharges && order.loadingUnloadingCharges > 0 ? \?\ + order.loadingUnloadingCharges.toLocaleString('en-IN') : ''}</div>
+                </div>
+                <div className="grid-cell no-right" style={{ width: '50%', display: 'flex', alignItems: 'center', borderBottom: '1px solid #000' }}>
+                  <label>Transport Charge:</label>
+                  <div style={{ flexGrow: 1, borderBottom: '1px solid #000', marginLeft: '5px', paddingBottom: '2px' }}>{order?.transportationCharges && order.transportationCharges > 0 ? \?\ + order.transportationCharges.toLocaleString('en-IN') : ''}</div>
+                </div>
+                <div className="grid-cell" style={{ width: '50%', borderBottom: 'none', display: 'flex', alignItems: 'center' }}>
+                  <label>TC :</label>
+                  <div style={{ flexGrow: 1, borderBottom: '1px solid #000', marginLeft: '5px', paddingBottom: '2px' }}>{order?.tc === 'Yes' ? 'YES' : ''}</div>
+                </div>
+                <div className="grid-cell no-right" style={{ width: '50%', borderBottom: 'none', display: 'flex', alignItems: 'center' }}>
+                  <label>UT :</label>
+                  <div style={{ flexGrow: 1, borderBottom: '1px solid #000', marginLeft: '5px', paddingBottom: '2px' }}>{order?.ut === 'Yes' ? 'YES' : ''}</div>
+                </div>
             </div>
           </div>
 
@@ -697,3 +692,4 @@ export const ChallanPrint: React.FC<ChallanPrintProps> = ({ challan, order }) =>
     );
   }
 };
+

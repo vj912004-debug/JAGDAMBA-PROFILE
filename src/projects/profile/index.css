@@ -150,8 +150,13 @@
 
 /* Grid Layouts for Sections */
 .grid-2-col {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
+  display: flex;
+  flex-wrap: wrap;
+  width: 100%;
+}
+.grid-2-col > div {
+  width: 50%;
+  box-sizing: border-box;
 }
 
 .grid-cell {
@@ -177,9 +182,14 @@
 
 /* Transport Section */
 .transport-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr 1fr;
+  display: flex;
+  flex-wrap: wrap;
+  width: 100%;
   border-bottom: 1px solid #000 !important;
+}
+.transport-grid > div {
+  width: 33.333%;
+  box-sizing: border-box;
 }
 
 /* Items Table */
@@ -225,8 +235,8 @@
 
 /* Commercial / Quality Details */
 .commercial-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
+  display: flex;
+  width: 100%;
   border-bottom: 1px solid #000 !important;
 }
 
@@ -246,12 +256,13 @@
 
 /* Signatures Section */
 .signatures-section {
-  display: grid;
-  grid-template-columns: 1fr 1fr 1.5fr;
-  min-height: 80px;
+  display: flex;
+  width: 100%;
+  min-height: 90px;
 }
 
 .signature-box {
+  flex: 1;
   padding: 10px;
   font-size: 12px;
   font-weight: bold;
@@ -264,6 +275,7 @@
 .signature-box:last-child {
   border-right: none !important;
   align-items: flex-end;
+  flex: 1.5;
 }
 
 .sig-label-bottom {
