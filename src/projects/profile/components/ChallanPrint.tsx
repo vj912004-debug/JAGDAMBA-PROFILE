@@ -507,10 +507,10 @@ export const ChallanPrint: React.FC<ChallanPrintProps> = ({ challan, order }) =>
                     </div>
                     <div style={{ flex: 4 }}>
                         <div style={{ padding: '6px', borderBottom: '1px solid #000', display: 'flex', alignItems: 'center' }}>
-                          <b>Loading Charge:</b> <div style={{ flexGrow: 1, borderBottom: '1px solid #000', marginLeft: '10px', textAlign: 'center' }}>{order?.loadingUnloadingCharges && order.loadingUnloadingCharges > 0 ? '₹' + order.loadingUnloadingCharges.toLocaleString('en-IN') : ''}</div>
+                          <b>Loading Charge:</b> <div style={{ flexGrow: 1, borderBottom: '1px solid #000', marginLeft: '10px', textAlign: 'center' }}>{loadingVal === 'NO' ? '' : loadingVal}</div>
                         </div>
                         <div style={{ padding: '6px', display: 'flex', alignItems: 'center' }}>
-                          <b>Transport Charge:</b> <div style={{ flexGrow: 1, borderBottom: '1px solid #000', marginLeft: '10px', textAlign: 'center' }}>{order?.transportationCharges && order.transportationCharges > 0 ? '₹' + order.transportationCharges.toLocaleString('en-IN') : ''}</div>
+                          <b>Transport Charge:</b> <div style={{ flexGrow: 1, borderBottom: '1px solid #000', marginLeft: '10px', textAlign: 'center' }}>{transportVal === 'NO' ? '' : transportVal}</div>
                         </div>
                     </div>
                 </div>
@@ -647,19 +647,19 @@ export const ChallanPrint: React.FC<ChallanPrintProps> = ({ challan, order }) =>
             <div style={{ width: '50%', display: 'flex', flexWrap: 'wrap' }}>
                 <div className="grid-cell no-right" style={{ width: '50%', display: 'flex', alignItems: 'center', borderBottom: '1px solid #000' }}>
                   <label>Loading Charge:</label>
-                  <div style={{ flexGrow: 1, borderBottom: '1px solid #000', marginLeft: '5px', paddingBottom: '2px' }}>{order?.loadingUnloadingCharges && order.loadingUnloadingCharges > 0 ? '₹' + order.loadingUnloadingCharges.toLocaleString('en-IN') : ''}</div>
+                  <div style={{ flexGrow: 1, borderBottom: '1px solid #000', marginLeft: '5px', paddingBottom: '2px' }}>{loadingVal === 'NO' ? '' : loadingVal}</div>
                 </div>
                 <div className="grid-cell no-right" style={{ width: '50%', display: 'flex', alignItems: 'center', borderBottom: '1px solid #000' }}>
                   <label>Transport Charge:</label>
-                  <div style={{ flexGrow: 1, borderBottom: '1px solid #000', marginLeft: '5px', paddingBottom: '2px' }}>{order?.transportationCharges && order.transportationCharges > 0 ? '₹' + order.transportationCharges.toLocaleString('en-IN') : ''}</div>
+                  <div style={{ flexGrow: 1, borderBottom: '1px solid #000', marginLeft: '5px', paddingBottom: '2px' }}>{transportVal === 'NO' ? '' : transportVal}</div>
                 </div>
                 <div className="grid-cell" style={{ width: '50%', borderBottom: 'none', display: 'flex', alignItems: 'center' }}>
                   <label>TC :</label>
-                  <div style={{ flexGrow: 1, borderBottom: '1px solid #000', marginLeft: '5px', paddingBottom: '2px' }}>{order?.tc === 'Yes' ? 'YES' : ''}</div>
+                  <div style={{ flexGrow: 1, borderBottom: '1px solid #000', marginLeft: '5px', paddingBottom: '2px' }}>{tcVal === 'NO' ? '' : tcVal}</div>
                 </div>
                 <div className="grid-cell no-right" style={{ width: '50%', borderBottom: 'none', display: 'flex', alignItems: 'center' }}>
                   <label>UT :</label>
-                  <div style={{ flexGrow: 1, borderBottom: '1px solid #000', marginLeft: '5px', paddingBottom: '2px' }}>{order?.ut === 'Yes' ? 'YES' : ''}</div>
+                  <div style={{ flexGrow: 1, borderBottom: '1px solid #000', marginLeft: '5px', paddingBottom: '2px' }}>{utVal === 'NO' ? '' : utVal}</div>
                 </div>
             </div>
           </div>
