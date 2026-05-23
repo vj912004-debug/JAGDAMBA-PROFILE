@@ -1,5 +1,5 @@
-import React from 'react';
-import type { ChallanRecord, Order } from '../store/AppContext';
+import React, { useState } from 'react';
+import { useAppContext, type ChallanRecord, type Order } from '../store/AppContext';
 
 interface ChallanPrintProps {
   challan: ChallanRecord;
@@ -7,312 +7,693 @@ interface ChallanPrintProps {
 }
 
 export const ChallanPrint: React.FC<ChallanPrintProps> = ({ challan, order }) => {
-  // Fill table with empty rows if needed
+  const { dispatches, parties } = useAppContext();
+  const dispatch = dispatches.find(d => d.orderNo === challan.orderNo);
+  const party = parties.find(p => p.partyName === challan.partyName);
+
+  const vehicleNo = dispatch?.vehicleNo || '';
+  const driverMobile = ''; // Dotted/blank line if not available
+
   const items = order?.items || [];
-  const emptyRowsCount = Math.max(0, 8 - items.length);
+  // Force table to always have 10 rows just like your static HTML
+  const emptyRowsCount = Math.max(0, 10 - items.length);
   const emptyRows = Array.from({ length: emptyRowsCount });
 
+  const totalNos = items.reduce((sum, item) => item.unitType === 'Nos' ? sum + item.quantity : sum, 0);
+  const totalKg = items.reduce((sum, item) => item.unitType === 'Kg' ? sum + item.quantity : sum + (item.totalWeight || 0), 0);
+
+  const tcVal = order?.tc === 'Yes' ? 'YES' : 'NO';
+  const utVal = order?.ut === 'Yes' ? 'YES' : 'NO';
+  const loadingVal = order?.loadingUnloadingCharges && order.loadingUnloadingCharges > 0 
+    ? `₹${order.loadingUnloadingCharges.toLocaleString('en-IN')}` 
+    : 'NO';
+  const transportVal = order?.transportationCharges && order.transportationCharges > 0 
+    ? `₹${order.transportationCharges.toLocaleString('en-IN')}` 
+    : 'NO';
+
+  // State for Original vs Duplicate
+  const [printType, setPrintType] = useState<'ORIGINAL' | 'DUPLICATE'>('ORIGINAL');
+
+  const handlePrint = (type: 'ORIGINAL' | 'DUPLICATE') => {
+    setPrintType(type);
+    setTimeout(() => {
+      window.print();
+    }, 100);
+  };
+
   return (
-    <div className="bg-white p-4 mx-auto" id="challan-print-area" style={{ width: '210mm', minHeight: '297mm' }}>
-      <style>{`
-        .challan-container {
-            width: 100%;
-            margin: 0 auto;
-            background: #fff;
-            border: 2px solid #000;
+    <div className="flex flex-col items-center w-full pb-10 bg-gray-100 min-h-screen">
+
+      {/* Action Buttons (Hidden when printing) */}
+      <div className="no-print flex gap-4 my-6">
+        <button
+          onClick={() => handlePrint('ORIGINAL')}
+          className="bg-blue-600 text-white px-6 py-2 rounded shadow-md hover:bg-blue-700 font-bold transition-colors cursor-pointer"
+        >
+          Print Original Only
+        </button>
+        <button
+          onClick={() => handlePrint('DUPLICATE')}
+          className="bg-amber-500 text-white px-6 py-2 rounded shadow-md hover:bg-amber-600 font-bold transition-colors cursor-pointer"
+        >
+          Print Original & Duplicate
+        </button>
+      </div>
+
+      {/* Your EXACT Design starts here */}
+      <div id="challan-print-area" className="flex flex-col items-center">
+        <style>{`
+          /* Scoped Reset to protect your ERP styles */
+          #challan-print-area {
+            background-color: transparent;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+          }
+          
+          #challan-print-area * {
+            box-sizing: border-box;
+            margin: 0;
             padding: 0;
-            color: #000;
             font-family: Arial, sans-serif;
-            font-size: 12px;
-        }
+            color: #000;
+          }
 
-        .header-section {
-            text-align: center;
-            border-bottom: 2px solid #000;
-            padding: 15px;
-            position: relative;
-        }
+          /* Print Settings */
+          @media print {
+            .no-print { display: none !important; }
+            @page {
+              size: A4 portrait;
+              margin: 5mm;
+            }
+            body {
+              -webkit-print-color-adjust: exact !important;
+              print-color-adjust: exact !important;
+            }
+          }
 
-        .since-badge {
-            position: absolute;
-            top: 15px;
-            left: 15px;
-            font-weight: bold;
-            font-size: 10px;
-        }
+          /* YOUR CSS EXACTLY AS PROVIDED */
+          .challan-container {
+            width: 210mm; /* A4 width approximate */
+            background-color: white;
+            border: 2px solid #000;
+            padding: 4px;
+            margin: 0 auto;
+            page-break-inside: avoid;
+          }
 
-        .gstin {
-            position: absolute;
-            top: 15px;
-            right: 15px;
-            font-weight: bold;
-            font-size: 12px;
-        }
-
-        .company-name {
-            font-size: 28px;
-            font-weight: bold;
-            margin-bottom: 5px;
-            letter-spacing: 1px;
-        }
-
-        .tagline {
-            font-weight: bold;
-            margin-bottom: 5px;
-        }
-
-        .address {
-            margin-bottom: 5px;
-        }
-
-        .contact {
-            margin-bottom: 10px;
-        }
-
-        .document-title {
-            background-color: #000;
-            color: #fff;
-            display: inline-block;
-            padding: 5px 20px;
-            font-size: 18px;
-            font-weight: bold;
-            border-radius: 3px;
-        }
-
-        .info-section {
-            display: flex;
-            border-bottom: 2px solid #000;
-        }
-
-        .info-left, .info-right {
-            width: 50%;
-            padding: 10px;
-        }
-
-        .info-left {
-            border-right: 2px solid #000;
-        }
-
-        .info-row {
-            display: flex;
-            margin-bottom: 8px;
-        }
-
-        .info-label {
-            font-weight: bold;
-            min-width: 100px;
-        }
-
-        .info-value {
-            border-bottom: 1px dotted #000;
-            flex-grow: 1;
-            padding-left: 5px;
-        }
-
-        .info-right .info-label {
-            min-width: 120px;
-        }
-
-        .items-table {
-            width: 100%;
-            border-collapse: collapse;
-        }
-
-        .items-table th, .items-table td {
+          .inner-border {
             border: 1px solid #000;
-            padding: 8px;
-            text-align: left;
-        }
+            display: flex;
+            flex-direction: column;
+          }
 
-        .items-table th {
-            text-align: center;
-            font-weight: bold;
-        }
-
-        .items-table tr.empty-row td {
-            height: 30px;
-        }
-
-        .items-table td:nth-child(1), .items-table th:nth-child(1) { width: 50px; text-align: center; }
-        .items-table td:nth-child(3), .items-table th:nth-child(3) { width: 100px; text-align: center; }
-        .items-table td:nth-child(4), .items-table th:nth-child(4) { width: 100px; text-align: right; }
-
-        .charges-row td {
-            font-weight: bold;
-        }
-        
-        .charges-row td:first-child {
-            text-align: right;
-            border-right: none;
-        }
-
-        .charges-row td:last-child {
-            border-left: none;
-        }
-
-        .footer-section {
+          .header {
+            display: flex;
+            align-items: center;
             padding: 15px;
-            font-size: 11px;
-        }
+            border-bottom: 1px solid #000;
+          }
 
-        .footer-note {
-            margin-bottom: 15px;
-            line-height: 1.4;
-        }
+          .logo-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-right: 20px;
+            gap: 4px;
+          }
 
-        .weightment {
+          .logo-mark {
+            font-size: 50px;
+            color: #f26522 !important;
+            font-weight: bold;
+            line-height: 1.1;
+            text-align: center;
+            margin-bottom: 2px;
+          }
+          
+          .logo-text-small {
+            font-size: 9px;
             text-align: center;
             font-weight: bold;
-            font-size: 14px;
-            margin: 10px 0;
-            text-decoration: underline;
-        }
+            color: #333;
+          }
 
-        .signatures {
+          .header-text {
+            flex-grow: 1;
+          }
+
+          .company-title {
+            color: #f26522 !important;
+            font-size: 32px;
+            font-weight: bold;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+          }
+
+          .company-details {
+            font-size: 12px;
+            line-height: 1.5;
+          }
+
+          .contact-row {
             display: flex;
             justify-content: space-between;
-            margin-top: 50px;
-            padding: 0 20px;
-        }
+          }
 
-        .sig-block {
+          .document-title {
             text-align: center;
+            font-size: 16px;
             font-weight: bold;
-        }
+            padding: 8px;
+            border-bottom: 1px solid #000;
+            background-color: #f9f9f9 !important;
+          }
 
-        @media print {
-            body {
-                background: none;
-                padding: 0;
-            }
-            .challan-container {
-                border: 2px solid #000;
-                max-width: 100%;
-            }
-        }
-      `}</style>
+          .section-header {
+            background-color: #000 !important;
+            color: #fff !important;
+            font-size: 12px;
+            font-weight: bold;
+            padding: 6px 10px;
+            border-bottom: 1px solid #000;
+          }
 
-      <div className="challan-container">
-        <div className="header-section">
-            <div className="since-badge">SINCE 2002W</div>
-            <div className="gstin">GSTIN: 24AJGPP9863R1Z5</div>
-            <div className="company-name">JAGDAMBA PROFILE</div>
-            <div className="tagline">Mfg.: M.S. & S.S., C.N.C. Profile Cutting Traders & Steel</div>
-            <div className="address">Office: 504/1, GIDC, Industrial Estate, Makarpura, Vadodara -390010.</div>
-            <div className="contact">
-                Ph: 9824917250, 9824025001, 8799617250, 8799617251, 8799617252, 8799617254, 9099969507<br />
-                E-mail ID: jagdambaprofile@gmail.com
-            </div>
-            <div className="document-title">DELIVERY CHALLAN</div>
-        </div>
+          .grid-2-col {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+          }
 
-        <div className="info-section">
-            <div className="info-left">
-                <div className="info-row">
-                    <span className="info-label">M/s.</span>
-                    <span className="info-value">{challan.partyName}</span>
-                </div>
-                <div className="info-row">
-                    <span className="info-label">Gadi Number</span>
-                    <span className="info-value"></span>
-                </div>
-                <div className="info-row">
-                    <span className="info-label">Driver No.</span>
-                    <span className="info-value"></span>
-                </div>
-                <div className="info-row">
-                    <span className="info-label">Lr No.</span>
-                    <span className="info-value"></span>
-                </div>
-                <div className="info-row">
-                    <span className="info-label">Delivery Address:</span>
-                    <span className="info-value">{order?.deliveryAddress}</span>
-                </div>
-            </div>
-            <div className="info-right">
-                <div className="info-row">
-                    <span className="info-label">Ch. No.</span>
-                    <span className="info-value">{challan.challanNo}</span>
-                </div>
-                <div className="info-row">
-                    <span className="info-label">Date</span>
-                    <span className="info-value">{challan.challanDate}</span>
-                </div>
-                <div className="info-row">
-                    <span className="info-label">PO.No.</span>
-                    <span className="info-value">{order?.orderNo}</span>
-                </div>
-                <div className="info-row">
-                    <span className="info-label">P.O. DATE</span>
-                    <span className="info-value">{order?.orderDate}</span>
-                </div>
-                <div className="info-row">
-                    <span className="info-label">ORDER PAGE NO.:</span>
-                    <span className="info-value"></span>
-                </div>
-                <div className="info-row">
-                    <span className="info-label">PAYMENT</span>
-                    <span className="info-value">{challan.status}</span>
-                </div>
-            </div>
-        </div>
+          .grid-cell {
+            border-bottom: 1px solid #000;
+            border-right: 1px solid #000;
+            padding: 8px 10px;
+            font-size: 12px;
+            min-height: 35px;
+            display: flex;
+            align-items: center;
+          }
 
-        <table className="items-table">
-            <thead>
-                <tr>
-                    <th>Sr. No.</th>
-                    <th>Description of Material</th>
-                    <th>Quantity</th>
-                    <th>Rate</th>
-                </tr>
-            </thead>
-            <tbody>
-                {items.map((item, index) => (
-                    <tr key={index}>
-                        <td style={{ textAlign: 'center' }}>{index + 1}</td>
-                        <td>{item.partName || '-'} - {item.thickness} ({item.materialType} {item.materialGrade})</td>
-                        <td style={{ textAlign: 'center' }}>{item.quantity} {item.unitType}</td>
-                        <td style={{ textAlign: 'right' }}>{item.rate.toLocaleString()}</td>
-                    </tr>
-                ))}
-                {emptyRows.map((_, index) => (
-                    <tr key={`empty-${index}`} className="empty-row">
-                        <td></td>
-                        <td></td>
-                        <td></td>
-                        <td></td>
-                    </tr>
-                ))}
-                
-                <tr className="charges-row">
-                    <td colSpan={2}>Loading Charge</td>
-                    <td colSpan={2}></td>
-                </tr>
-                <tr className="charges-row">
-                    <td colSpan={2}>Transport Charge</td>
-                    <td colSpan={2}></td>
-                </tr>
-            </tbody>
-        </table>
+          .grid-cell.no-right-border {
+            border-right: none;
+          }
 
-        <div className="footer-section">
-            <p className="footer-note"><strong>Please receive the following goods in good condition & return duplicate copy duly signed.</strong></p>
-            <p className="weightment">THIS VEHICLE IS GOING FOR WEIGHTMENT</p>
-            <p className="footer-note">
-                Please receive & confirm the above mentioned ordered Material & send the duplicate. Once the material is found, stamp and sign the duplicate challan. If this is a policy you are giving me, I have noted that I must be informed of any material problems within 7 days of receipt, otherwise, you will not be responsible.
-            </p>
-            
-            <div className="signatures">
-                <div className="sig-block">
-                    Receiver's Signature<br />
-                    with Rubber Stamp
-                </div>
-                <div className="sig-block">
-                    For Jagdamba Profile
-                </div>
-            </div>
-        </div>
+          .grid-cell label {
+            font-weight: bold;
+            margin-right: 10px;
+          }
+
+          .transport-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            border-bottom: 1px solid #000;
+          }
+
+          .items-table {
+            width: 100%;
+            border-collapse: collapse;
+          }
+
+          .items-table th, .items-table td {
+            border: 1px solid #000;
+            padding: 6px;
+            text-align: center;
+            font-size: 12px;
+          }
+
+          .items-table th {
+            background-color: #000 !important;
+            color: #fff !important;
+            font-weight: bold;
+            border-top: none;
+          }
+
+          .items-table tr.empty-row td {
+            height: 25px;
+          }
+          
+          .items-table th:first-child, .items-table td:first-child { border-left: none; }
+          .items-table th:last-child, .items-table td:last-child { border-right: none; }
+
+          .total-row td {
+            font-weight: bold;
+          }
+
+          .commercial-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            border-bottom: 1px solid #000;
+          }
+
+          .terms-content {
+            padding: 10px 15px;
+            font-size: 11px;
+            border-bottom: 1px solid #000;
+          }
+
+          .terms-list {
+            list-style-type: none;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px 20px;
+          }
+
+          .signatures-section {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1.5fr;
+            min-height: 80px;
+          }
+
+          .signature-box {
+            padding: 10px;
+            font-size: 12px;
+            font-weight: bold;
+            border-right: 1px solid #000;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+          }
+
+          .signature-box:last-child {
+            border-right: none;
+            align-items: flex-end;
+          }
+
+          .sig-label-bottom {
+            align-self: flex-end;
+            width: 100%;
+            text-align: right;
+          }
+          
+          .underline-input {
+            flex-grow: 1;
+            border-bottom: 1px solid #000;
+            height: 15px;
+            margin-left: 5px;
+            min-width: 50px;
+            display: flex;
+            align-items: center;
+            padding-left: 5px;
+            font-weight: bold;
+          }
+
+          .cut-line {
+            width: 210mm;
+            border-top: 1px dashed #999;
+            margin: 15px 0;
+            position: relative;
+          }
+          
+          .cut-line::after {
+            content: "✂";
+            position: absolute;
+            left: -20px;
+            top: -12px;
+            font-size: 16px;
+            color: #999;
+          }
+
+          /* ORIGINAL COPY STYLES */
+          .challan-container-orig, .challan-container-orig * { box-sizing: border-box; margin: 0; padding: 0; font-family: Arial, sans-serif; font-size: 12px; color: #000; }
+          .challan-container-orig { width: 210mm; background-color: #fff; border: 2px solid #000; padding: 15px; margin: 0 auto; position: relative; page-break-inside: avoid; }
+          .inner-border-orig { border: 1px solid #000; padding: 5px; }
+          .header-orig { display: flex; align-items: center; border-bottom: 1px solid #000; padding-bottom: 10px; margin-bottom: 5px; }
+          .logo-container-orig { display: flex; flex-direction: column; align-items: center; margin-right: 20px; margin-left: 10px; width: 70px; }
+          .company-logo-orig { width: 60px; height: auto; object-fit: contain; }
+          .logo-text-orig { font-size: 8px; font-weight: bold; font-style: italic; text-align: center; margin-top: 3px; }
+          .company-info-container-orig { flex-grow: 1; }
+          .company-name-orig { font-size: 32px; font-weight: 900; text-align: center; letter-spacing: 2px; margin-bottom: 10px; }
+          .company-details-orig { display: flex; flex-direction: column; font-size: 11px; }
+          .contact-row-orig { display: flex; justify-content: space-between; }
+          .title-orig { text-align: center; font-size: 16px; font-weight: bold; margin: 10px 0; }
+          .challan-container-orig table { width: 100%; border-collapse: collapse; margin-bottom: 10px; }
+          .challan-container-orig th, .challan-container-orig td { border: 1px solid #000; padding: 6px; text-align: left; }
+          .section-header-orig { background-color: #222 !important; color: #fff !important; font-weight: bold; font-size: 12px; text-align: left; }
+          .section-header-center-orig { background-color: #222 !important; color: #fff !important; font-weight: bold; font-size: 12px; text-align: center; }
+          .flex-row-orig { display: flex; width: 100%; border: 1px solid #000; margin-bottom: 10px; }
+          .flex-col-orig { flex: 1; }
+          .flex-col-orig:first-child { border-right: 1px solid #000; }
+          .flex-col-orig .section-header-orig { padding: 6px; border-bottom: 1px solid #000; }
+          .input-row-orig { display: flex; border-bottom: 1px solid #000; min-height: 28px; }
+          .input-row-orig:last-child { border-bottom: none; }
+          .input-label-orig { padding: 6px; font-weight: bold; width: 130px; flex-shrink: 0; }
+          .input-value-orig { padding: 6px; flex-grow: 1; display: flex; align-items: center; }
+          .item-table-orig th { background-color: #222 !important; color: #fff !important; text-align: center; font-weight: bold; }
+          .item-table-orig td { height: 24px; text-align: center; }
+          .total-row-orig td { font-weight: bold; }
+          .terms-box-orig { border: 1px solid #000; margin-bottom: 10px; }
+          .terms-content-orig { padding: 6px; font-size: 11px; line-height: 1.6; }
+          .signature-row-orig { display: flex; border: 1px solid #000; height: 80px; }
+          .sig-box-orig { flex: 1; padding: 6px; font-weight: bold; display: flex; flex-direction: column; justify-content: space-between; }
+          .sig-box-orig:not(:last-child) { border-right: 1px solid #000; }
+          .sig-box-orig.right-align-orig { align-items: flex-end; }
+          .copy-stamp-orig { position: absolute; top: 18px; right: 18px; font-size: 13px; font-weight: bold; color: #1a4d8c; border: 2px solid #1a4d8c; padding: 2px 10px; border-radius: 3px; letter-spacing: 1px; background: #fff; z-index: 10; }
+        `}</style>
+
+        <ChallanOriginalCopy />
+        
+        {printType === 'DUPLICATE' && (
+          <>
+            <div className="cut-line"></div>
+            <ChallanDuplicateCopy />
+          </>
+        )}
+
       </div>
     </div>
   );
+
+  function ChallanOriginalCopy() {
+    return (
+      <div className="challan-container-orig">
+        <div className="copy-stamp-orig">ORIGINAL COPY</div>
+        <div className="inner-border-orig">
+            
+            <div className="header-orig">
+                <div className="logo-container-orig">
+                    <img src="/logo.png" alt="Jagdamba Profile Logo" className="company-logo-orig" />
+                    <div className="logo-text-orig">Jagdamba Profile</div>
+                </div>
+                <div className="company-info-container-orig">
+                    <div className="company-name-orig">Jagdamba Profile</div>
+                    <div className="company-details-orig">
+                        <div>504/1A, GIDC Makarpura, Vadodara -390010.</div>
+                        <div>GST No: 24AJGPP9863R1Z5</div>
+                        <div className="contact-row-orig">
+                            <div>Mo: 8799617251, 8799617252, 8799617254, 9824025001</div>
+                            <div>Email: jagdambaprofile@gmail.com</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div className="title-orig">DELIVERY CHALLAN</div>
+
+            <div className="flex-row-orig">
+                <div className="flex-col-orig">
+                    <div className="section-header-orig">PARTY DETAILS</div>
+                    <div className="input-row-orig" style={{ height: '40px' }}>
+                        <div className="input-label-orig">Party Name:</div>
+                        <div className="input-value-orig">{challan.partyName}</div>
+                    </div>
+                    <div className="input-row-orig" style={{ height: '50px' }}>
+                        <div className="input-label-orig">Address:</div>
+                        <div className="input-value-orig">{party?.deliveryAddress || order?.deliveryAddress || ''}</div>
+                    </div>
+                    <div className="input-row-orig">
+                        <div className="input-label-orig">GST Number:</div>
+                        <div className="input-value-orig">{party?.gstNumber || order?.gstType || ''}</div>
+                    </div>
+                    <div className="input-row-orig">
+                        <div className="input-label-orig">Mobile Number:</div>
+                        <div className="input-value-orig">{party?.mobileNumber || order?.mobileNumber || ''}</div>
+                    </div>
+                    <div className="input-row-orig">
+                        <div className="input-label-orig">Email ID :</div>
+                        <div className="input-value-orig">{party?.email || ''}</div>
+                    </div>
+                </div>
+                <div className="flex-col-orig">
+                    <div className="section-header-orig">CHALLAN / ORDER DETAILS</div>
+                    <div className="input-row-orig">
+                        <div className="input-label-orig">Challan No:</div>
+                        <div className="input-value-orig" style={{ color: '#1e3a8a', fontWeight: 'bold' }}>{challan.challanNo}</div>
+                    </div>
+                    <div className="input-row-orig" style={{ height: '40px' }}>
+                        <div className="input-label-orig">Challan Date:</div>
+                        <div className="input-value-orig">{challan.challanDate}</div>
+                    </div>
+                    <div className="input-row-orig">
+                        <div className="input-label-orig">PO No:</div>
+                        <div className="input-value-orig">{order?.orderNo || ''}</div>
+                    </div>
+                    <div className="input-row-orig">
+                        <div className="input-label-orig">PO Date:</div>
+                        <div className="input-value-orig">{order?.orderDate || ''}</div>
+                    </div>
+                    <div className="input-row-orig">
+                        <div className="input-label-orig">Order Page Number:</div>
+                        <div className="input-value-orig">1 of 1</div>
+                    </div>
+                </div>
+            </div>
+
+            <table>
+                <tbody>
+                  <tr>
+                      <td colSpan={3} className="section-header-center-orig">VEHICLE TRANSPORT DETAILS</td>
+                  </tr>
+                  <tr>
+                      <td style={{ width: '33.33%' }}><b>Vehicle Number:</b> {vehicleNo}</td>
+                      <td style={{ width: '33.33%' }}><b>Driver Mobile No:</b> {driverMobile}</td>
+                      <td style={{ width: '33.33%' }}><b>Payment Terms :</b> {order?.paymentTerms || ''}</td>
+                  </tr>
+                </tbody>
+            </table>
+
+            <table className="item-table-orig">
+                <thead>
+                  <tr>
+                      <th style={{ width: '5%' }}>Sr No</th>
+                      <th style={{ width: '25%' }}>Item</th>
+                      <th style={{ width: '10%' }}>Grade</th>
+                      <th style={{ width: '10%' }}>Thickness</th>
+                      <th style={{ width: '10%' }}>Width</th>
+                      <th style={{ width: '10%' }}>Length</th>
+                      <th style={{ width: '10%' }}>Nos</th>
+                      <th style={{ width: '10%' }}>Kg</th>
+                      <th style={{ width: '10%' }}>Rate</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {items.map((item, index) => (
+                    <tr key={index}>
+                      <td>{index + 1}</td>
+                      <td style={{ textAlign: 'left', paddingLeft: '8px' }}>{item.partName || item.drawingNumber || '-'}</td>
+                      <td>{item.materialGrade || '-'}</td>
+                      <td>{item.thickness ? `${item.thickness.replace(/mm/gi, '')}mm` : '-'}</td>
+                      <td>{item.width || item.innerDiameter || '-'}</td>
+                      <td>{item.length || item.outerDiameter || '-'}</td>
+                      <td>{item.unitType === 'Nos' ? item.quantity : '-'}</td>
+                      <td>{item.unitType === 'Kg' ? item.quantity : item.totalWeight || '-'}</td>
+                      <td>{item.rate > 0 ? `₹${item.rate.toLocaleString('en-IN')}` : '-'}</td>
+                    </tr>
+                  ))}
+                  {emptyRows.map((_, index) => (
+                    <tr key={`empty-${index}`}>
+                      <td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td>
+                    </tr>
+                  ))}
+                  <tr className="total-row-orig">
+                      <td colSpan={6} style={{ textAlign: 'center' }}>Total</td>
+                      <td style={{ textAlign: 'center' }}>{totalNos > 0 ? totalNos : ''}</td>
+                      <td style={{ textAlign: 'center' }}>{totalKg > 0 ? totalKg.toLocaleString('en-IN') : ''}</td>
+                      <td></td>
+                  </tr>
+                </tbody>
+            </table>
+
+            <div style={{ border: '1px solid #000', marginBottom: '10px' }}>
+                <div className="section-header-orig" style={{ padding: '6px' }}>COMMERCIAL / QUALITY DETAILS</div>
+                <div style={{ display: 'flex' }}>
+                    <div style={{ flex: 6, borderRight: '1px solid #000' }}>
+                        <div style={{ padding: '6px', height: '50px', borderBottom: '1px solid #000', display: 'flex', alignItems: 'center' }}>
+                          <b>Delivery Address :</b> <span style={{ marginLeft: '8px' }}>{order?.deliveryAddress || party?.deliveryAddress || ''}</span>
+                        </div>
+                        <div style={{ padding: '6px', display: 'flex', alignItems: 'center' }}>
+                          <b>TC :</b> <div style={{ flexGrow: 1, borderBottom: '1px solid #000', margin: '0 15px', textAlign: 'center' }}>{tcVal}</div> 
+                          <b>UT :</b> <div style={{ flexGrow: 1, borderBottom: '1px solid #000', margin: '0 15px', textAlign: 'center' }}>{utVal}</div>
+                        </div>
+                    </div>
+                    <div style={{ flex: 4 }}>
+                        <div style={{ padding: '6px', borderBottom: '1px solid #000', display: 'flex', alignItems: 'center' }}>
+                          <b>Loading Charge:</b> <div style={{ flexGrow: 1, borderBottom: '1px solid #000', marginLeft: '10px', textAlign: 'center' }}>{loadingVal}</div>
+                        </div>
+                        <div style={{ padding: '6px', display: 'flex', alignItems: 'center' }}>
+                          <b>Transport Charge:</b> <div style={{ flexGrow: 1, borderBottom: '1px solid #000', marginLeft: '10px', textAlign: 'center' }}>{transportVal}</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div className="terms-box-orig">
+                <div className="section-header-orig" style={{ padding: '6px' }}>GENERAL TERMS AND CONDITIONS</div>
+                <div className="terms-content-orig">
+                    1. Material should be supplied strictly as per challan details. &nbsp;&nbsp;&nbsp; 2. Final weight / quantity will be considered as mutually agreed.<br/>
+                    3. Loading and transport charges as mentioned above. &nbsp;&nbsp;&nbsp; 4. Please verify material at the time of delivery.
+                </div>
+            </div>
+
+            <div className="signature-row-orig">
+                <div className="sig-box-orig">
+                    <div>Receiver's Signature</div>
+                </div>
+                <div className="sig-box-orig">
+                    <div>Dispatch</div>
+                </div>
+                <div className="sig-box-orig right-align-orig">
+                    <div style={{ alignSelf: 'flex-start' }}>For</div>
+                    <div style={{ fontSize: '14px' }}>For Jagdamba Profile</div>
+                </div>
+            </div>
+
+        </div>
+      </div>
+    );
+  }
+
+  function ChallanDuplicateCopy() {
+    return (
+      <div className="challan-container">
+        <div className="inner-border">
+
+          <div className="header">
+            <div className="logo-container">
+              <img src="/logo.png" alt="Shree Jagdamba Steel Profiles" style={{ width: '140px', height: 'auto' }} />
+            </div>
+            <div className="header-text">
+              <div className="company-title">SHREE JAGDAMBA STEEL PROFILES</div>
+              <div className="company-details">
+                <div>503/1A, GIDC Makarpura, Vadodara - 390010.</div>
+                <div>GST No: 24AJGPP9863R1Z5</div>
+                <div className="contact-row">
+                  <span>Mo: 8799617251, 8799617252, 8799617254, 9824025001</span>
+                  <span>Email: jagdambaprofile@gmail.com</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div className="document-title">
+            DELIVERY CHALLAN | DUPLICATE COPY
+          </div>
+
+          <div className="grid-2-col">
+            <div className="section-header" style={{ borderRight: '1px solid #fff' }}>PARTY DETAILS</div>
+            <div className="section-header">CHALLAN / ORDER DETAILS</div>
+
+            <div className="grid-cell"><label>Party Name:</label> {challan.partyName}</div>
+            <div className="grid-cell no-right-border"><label>Challan No:</label> <span style={{ color: '#1e3a8a', fontWeight: 'bold' }}>{challan.challanNo}</span></div>
+
+            <div className="grid-cell"><label>Address:</label> {party?.deliveryAddress || order?.deliveryAddress || ''}</div>
+            <div className="grid-cell no-right-border"><label>Challan Date:</label> {challan.challanDate}</div>
+
+            <div className="grid-cell"><label>GST Number:</label> {party?.gstNumber || order?.gstType || ''}</div>
+            <div className="grid-cell no-right-border"><label>PO No:</label> {order?.orderNo || ''}</div>
+
+            <div className="grid-cell"><label>Mobile Number:</label> {party?.mobileNumber || order?.mobileNumber || ''}</div>
+            <div className="grid-cell no-right-border"><label>PO Date:</label> {order?.orderDate || ''}</div>
+
+            <div className="grid-cell"><label>Email ID :</label> {party?.email || ''}</div>
+            <div className="grid-cell no-right-border"><label>Order Page Number:</label> 1 of 1</div>
+          </div>
+
+          <div className="section-header" style={{ textAlign: 'center' }}>VEHICLE TRANSPORT DETAILS</div>
+          <div className="transport-grid">
+            <div className="grid-cell" style={{ borderBottom: 'none' }}><label>Vehicle Number:</label> {vehicleNo}</div>
+            <div className="grid-cell" style={{ borderBottom: 'none' }}><label>Driver Mobile No:</label> {driverMobile}</div>
+            <div className="grid-cell no-right-border" style={{ borderBottom: 'none' }}><label>Payment Terms :</label> {order?.paymentTerms || ''}</div>
+          </div>
+
+          <table className="items-table">
+            <thead>
+              <tr>
+                <th style={{ width: '5%' }}>Sr No</th>
+                <th style={{ width: '25%' }}>Item</th>
+                <th style={{ width: '10%' }}>Grade</th>
+                <th style={{ width: '10%' }}>Thickness</th>
+                <th style={{ width: '10%' }}>Width</th>
+                <th style={{ width: '10%' }}>Length</th>
+                <th style={{ width: '10%' }}>Nos</th>
+                <th style={{ width: '10%' }}>Kg</th>
+                <th style={{ width: '10%' }}>Rate</th>
+              </tr>
+            </thead>
+            <tbody>
+              {items.map((item, index) => (
+                <tr key={index} className="empty-row">
+                  <td>{index + 1}</td>
+                  <td style={{ textAlign: 'left', paddingLeft: '8px' }}>{item.partName || item.drawingNumber || '-'}</td>
+                  <td>{item.materialGrade || '-'}</td>
+                  <td>{item.thickness ? `${item.thickness.replace(/mm/gi, '')}mm` : '-'}</td>
+                  <td>{item.width || item.innerDiameter || '-'}</td>
+                  <td>{item.length || item.outerDiameter || '-'}</td>
+                  <td>{item.unitType === 'Nos' ? item.quantity : '-'}</td>
+                  <td>{item.unitType === 'Kg' ? item.quantity : item.totalWeight || '-'}</td>
+                  <td>{item.rate > 0 ? `₹${item.rate.toLocaleString('en-IN')}` : '-'}</td>
+                </tr>
+              ))}
+              {emptyRows.map((_, index) => (
+                <tr key={`empty-${index}`} className="empty-row">
+                  <td>{items.length > 0 ? items.length + index + 1 : ''}</td>
+                  <td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td>
+                </tr>
+              ))}
+              <tr className="total-row">
+                <td colSpan={6} style={{ textAlign: 'center', borderBottom: 'none' }}>Total</td>
+                <td style={{ borderBottom: 'none' }}>{totalNos > 0 ? totalNos : ''}</td>
+                <td style={{ borderBottom: 'none' }}>{totalKg > 0 ? totalKg.toLocaleString('en-IN') : ''}</td>
+                <td style={{ borderBottom: 'none' }}></td>
+              </tr>
+            </tbody>
+          </table>
+
+          <div className="section-header" style={{ borderTop: '1px solid #000' }}>COMMERCIAL / QUALITY DETAILS</div>
+          <div className="commercial-grid">
+            <div className="grid-cell" style={{ gridRow: 'span 2', alignItems: 'flex-start', paddingTop: '10px' }}>
+              <label>Delivery Address :</label> {order?.deliveryAddress || party?.deliveryAddress || ''}
+            </div>
+            <div className="grid-cell no-right-border" style={{ display: 'flex' }}>
+              <label>Loading Charge:</label>
+              <div className="underline-input">
+                {order?.loadingUnloadingCharges && order.loadingUnloadingCharges > 0 ? `₹${order.loadingUnloadingCharges.toLocaleString('en-IN')}` : ''}
+              </div>
+            </div>
+            <div className="grid-cell no-right-border" style={{ display: 'flex' }}>
+              <label>Transport Charge:</label>
+              <div className="underline-input">
+                {order?.transportationCharges && order.transportationCharges > 0 ? `₹${order.transportationCharges.toLocaleString('en-IN')}` : ''}
+              </div>
+            </div>
+            <div className="grid-cell" style={{ borderBottom: 'none', display: 'flex' }}>
+              <label>TC :</label>
+              <div className="underline-input">
+                {order?.tc === 'Yes' ? 'YES' : ''}
+              </div>
+            </div>
+            <div className="grid-cell no-right-border" style={{ borderBottom: 'none', display: 'flex' }}>
+              <label>UT :</label>
+              <div className="underline-input">
+                {order?.ut === 'Yes' ? 'YES' : ''}
+              </div>
+            </div>
+          </div>
+
+          <div className="section-header">GENERAL TERMS AND CONDITIONS</div>
+          <div className="terms-content">
+            <ul className="terms-list">
+              <li>1. Material should be supplied strictly as per challan details.</li>
+              <li>2. Final weight / quantity will be considered as mutually agreed.</li>
+              <li>3. Loading and transport charges as mentioned above.</li>
+              <li>4. Please verify material at the time of delivery.</li>
+            </ul>
+          </div>
+
+          <div className="signatures-section">
+            <div className="signature-box">
+              <span>Receiver's Signature</span>
+            </div>
+            <div className="signature-box">
+              <span>Dispatch</span>
+            </div>
+            <div className="signature-box">
+              <span style={{ alignSelf: 'flex-start' }}>For</span>
+              <span className="sig-label-bottom">For Shree Jagdamba Steel Profiles</span>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    );
+  }
 };

@@ -1,0 +1,56 @@
+import paramiko
+import sys
+
+def update_live_server():
+    host = "187.127.160.28"
+    user = "root"
+    pw = "Jagdamba@2026"
+
+    client = paramiko.SSHClient()
+    client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+    
+    print(f"Connecting to live server {host}...")
+    try:
+        client.connect(host, username=user, password=pw)
+        print("Connected successfully!")
+    except Exception as e:
+        print(f"Failed to connect: {e}")
+        sys.exit(1)
+
+    commands = [
+        "cd /root/JAGDAMBA-PROFILE && git pull origin master",
+        "cd /root/JAGDAMBA-PROFILE && npm run build"
+    ]
+
+    for cmd in commands:
+        print(f"\nExecuting command: {cmd}")
+        stdin, stdout, stderr = client.exec_command(cmd)
+        
+        # Stream the output in real-time
+        encoding = sys.stdout.encoding or 'utf-8'
+        while True:
+            try:
+                line = stdout.readline()
+                if not line:
+                    break
+                clean_line = line.strip().encode(encoding, errors='replace').decode(encoding)
+                print(clean_line)
+            except Exception:
+                break
+            
+        err = stderr.read().decode('utf-8', errors='replace').strip()
+        if err:
+            print(f"Stderr output:\n{err}")
+            
+        exit_status = stdout.channel.recv_exit_status()
+        print(f"Command exit status: {exit_status}")
+        if exit_status != 0:
+            print("Deployment halted due to command failure.")
+            client.close()
+            sys.exit(1)
+
+    client.close()
+    print("\nLive server updated successfully!")
+
+if __name__ == "__main__":
+    update_live_server()

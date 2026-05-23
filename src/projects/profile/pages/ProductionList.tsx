@@ -4,7 +4,7 @@ import { LayoutList, Search, CheckCircle2, Clock, User, ClipboardList, AlertCirc
 import { generateOrderEntryPDF, generateSalesOrderPDF } from '../utils/pdfGenerator';
 
 export const ProductionList: React.FC = () => {
-   const { t, orders, updateItemCompletedQty, updateItemWorker, role } = useAppContext();
+   const { t, orders, updateItemCompletedQty, updateItemWorker, role, parties } = useAppContext();
   const [search, setSearch] = useState('');
   const [workerFilter, setWorkerFilter] = useState('All');
   const [statusFilter, setStatusFilter] = useState('All');
@@ -223,7 +223,7 @@ export const ProductionList: React.FC = () => {
                       <button
                         onClick={() => {
                           const order = orders.find(o => o.id === orderId);
-                          if (order) generateSalesOrderPDF(order);
+                          if (order) generateSalesOrderPDF(order, parties);
                         }}
                         className="p-1.5 text-indigo-600 bg-indigo-50 hover:bg-indigo-100 border border-indigo-100 rounded-lg transition-colors"
                         title="Download Sales Order"

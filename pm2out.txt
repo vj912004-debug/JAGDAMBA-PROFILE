@@ -1,0 +1,35 @@
+ Describing process with id 2 - name frontend 
+┌───────────────────┬────────────────────────────────────┐
+│ status            │ online                             │
+│ name              │ frontend                           │
+│ namespace         │ default                            │
+│ version           │ N/A                                │
+│ restarts          │ 0                                  │
+│ uptime            │ 3m                                 │
+│ script path       │ /usr/bin/bash                      │
+│ script args       │ -c npx serve -s dist -p 80         │
+│ error log path    │ /root/.pm2/logs/frontend-error.log │
+│ out log path      │ /root/.pm2/logs/frontend-out.log   │
+│ pid path          │ /root/.pm2/pids/frontend-2.pid     │
+│ interpreter       │ none                               │
+│ interpreter args  │ N/A                                │
+│ script id         │ 2                                  │
+│ exec cwd          │ /root                              │
+│ exec mode         │ fork_mode                          │
+│ node.js version   │ N/A                                │
+│ node env          │ N/A                                │
+│ watch & reload    │ ✘                                  │
+│ unstable restarts │ 0                                  │
+│ created at        │ 2026-05-17T02:38:33.016Z           │
+└───────────────────┴────────────────────────────────────┘
+ Divergent env variables from local env 
+┌────────────────┬───────────────────────────────────────┐
+│ SSH_CONNECTION │ 152.59.53.196 16060 187.127.160.28 22 │
+│ XDG_SESSION_ID │ 81                                    │
+│ SSH_CLIENT     │ 152.59.53.196 16060 22                │
+└────────────────┴───────────────────────────────────────┘
+
+ Add your own code metrics: http://bit.ly/code-metrics
+ Use `pm2 logs frontend [--lines 1000]` to display logs
+ Use `pm2 env 2` to display environment variables
+ Use `pm2 monit` to monitor CPU and Memory usage frontend

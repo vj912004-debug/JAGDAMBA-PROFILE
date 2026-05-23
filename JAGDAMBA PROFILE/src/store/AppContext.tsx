@@ -422,21 +422,131 @@ const translations: Record<Language, Record<string, string>> = {
 
 const today = new Date().toISOString().split('T')[0];
 
-const seedOrders: Order[] = [];
+const seedOrders: Order[] = [
+  {
+    id: "ord-101",
+    orderNo: "JP-1205",
+    orderDate: "2026-05-15",
+    deliveryDate: "2026-05-22",
+    partyName: "SUPERIOR STEEL FABRICATORS",
+    contactPerson: "Mr. Rajan Patel",
+    mobileNumber: "9876543210",
+    location: "Vadodara",
+    deliveryAddress: "PLOT NO. 23/B, GIDC MAKARPURA, VADODARA - 390010",
+    handledBy: "Vraj Patel",
+    remark: "High accuracy profile cutting required",
+    stage: "Challan Done",
+    urgent: true,
+    deliveryOption: "Self Pick",
+    paymentTerms: "30 Days Credit",
+    termsAndConditions: "Material standard as per drawings.",
+    gstType: "CGST/SGST",
+    transportationCharges: 1500,
+    loadingUnloadingCharges: 500,
+    customerPONo: "PO-SSF-2026-89",
+    customerPODate: "2026-05-14",
+    tc: "Yes",
+    ut: "No",
+    items: [
+      {
+        id: "item-1",
+        cuttingType: "CNC Profile",
+        materialType: "MS",
+        materialGrade: "IS 2062 E250",
+        thickness: "25mm",
+        plateSize: "2000x3000",
+        drawingNumber: "DRW-SSF-01",
+        partName: "Flange Plate 650 OD",
+        quantity: 5,
+        completedQty: 5,
+        dispatchedQty: 5,
+        unitType: "Nos",
+        rate: 3400,
+        amount: 17000,
+        scrapBelongsTo: "Customer",
+        specialInstructions: "Clean edges, no burr.",
+        fileName: null,
+        itemStatus: "Completed"
+      },
+      {
+        id: "item-2",
+        cuttingType: "CNC Profile",
+        materialType: "MS",
+        materialGrade: "IS 2062 E350",
+        thickness: "40mm",
+        plateSize: "1500x3000",
+        drawingNumber: "DRW-SSF-02",
+        partName: "Support Ring 450 ID",
+        quantity: 3,
+        completedQty: 3,
+        dispatchedQty: 3,
+        unitType: "Nos",
+        rate: 5800,
+        amount: 17400,
+        scrapBelongsTo: "Our Company",
+        specialInstructions: "UT Checked Plate.",
+        fileName: null,
+        itemStatus: "Completed"
+      }
+    ],
+    createdAt: "2026-05-15T10:00:00.000Z"
+  }
+];
 const seedPlates: Plate[] = [];
 const seedUsages: Usage[] = [];
-const seedDispatches: DispatchRecord[] = [];
-const seedChallans: ChallanRecord[] = [];
+const seedDispatches: DispatchRecord[] = [
+  {
+    id: "disp-101",
+    orderId: "ord-101",
+    orderNo: "JP-1205",
+    partyName: "SUPERIOR STEEL FABRICATORS",
+    readyQty: 8,
+    dispatchQty: 8,
+    dispatchDate: "2026-05-20",
+    vehicleNo: "GJ-06-ZZ-4521",
+    deliveryNote: "DN-8964",
+    pendingQty: 0,
+    remark: "Delivered in perfect condition"
+  }
+];
+const seedChallans: ChallanRecord[] = [
+  {
+    id: "ch-101",
+    challanNo: "CH-2026-001",
+    challanDate: "2026-05-20",
+    orderNo: "JP-1205",
+    partyName: "SUPERIOR STEEL FABRICATORS",
+    taxableAmount: 34400,
+    gstAmount: 6192,
+    totalAmount: 40592,
+    amountPaid: 0,
+    balanceAmount: 40592,
+    dueDate: "2026-05-27",
+    status: "Pending"
+  }
+];
 const seedPurchaseOrders: PurchaseOrder[] = [];
 const seedPurchaseReceipts: PurchaseReceipt[] = [];
-const seedParties: PartyMaster[] = [];
+const seedParties: PartyMaster[] = [
+  {
+    id: "party-101",
+    partyName: "SUPERIOR STEEL FABRICATORS",
+    contactPerson: "Mr. Rajan Patel",
+    mobileNumber: "9876543210",
+    location: "Vadodara",
+    deliveryAddress: "PLOT NO. 23/B, GIDC MAKARPURA, VADODARA - 390010",
+    paymentTerms: "30 Days Credit",
+    gstNumber: "24AAACS1234F1Z0",
+    email: "superiorsteel@gmail.com"
+  }
+];
 
 // ─── LocalStorage Helpers ─────────────────────────────────────
 
 const STORAGE_KEY = 'jagdamba_erp_data';
 const AUTH_KEY = 'jagdamba_erp_auth';
 const STORAGE_VERSION_KEY = 'jagdamba_erp_data_version';
-const CURRENT_VERSION = 'v3_empty_live';
+const CURRENT_VERSION = 'v4_seeded';
 
 interface StoredData {
   orders: Order[];
@@ -494,8 +604,13 @@ function saveToStorage(data: StoredData) {
 const AppContext = createContext<AppContextType | undefined>(undefined);
 
 export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
-  const [user, setUserState] = useState<User | null>(null);
-  const [role, setRole] = useState<Role>('Admin');
+  const [user, setUserState] = useState<User | null>(() => {
+    return loadAuth();
+  });
+  const [role, setRole] = useState<Role>(() => {
+    const storedAuth = loadAuth();
+    return storedAuth ? storedAuth.role : 'Admin';
+  });
   const [language, setLanguage] = useState<Language>('English');
   const [branch, setBranch] = useState<string>('All');
 

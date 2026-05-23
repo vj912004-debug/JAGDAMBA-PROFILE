@@ -119,7 +119,17 @@ const Portal = ({ onSelect }: { onSelect: (project: 'profile' | 'client') => voi
 };
 
 export default function App() {
-  const [selectedProject, setSelectedProject] = useState<'profile' | 'client' | null>(null);
+  const [selectedProject, setSelectedProject] = useState<'profile' | 'client' | null>(() => {
+    if (typeof window !== 'undefined') {
+      return (localStorage.getItem('jagdamba-project') as 'profile' | 'client') || null;
+    }
+    return null;
+  });
+
+  const handleSelect = (project: 'profile' | 'client') => {
+    setSelectedProject(project);
+    localStorage.setItem('jagdamba-project', project);
+  };
 
   if (selectedProject === 'profile') {
     return (
@@ -145,5 +155,5 @@ export default function App() {
     );
   }
 
-  return <Portal onSelect={setSelectedProject} />;
+  return <Portal onSelect={handleSelect} />;
 }

@@ -10,6 +10,9 @@
   }
 }
 
+/* ==========================================
+   ANIMATIONS
+   ========================================== */
 .fade-in {
   animation: fadeIn 0.5s ease-out;
 }
@@ -40,7 +43,260 @@
   }
 }
 
+/* ==========================================
+   DELIVERY CHALLAN DESIGN (Tailwind-Proofed)
+   ========================================== */
+.challan-container {
+  width: 210mm !important;
+  /* Forced A4 width */
+  background-color: white !important;
+  border: 2px solid #000 !important;
+  /* Forced outer border */
+  padding: 4px;
+  font-family: Arial, sans-serif !important;
+  color: #000 !important;
+  margin: 0 auto;
+  box-sizing: border-box;
+}
+
+.challan-container * {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+.inner-border {
+  border: 1px solid #000 !important;
+  /* Forced inner border */
+  display: flex;
+  flex-direction: column;
+}
+
+/* Header Section */
+.header {
+  display: flex;
+  align-items: center;
+  padding: 15px;
+  border-bottom: 1px solid #000 !important;
+}
+
+.logo-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-right: 20px;
+  gap: 4px;
+}
+
+.logo-mark {
+  font-size: 50px;
+  color: #f26522 !important;
+  font-weight: bold;
+  line-height: 1.1;
+  text-align: center;
+  margin-bottom: 2px;
+}
+
+.logo-text-small {
+  font-size: 9px;
+  text-align: center;
+  font-weight: bold;
+  color: #333 !important;
+}
+
+.header-text {
+  flex-grow: 1;
+}
+
+.company-title {
+  color: #f26522 !important;
+  font-size: 32px;
+  font-weight: bold;
+  margin-bottom: 10px;
+  text-transform: uppercase;
+}
+
+.company-details {
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.contact-row {
+  display: flex;
+  justify-content: space-between;
+}
+
+/* Document Title */
+.document-title {
+  text-align: center;
+  font-size: 16px;
+  font-weight: bold;
+  padding: 8px;
+  border-bottom: 1px solid #000 !important;
+  background-color: #f9f9f9 !important;
+}
+
+/* Section Headers */
+.section-header {
+  background-color: #000 !important;
+  /* Forces black background */
+  color: #fff !important;
+  /* Forces white text */
+  font-size: 12px;
+  font-weight: bold;
+  padding: 6px 10px;
+  border-bottom: 1px solid #000 !important;
+}
+
+/* Grid Layouts for Sections */
+.grid-2-col {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+}
+
+.grid-cell {
+  border-bottom: 1px solid #000 !important;
+  /* Forces grid lines */
+  border-right: 1px solid #000 !important;
+  /* Forces grid lines */
+  padding: 8px 10px;
+  font-size: 12px;
+  min-height: 35px;
+  display: flex;
+  align-items: center;
+}
+
+.grid-cell.no-right-border {
+  border-right: none !important;
+}
+
+.grid-cell label {
+  font-weight: bold;
+  margin-right: 10px;
+}
+
+/* Transport Section */
+.transport-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  border-bottom: 1px solid #000 !important;
+}
+
+/* Items Table */
+.items-table {
+  width: 100%;
+  border-collapse: collapse !important;
+}
+
+.items-table th,
+.items-table td {
+  border: 1px solid #000 !important;
+  /* Forces table borders */
+  padding: 6px;
+  text-align: center;
+  font-size: 12px;
+}
+
+.items-table th {
+  background-color: #000 !important;
+  /* Forces black headers */
+  color: #fff !important;
+  font-weight: bold;
+  border-top: none !important;
+}
+
+.items-table tr.empty-row td {
+  height: 25px;
+}
+
+.items-table th:first-child,
+.items-table td:first-child {
+  border-left: none !important;
+}
+
+.items-table th:last-child,
+.items-table td:last-child {
+  border-right: none !important;
+}
+
+.total-row td {
+  font-weight: bold;
+}
+
+/* Commercial / Quality Details */
+.commercial-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  border-bottom: 1px solid #000 !important;
+}
+
+/* Terms and Conditions */
+.terms-content {
+  padding: 10px 15px;
+  font-size: 11px;
+  border-bottom: 1px solid #000 !important;
+}
+
+.terms-list {
+  list-style-type: none;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px 20px;
+}
+
+/* Signatures Section */
+.signatures-section {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1.5fr;
+  min-height: 80px;
+}
+
+.signature-box {
+  padding: 10px;
+  font-size: 12px;
+  font-weight: bold;
+  border-right: 1px solid #000 !important;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.signature-box:last-child {
+  border-right: none !important;
+  align-items: flex-end;
+}
+
+.sig-label-bottom {
+  align-self: flex-end;
+  width: 100%;
+  text-align: right;
+}
+
+.underline-input {
+  flex-grow: 1;
+  border-bottom: 1px solid #000 !important;
+  height: 15px;
+  margin-left: 5px;
+  min-width: 50px;
+}
+
+/* ==========================================
+   PRINT MEDIA QUERIES (Fixed for Layout)
+   ========================================== */
 @media print {
+
+  /* Ensure browser prints black backgrounds and orange text */
+  body {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  /* Force A4 Size */
+  @page {
+    size: A4 portrait;
+    margin: 5mm;
+  }
+
   body * {
     visibility: hidden;
   }
@@ -62,7 +318,8 @@
     position: absolute;
     left: 0;
     top: 0;
-    width: 100%;
+    width: 210mm !important;
+    /* Lock width for printing */
     margin: 0;
     padding: 0;
     box-shadow: none;

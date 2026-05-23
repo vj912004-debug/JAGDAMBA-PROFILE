@@ -1,0 +1,3 @@
+import { generateTCPDFBase64 } from '../utils/pdfGenerator';
+      tcDataToSend = generateTCPDFBase64(selectedTC);
+      tcDataToSend = generateTCPDFBase64(selectedTC);

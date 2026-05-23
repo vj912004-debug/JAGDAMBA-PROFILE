@@ -659,7 +659,7 @@ export const OrderEntry: React.FC = () => {
               </button>
               <button 
                 onClick={() => {
-                  if (currentOrder) generateSalesOrderPDF(currentOrder);
+                  if (currentOrder) generateSalesOrderPDF(currentOrder, parties);
                 }} 
                 className="flex items-center gap-2 px-4 py-2 text-sm font-semibold text-white bg-indigo-600 hover:bg-indigo-700 rounded-xl transition-colors shadow-sm"
               >

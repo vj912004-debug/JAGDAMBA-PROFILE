@@ -1,0 +1,5 @@
+commit fa156d587febb539fc05572a1d8d922765205f1f
+Author: vj912004-debug <vj912004@gmail.com>
+Date:   Sun May 17 08:07:36 2026 +0530
+
+    Fix TC Attachment Error and WhatsApp Payload Limit

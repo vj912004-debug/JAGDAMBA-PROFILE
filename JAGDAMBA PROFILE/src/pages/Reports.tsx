@@ -6,7 +6,7 @@ import { generateChallanPDF, generateWorkerTaskPDF, generateWorkerPerformancePDF
 type ReportTab = 'Daily' | 'Party' | 'ItemWise' | 'Shape' | 'ChallanHistory' | 'Worker' | 'Pending' | 'Production' | 'Material';
 
 export const Reports: React.FC = () => {
-  const { t, orders, plates, usages, challans, branch } = useAppContext();
+  const { t, orders, plates, usages, challans, branch, parties, dispatches } = useAppContext();
   const [activeTab, setActiveTab] = useState<ReportTab>('Daily');
   const [selectedParty, setSelectedParty] = useState('');
   const [dateFrom, setDateFrom] = useState('');
@@ -226,7 +226,7 @@ export const Reports: React.FC = () => {
                           <button
                             onClick={() => {
                               const order = orders.find(o => o.orderNo === c.orderNo);
-                              generateChallanPDF(c, order);
+                              generateChallanPDF(c, order, parties, dispatches);
                             }}
                             className="p-2 bg-teal-100 text-teal-600 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity"
                             title="Download PDF"
@@ -417,7 +417,7 @@ export const Reports: React.FC = () => {
                           <button 
                             onClick={() => {
                               const order = orders.find(o => o.orderNo === c.orderNo);
-                              generateChallanPDF(c, order);
+                              generateChallanPDF(c, order, parties, dispatches);
                             }}
                             className="p-1.5 text-teal-600 bg-teal-50 hover:bg-teal-100 rounded-lg transition-colors"
                           >

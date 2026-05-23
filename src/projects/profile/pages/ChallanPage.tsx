@@ -6,7 +6,7 @@ import toast from 'react-hot-toast';
 import { ChallanPrint } from '../components/ChallanPrint';
 
 export const ChallanPage: React.FC = () => {
-  const { t, role, challans, setChallans, orders, dispatches, nextChallanNo } = useAppContext();
+  const { t, role, challans, setChallans, orders, dispatches, nextChallanNo, parties } = useAppContext();
   const [showCreate, setShowCreate] = useState(false);
   const [previewChallan, setPreviewChallan] = useState<{ challan: ChallanRecord, order?: Order } | null>(null);
 
@@ -200,7 +200,7 @@ export const ChallanPage: React.FC = () => {
                       <button
                         onClick={() => {
                           const order = orders.find(o => o.orderNo === item.orderNo);
-                          generateChallanPDF(item, order);
+                          generateChallanPDF(item, order, parties, dispatches);
                           toast.success(`Downloading ${item.challanNo}`);
                         }}
                         className="p-1.5 text-teal-600 hover:bg-teal-50 rounded-lg transition-colors"

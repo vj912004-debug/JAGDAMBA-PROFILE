@@ -6,8 +6,9 @@ interface PurchaseOrderPrintProps {
 }
 
 export const PurchaseOrderPrint: React.FC<PurchaseOrderPrintProps> = ({ po }) => {
-  const emptyRowsCount = 12 - po.items.length;
-  const emptyRows = Array.from({ length: Math.max(0, emptyRowsCount) });
+  const items = po.items || [];
+  const emptyRowsCount = Math.max(0, 12 - items.length);
+  const emptyRows = Array.from({ length: emptyRowsCount });
 
   return (
     <div className="bg-white p-0 mx-auto text-black font-sans shadow-lg print:shadow-none w-[210mm] min-h-[297mm]" id="po-print-area">
@@ -19,225 +20,355 @@ export const PurchaseOrderPrint: React.FC<PurchaseOrderPrintProps> = ({ po }) =>
         #po-print-area {
           font-family: Arial, sans-serif;
           font-size: 12px;
-          color: #000;
-          background: white;
-          padding: 20px;
-          box-sizing: border-box;
-          width: 210mm;
           margin: 0 auto;
+          padding: 15px;
+          background-color: #fff;
+          width: 210mm;
+          min-height: 297mm;
+          box-sizing: border-box;
         }
-        .header {
+        
+        /* Main wrapper for the outer double border effect */
+        .outer-container {
+          border: 2px solid #ccc;
+          padding: 8px;
+          box-sizing: border-box;
+          background-color: #fff;
+          min-height: calc(297mm - 30px);
+          display: flex;
+          flex-direction: column;
+        }
+        
+        /* Inner black border */
+        .inner-container {
+          border: 1px solid #000;
+          display: flex;
+          flex-direction: column;
+          flex-grow: 1;
+          box-sizing: border-box;
+        }
+        
+        /* Header Section */
+        .main-header {
           text-align: center;
-          border: 1px solid #ccc;
-          padding: 10px;
-          margin-bottom: 5px;
-        }
-        .header h1 {
-          color: #2c5a8d;
-          margin: 0;
-          font-size: 24px;
-          letter-spacing: 1px;
-        }
-        .header p {
-          margin: 5px 0;
+          background-color: #eef4fb; /* Light blue */
+          color: #1a4d8c;
+          font-size: 26px;
           font-weight: bold;
+          padding: 12px;
+          border-bottom: 1px solid #000;
+        }
+        .address-bar {
+          padding: 6px 10px;
+          border-bottom: 1px solid #000;
+          text-align: left;
         }
         .po-title {
           font-weight: bold;
-          border-top: 1px solid #ccc;
-          margin-top: 10px;
-          padding-top: 5px;
-          text-decoration: underline;
+          padding: 6px 10px;
+          border-bottom: 1px solid #000;
+          font-size: 14px;
+          text-align: left;
         }
-        .section-grid {
-          display: grid;
-          grid-template-columns: 2fr 1fr;
-        }
-        .section-box {
-          border: 1px solid #444;
-          margin-bottom: -1px;
-        }
+        
+        /* Section Headers */
         .section-header {
           background-color: #888;
-          color: white;
-          padding: 4px 10px;
+          color: #fff;
           font-weight: bold;
           text-align: center;
-          font-size: 11px;
-          text-transform: uppercase;
-        }
-        .field {
-          padding: 5px 10px;
+          padding: 6px;
+          border-bottom: 1px solid #000;
           display: flex;
+          box-sizing: border-box;
         }
-        .field label {
+        .section-header.full {
+          display: block;
+        }
+        .section-header .left-title {
+          flex: 6;
+          border-right: 1px solid #fff;
+          text-align: center;
+        }
+        .section-header .right-title {
+          flex: 4;
+          text-align: center;
+        }
+        
+        /* Split Layout for Party / PO Details */
+        .split-section {
+          display: flex;
+          border-bottom: 1px solid #000;
+        }
+        .split-left {
+          flex: 6;
+          border-right: 1px solid #000;
+          padding: 8px 10px;
+          box-sizing: border-box;
+        }
+        .split-right {
+          flex: 4;
+          padding: 8px 10px;
+          box-sizing: border-box;
+        }
+        
+        /* Reusable form line elements */
+        .form-row {
+          display: flex;
+          margin-bottom: 8px;
+          align-items: flex-end;
+        }
+        .form-label {
           font-weight: bold;
-          margin-right: 8px;
           white-space: nowrap;
+          margin-right: 5px;
         }
-        .field span {
+        .form-line {
           flex-grow: 1;
-          border-bottom: 1px dotted #ccc;
-          min-height: 1.2em;
+          border-bottom: 1px solid #000;
+          height: 14px; /* Creates the underline effect */
+          padding-left: 6px;
+          font-weight: bold;
+          font-size: 11.5px;
+          line-height: 14px;
+          text-align: left;
         }
-        .grid-2 {
-          display: grid;
-          grid-template-columns: 1fr 1fr;
+        
+        .full-section {
+          padding: 8px 10px;
+          border-bottom: 1px solid #000;
+          box-sizing: border-box;
         }
-        .items-table {
+    
+        /* Main Data Table */
+        .po-table {
           width: 100%;
           border-collapse: collapse;
-          margin-bottom: -1px;
+          border-bottom: 1px solid #000;
         }
-        .items-table th {
-          background-color: #d9eaf7;
-          border: 1px solid #444;
-          padding: 8px 4px;
+        .po-table th, .po-table td {
+          border: 1px solid #000;
+          text-align: center;
+          padding: 6px;
           font-size: 11px;
         }
-        .items-table td {
-          border: 1px solid #444;
-          height: 28px;
-          text-align: center;
+        .po-table th {
+          background-color: #eef4fb;
+          font-weight: bold;
         }
-        .text-right { text-align: right !important; padding-right: 10px; }
-        .bold { font-weight: bold; }
-        .note { 
-          padding: 8px 10px; 
-          margin: 0; 
-          border-top: 1px solid #444;
+        .po-table th:first-child, .po-table td:first-child {
+          border-left: none; /* Align to the container border */
         }
+        .po-table th:last-child, .po-table td:last-child {
+          border-right: none;
+        }
+        .item-row td {
+          height: 24px;
+        }
+        .empty-row td {
+          height: 24px; /* Fixed height for empty rows */
+        }
+        .totals-row td {
+          font-weight: bold;
+          background-color: #eee;
+          height: 26px;
+        }
+        .totals-row .no-border {
+          border-left: none;
+          border-bottom: none;
+          background-color: #fff;
+        }
+        
+        /* Terms and Conditions list */
         .terms {
-          padding: 10px 30px;
-          margin: 0;
-          font-size: 10.5px;
-          line-height: 1.4;
+          font-size: 11px;
+          text-align: left;
         }
-        .footer-sign {
-          display: grid;
-          grid-template-columns: 1fr 1fr 1.5fr;
+        .terms ol {
+          margin: 5px 0 5px 15px;
+          padding: 0;
+        }
+        .terms li {
+          margin-bottom: 3px;
+        }
+        
+        /* Footer Signatures */
+        .footer-signatures {
+          display: flex;
           text-align: center;
+          font-weight: bold;
+          margin-top: auto; /* Push signature block to bottom */
         }
-        .sign-box {
-          border: 1px solid #444;
-          height: 90px;
+        .sig-box {
+          flex: 1;
+          border-right: 1px solid #000;
           display: flex;
           flex-direction: column;
           justify-content: space-between;
-          padding: 10px;
+          min-height: 80px;
+          padding: 15px 10px 10px 10px;
+          box-sizing: border-box;
         }
-        .company-name { font-weight: bold; margin-bottom: 10px; }
-        .sign-space { flex-grow: 1; }
+        .sig-box:last-child {
+          border-right: none;
+        }
       `}</style>
 
-      <header className="header">
-        <h1>JAGDAMBA PROFILE</h1>
-        <p>504/1/A, GIDC Makarpura, Vadodara - 390010</p>
-        <div className="po-title">PURCHASE ORDER</div>
-      </header>
+      <div className="outer-container">
+        <div className="inner-container">
+          <div className="main-header">JAGDAMBA PROFILE</div>
+          <div className="address-bar">504/1/A, GIDC Makarpura, Vadodara - 390010</div>
+          <div className="po-title">PURCHASE ORDER</div>
 
-      <div className="section-grid">
-        <div className="section-box">
-          <div className="section-header">SUPPLIER / PARTY DETAILS</div>
-          <div className="field"><label>Party Name:</label><span>{po.supplierName}</span></div>
-          <div className="field"><label>Address:</label><span>{po.supplierAddress}</span></div>
-          <div className="field"><label>GST Number:</label><span>{po.supplierGST}</span></div>
-          <div className="field"><label>E-mail ID:</label><span>{po.supplierEmail}</span></div>
-        </div>
-        <div className="section-box">
-          <div className="section-header">PO DETAILS</div>
-          <div className="field"><label>PO No:</label><span>{po.poNumber}</span></div>
-          <div className="field"><label>PO Date:</label><span>{po.date}</span></div>
-          <div className="field"><label>Mobile:</label><span>{po.supplierMobile}</span></div>
-        </div>
-      </div>
+          <div className="section-header">
+            <div className="left-title">SUPPLIER / PARTY DETAILS</div>
+            <div className="right-title">PO DETAILS</div>
+          </div>
 
-      <div className="section-box">
-        <div className="section-header">DELIVERY & TRANSPORT DETAILS</div>
-        <div className="field"><label>Delivery Address:</label><span>{po.deliveryAddress}</span></div>
-        <div className="grid-2">
-          <div className="field"><label>Transport Name:</label><span>{po.transportName}</span></div>
-          <div className="field"><label>Transport Number:</label><span>{po.transportNumber}</span></div>
-        </div>
-      </div>
+          <div className="split-section">
+            <div className="split-left">
+              <div className="form-row">
+                <div className="form-label">Party Name:</div>
+                <div className="form-line">{po.supplierName}</div>
+              </div>
+              <div className="form-row">
+                <div className="form-label">Address:</div>
+                <div className="form-line">{po.supplierAddress || ''}</div>
+              </div>
+              <div className="form-row">
+                <div className="form-label">GST Number:</div>
+                <div className="form-line" style={{ flexGrow: 0, width: '250px' }}>{po.supplierGST || ''}</div>
+              </div>
+              <div className="form-row">
+                <div className="form-label">E-mail ID:</div>
+                <div className="form-line">{po.supplierEmail || ''}</div>
+              </div>
+            </div>
+            <div className="split-right">
+              <div className="form-row">
+                <div className="form-label">PO No:</div>
+                <div className="form-line">{po.poNumber}</div>
+              </div>
+              <div className="form-row">
+                <div className="form-label">PO Date:</div>
+                <div className="form-line">{po.date}</div>
+              </div>
+              <div className="form-row" style={{ marginTop: '28px' }}>
+                <div className="form-label">Mobile:</div>
+                <div className="form-line">{po.supplierMobile || ''}</div>
+              </div>
+            </div>
+          </div>
 
-      <table className="items-table">
-        <thead>
-          <tr>
-            <th style={{ width: '5%' }}>Sr No</th>
-            <th>Grade</th>
-            <th>Thickness</th>
-            <th>Width</th>
-            <th>Length</th>
-            <th>Nos</th>
-            <th>Kg</th>
-            <th>Rate</th>
-            <th>Amount</th>
-          </tr>
-        </thead>
-        <tbody>
-          {po.items.map((item, idx) => (
-            <tr key={item.id}>
-              <td>{idx + 1}</td>
-              <td>{item.grade}</td>
-              <td>{item.thickness}</td>
-              <td>{item.width}</td>
-              <td>{item.length}</td>
-              <td>{item.nos}</td>
-              <td>{item.kg.toLocaleString()}</td>
-              <td>{item.rate.toLocaleString()}</td>
-              <td>{item.amount.toLocaleString()}</td>
-            </tr>
-          ))}
-          {emptyRows.map((_, idx) => (
-            <tr key={`empty-${idx}`}>
-              <td>{po.items.length + idx + 1}</td>
-              <td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td>
-            </tr>
-          ))}
-        </tbody>
-        <tfoot>
-          <tr>
-            <td colSpan={6} className="text-right bold">Total Kg</td>
-            <td className="bold">{po.totalKg.toLocaleString()}</td>
-            <td className="bold">Total Amount</td>
-            <td className="bold">₹{po.totalAmount.toLocaleString()}</td>
-          </tr>
-        </tfoot>
-      </table>
+          <div className="section-header full">DELIVERY & TRANSPORT DETAILS</div>
+          <div className="full-section">
+            <div className="form-row">
+              <div className="form-label">Delivery Address:</div>
+              <div className="form-line">{po.deliveryAddress || ''}</div>
+            </div>
+            <div className="form-row">
+              <div className="form-label">Transport Name:</div>
+              <div className="form-line">{po.transportName || ''}</div>
+              <div className="form-label" style={{ marginLeft: '20px' }}>Transport Number:</div>
+              <div className="form-line">{po.transportNumber || ''}</div>
+            </div>
+          </div>
 
-      <div className="section-box">
-        <div className="section-header">COMMERCIAL / QUALITY DETAILS</div>
-        <div className="field"><label>Payment Term:</label><span>{po.paymentTerms}</span></div>
-        <div className="grid-2">
-          <div className="field"><label>Make:</label><span>{po.make}</span></div>
-          <div className="field"><label>UT Level:</label><span>{po.utLevel}</span></div>
-        </div>
-        <div className="note"><strong>Note:</strong> Plate not pitted and bend acceptable.</div>
-      </div>
+          <table className="po-table">
+            <thead>
+              <tr>
+                <th style={{ width: '50px' }}>Sr No</th>
+                <th>Grade</th>
+                <th>Thickness</th>
+                <th>Width</th>
+                <th>Length</th>
+                <th>Nos</th>
+                <th>Kg</th>
+                <th>Rate</th>
+                <th>Amount</th>
+              </tr>
+            </thead>
+            <tbody>
+              {items.map((item, idx) => (
+                <tr key={item.id || idx} className="item-row">
+                  <td>{idx + 1}</td>
+                  <td>{item.grade || ''}</td>
+                  <td>{item.thickness || ''}</td>
+                  <td>{item.width || ''}</td>
+                  <td>{item.length || ''}</td>
+                  <td>{item.nos || ''}</td>
+                  <td>{item.kg ? item.kg.toLocaleString('en-IN') : ''}</td>
+                  <td>{item.rate ? item.rate.toLocaleString('en-IN') : ''}</td>
+                  <td>{item.amount ? item.amount.toLocaleString('en-IN') : ''}</td>
+                </tr>
+              ))}
+              {emptyRows.map((_, idx) => (
+                <tr key={`empty-${idx}`} className="empty-row">
+                  <td>{items.length + idx + 1}</td>
+                  <td></td>
+                  <td></td>
+                  <td></td>
+                  <td></td>
+                  <td></td>
+                  <td></td>
+                  <td></td>
+                  <td></td>
+                </tr>
+              ))}
+              <tr className="totals-row">
+                <td colSpan={6} className="no-border" style={{ textAlign: 'right', paddingRight: '15px' }}>Total Kg</td>
+                <td>{po.totalKg ? po.totalKg.toLocaleString('en-IN') : ''}</td>
+                <td className="no-border" style={{ textAlign: 'right', paddingRight: '15px', borderLeft: '1px solid #000' }}>Total Amount</td>
+                <td>{po.totalAmount ? `₹${po.totalAmount.toLocaleString('en-IN')}` : ''}</td>
+              </tr>
+            </tbody>
+          </table>
 
-      <div className="section-box">
-        <div className="section-header">GENERAL TERMS AND CONDITIONS</div>
-        <ol className="terms">
-          <li>Material should be supplied strictly as per above size, grade and specification.</li>
-          <li>Test Certificate / MTC required wherever applicable.</li>
-          <li>Material should be free from heavy rust, lamination, oil, paint and major surface defects.</li>
-          <li>Final weight, rate and payment will be as per mutually agreed terms.</li>
-          <li>Delivery schedule and transport details must be confirmed before dispatch.</li>
-        </ol>
-      </div>
+          <div className="section-header full" style={{ borderTop: 'none' }}>COMMERCIAL / QUALITY DETAILS</div>
+          <div className="full-section">
+            <div className="form-row">
+              <div className="form-label">Payment Term:</div>
+              <div className="form-line">{po.paymentTerms || ''}</div>
+            </div>
+            <div className="form-row">
+              <div className="form-label">Make:</div>
+              <div className="form-line" style={{ flex: 1 }}>{po.make || ''}</div>
+              <div className="form-label" style={{ marginLeft: '20px' }}>UT Level:</div>
+              <div className="form-line" style={{ flex: 2 }}>{po.utLevel || ''}</div>
+            </div>
+            <div className="form-row" style={{ marginTop: '8px' }}>
+              <div className="form-label" style={{ fontWeight: 'normal' }}>
+                <strong>Note:</strong> Plate not pitted and bend acceptable.
+              </div>
+            </div>
+          </div>
 
-      <div className="footer-sign">
-        <div className="sign-box">
-          <div className="bold">Prepared By</div>
-        </div>
-        <div className="sign-box">
-          <div className="bold">Checked By</div>
-        </div>
-        <div className="sign-box">
-          <div className="company-name">For Jagdamba Profile</div>
-          <div className="sign-space"></div>
-          <div className="bold">Authorized Signatory</div>
+          <div className="section-header full">GENERAL TERMS AND CONDITIONS</div>
+          <div className="full-section terms">
+            <ol>
+              <li>Material should be supplied strictly as per above size, grade and specification.</li>
+              <li>Test Certificate / MTC required wherever applicable.</li>
+              <li>Material should be free from heavy rust, lamination, oil, paint and major surface defects.</li>
+              <li>Final weight, rate and payment will be as per mutually agreed terms.</li>
+              <li>Delivery schedule and transport details must be confirmed before dispatch.</li>
+            </ol>
+          </div>
+
+          <div className="footer-signatures">
+            <div className="sig-box">
+              <div></div>
+              <div>Prepared By</div>
+            </div>
+            <div className="sig-box">
+              <div></div>
+              <div>Checked By</div>
+            </div>
+            <div className="sig-box" style={{ borderBottom: '1px solid transparent' }}>
+              <div>For Jagdamba Profile</div>
+              <div>Authorized Signatory</div>
+            </div>
+          </div>
+          
         </div>
       </div>
     </div>

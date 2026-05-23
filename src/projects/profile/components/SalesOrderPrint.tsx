@@ -1,277 +1,301 @@
 import React from 'react';
-import type { Order } from '../store/AppContext';
+import { useAppContext, type Order } from '../store/AppContext';
 
 interface SalesOrderPrintProps {
   order: Order;
 }
 
 export const SalesOrderPrint: React.FC<SalesOrderPrintProps> = ({ order }) => {
+  const { parties } = useAppContext();
+  
+  // Look up matching party to resolve full customer metadata
+  const party = parties.find(p => p.partyName === order.partyName);
+  
   const items = order.items || [];
   const emptyRowsCount = Math.max(0, 12 - items.length);
   const emptyRows = Array.from({ length: emptyRowsCount });
 
-  const tcText = order.tc === 'Yes' ? 'YES' : 'NO';
-  const utText = order.ut === 'Yes' ? 'YES' : 'NO';
-  const transportText = (order.transportationCharges && order.transportationCharges > 0) ? 'YES' : 'NO';
-  const loadingText = (order.loadingUnloadingCharges && order.loadingUnloadingCharges > 0) ? 'YES' : 'NO';
-
   return (
-    <div className="bg-white p-4 mx-auto" id="sales-order-print-area" style={{ width: '210mm', minHeight: '297mm' }}>
+    <div className="bg-white p-0 mx-auto text-black font-sans shadow-lg print:shadow-none w-[210mm] min-h-[297mm]" id="sales-order-print-area">
       <style>{`
-        .order-container-print {
-            width: 100%;
-            margin: auto;
-            background: #fff;
-            border: 2px solid #000;
-            padding: 10px;
-            box-sizing: border-box;
-            color: #000;
-            font-family: Arial, sans-serif;
+        @page {
+          size: A4;
+          margin: 0;
+        }
+        #sales-order-print-area {
+          font-family: Arial, sans-serif;
+          margin: 0 auto;
+          padding: 12px;
+          background-color: #fff;
+          width: 210mm;
+          min-height: 297mm;
+          box-sizing: border-box;
+        }
+        
+        /* Double Border Effect */
+        .border-outer {
+          border: 2px solid black;
+          padding: 2px;
+          height: 100%;
+          box-sizing: border-box;
+          min-height: calc(297mm - 24px);
+          display: flex;
+          flex-direction: column;
+        }
+        .border-inner {
+          border: 1px solid black;
+          display: flex;
+          flex-direction: column;
+          height: 100%;
+          flex-grow: 1;
+          box-sizing: border-box;
         }
 
-        .header-print {
-            text-align: center;
-            border-bottom: 2px solid #000;
-            padding-bottom: 10px;
+        /* Header Section */
+        .header-section {
+          text-align: center;
+        }
+        .header-section h1 {
+          margin: 10px 0 5px 0;
+          font-size: 26px;
+          text-transform: uppercase;
+          letter-spacing: 0.5px;
+          color: #000;
+          font-weight: bold;
+        }
+        .header-subtitle {
+          border-top: 1px solid black;
+          border-bottom: 1px solid black;
+          padding: 6px;
+          font-weight: bold;
+          font-size: 14px;
+          color: #000;
+        }
+        .header-contact {
+          padding: 6px;
+          font-size: 12px;
+          color: #000;
+        }
+        .header-gst {
+          border-top: 1px solid black;
+          padding: 8px 10px;
+          font-size: 13px;
+          text-align: left;
+          color: #000;
         }
 
-        .header-print h1 {
-            font-size: 32px;
-            font-weight: bold;
-            margin: 0;
+        /* Title Bar */
+        .sales-order-bar {
+          border-top: 1px solid black;
+          border-bottom: 1px solid black;
+          background-color: #e6e6e6;
+          text-align: center;
+          font-size: 22px;
+          font-weight: bold;
+          padding: 8px;
+          letter-spacing: 0.5px;
+          color: #000;
         }
 
-        .header-print h3 {
-            margin-top: 5px;
-            font-size: 16px;
-            margin: 5px 0 0 0;
+        /* General Table Styling */
+        .sales-order-print-table {
+          width: 100%;
+          border-collapse: collapse;
+          margin-top: -1px; /* Overlaps borders to prevent double lines */
+        }
+        .sales-order-print-table th, .sales-order-print-table td {
+          border: 1px solid black;
+          padding: 8px 6px;
+          font-size: 13px;
+          color: #000;
+        }
+        /* Remove outer borders of tables to sit flush with inner wrapper */
+        .sales-order-print-table th:first-child, .sales-order-print-table td:first-child { border-left: none; }
+        .sales-order-print-table th:last-child, .sales-order-print-table td:last-child { border-right: none; }
+
+        /* Top Order Info Table */
+        .info-table td.label {
+          font-weight: bold;
+          width: 20%;
+          background-color: #fafafa;
+        }
+        .info-table td.input {
+          width: 30%;
         }
 
-        .company-info-print {
-            margin-top: 10px;
-            font-size: 11px;
-            border-top: 1px solid #000;
-            padding-top: 10px;
+        /* Items Grid */
+        .items-table th {
+          font-weight: bold;
+          background-color: #e6e6e6;
+          text-align: center;
+          padding: 10px 4px;
+        }
+        .items-table td {
+          text-align: center;
+          height: 28px; /* Consistent height for blank rows */
+        }
+        .items-table th:nth-child(1) { width: 5%; }
+        .items-table th:nth-child(2) { width: 23%; }
+        .items-table th:nth-child(3) { width: 10%; }
+        .items-table th:nth-child(4) { width: 10%; }
+        .items-table th:nth-child(5) { width: 10%; }
+        .items-table th:nth-child(6) { width: 10%; }
+        .items-table th:nth-child(7) { width: 7%; }
+        .items-table th:nth-child(8) { width: 10%; }
+        .items-table th:nth-child(9) { width: 15%; }
+
+        /* Footer Info Table */
+        .footer-table td.label {
+          font-weight: bold;
+          width: 20%;
+          background-color: #fafafa;
+        }
+        .footer-table td.input {
+          width: 30%;
+        }
+        .footer-table td.center {
+          text-align: center;
         }
 
-        .gst-print {
-            margin-top: 10px;
-            font-size: 11px;
-            font-weight: bold;
+        /* Fixed Signature Block */
+        .signature-table {
+          border-bottom: none;
+          margin-top: auto;
         }
-
-        .sales-title-print {
-            text-align: center;
-            font-size: 24px;
-            font-weight: bold;
-            margin: 15px 0;
-            border: 2px solid #000;
-            padding: 5px;
-        }
-
-        .info-table-print {
-            width: 100%;
-            border-collapse: collapse;
-            margin-bottom: 10px;
-        }
-
-        .info-table-print td {
-            border: 1px solid #000;
-            padding: 8px;
-            height: 35px;
-            font-size: 11px;
-        }
-
-        .main-table-print {
-            width: 100%;
-            border-collapse: collapse;
-        }
-
-        .main-table-print th,
-        .main-table-print td {
-            border: 1px solid #000;
-            padding: 6px;
-            text-align: center;
-            height: 30px;
-            font-size: 10px;
-        }
-
-        .main-table-print th {
-            background: #eaeaea;
-            font-weight: bold;
-        }
-
-        .footer-table-print {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 10px;
-        }
-
-        .footer-table-print td {
-            border: 1px solid #000;
-            padding: 8px;
-            height: 35px;
-            font-size: 11px;
-        }
-
-        .signature-table-print {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 10px;
-        }
-
-        .signature-table-print td {
-            border: 1px solid #000;
-            padding: 15px 10px 5px 10px;
-            text-align: center;
-            font-weight: bold;
-            font-size: 11px;
-            height: 50px;
-            vertical-align: bottom;
-        }
-
-        @media print {
-            body {
-                background: #fff;
-            }
-            .order-container-print {
-                border: 2px solid #000;
-            }
+        .signature-table td {
+          height: 70px; /* Provides space for physical signatures */
+          vertical-align: bottom;
+          text-align: center;
+          font-weight: bold;
+          width: 33.333%;
+          padding-bottom: 12px;
+          border-bottom: none; /* Removes bottom border to sit flush */
         }
       `}</style>
 
-      <div className="order-container-print">
-          <div className="header-print">
-              <h1>JAGDAMBA PROFILE</h1>
-              <h3>MS & SS CNC Profile Cutting Works | Steel Traders</h3>
+      <div className="border-outer">
+        <div className="border-inner">
+            
+            <div className="header-section">
+                <h1>Jagdamba Profile</h1>
+                <div className="header-subtitle">MS & SS CNC Profile Cutting Works | Steel Traders</div>
+                <div className="header-contact">Address: Makarpura GIDC / Por GIDC, Vadodara | Mobile: 9824917250 | Email: jagdambaprofile@gmail.com</div>
+                <div className="header-gst">GST No: 24AJGPP9863R1Z5</div>
+            </div>
 
-              <div className="company-info-print">
-                  Address: Makarpura GIDC / Por GIDC, Vadodara |
-                  Mobile: 9824917250 |
-                  Email: jagdambaprofile@gmail.com
-              </div>
+            <div className="sales-order-bar">SALES ORDER</div>
 
-              <div className="gst-print">
-                  GST No: 24AJGPP9863R1Z5
-              </div>
-          </div>
-
-          <div className="sales-title-print">
-              SALES ORDER
-          </div>
-
-          {/* Top Info */}
-          <table className="info-table-print">
+            <table className="sales-order-print-table info-table">
               <tbody>
-                  <tr>
-                      <td style={{ width: '20%' }}><b>Sales Order No</b></td>
-                      <td style={{ width: '30%', fontWeight: 'bold', color: '#1e3a8a' }}>{order.orderNo}</td>
-                      <td style={{ width: '20%' }}><b>Date</b></td>
-                      <td style={{ width: '30%' }}>{order.orderDate}</td>
-                  </tr>
-
-                  <tr>
-                      <td><b>Party PO No</b></td>
-                      <td>{order.customerPONo || ''}</td>
-                      <td><b>PO Date</b></td>
-                      <td>{order.customerPODate || ''}</td>
-                  </tr>
-
-                  <tr>
-                      <td><b>Party Name</b></td>
-                      <td style={{ fontWeight: 'bold' }}>{order.partyName}</td>
-                      <td><b>Contact Person</b></td>
-                      <td>{order.contactPerson || ''}</td>
-                  </tr>
-
-                  <tr>
-                      <td><b>Party Address</b></td>
-                      <td>{order.deliveryAddress || ''}</td>
-                      <td><b>GST No</b></td>
-                      <td></td>
-                  </tr>
+                <tr>
+                    <td className="label">Sales Order No</td>
+                    <td className="input" style={{ fontWeight: 'bold' }}>{order.orderNo}</td>
+                    <td className="label">Date</td>
+                    <td className="input">{order.orderDate}</td>
+                </tr>
+                <tr>
+                    <td className="label">Party PO No</td>
+                    <td className="input">{order.customerPONo || '-'}</td>
+                    <td className="label">PO Date</td>
+                    <td className="input">{order.customerPODate || '-'}</td>
+                </tr>
+                <tr>
+                    <td className="label">Party Name</td>
+                    <td className="input" style={{ fontWeight: 'bold' }}>{order.partyName}</td>
+                    <td className="label">Contact Person</td>
+                    <td className="input">{order.contactPerson || '-'}</td>
+                </tr>
+                <tr>
+                    <td className="label">Party Address</td>
+                    <td className="input">{party?.deliveryAddress || order.deliveryAddress || ''}</td>
+                    <td className="label">GST No</td>
+                    <td className="input">{party?.gstNumber || order.gstType || '-'}</td>
+                </tr>
               </tbody>
-          </table>
+            </table>
 
-          {/* Main Table */}
-          <table className="main-table-print">
-              <thead>
-                  <tr>
-                      <th style={{ width: '5%' }}>Sr</th>
-                      <th style={{ width: '35%' }}>Item</th>
-                      <th style={{ width: '15%' }}>Grade</th>
-                      <th style={{ width: '10%' }}>Thickness</th>
-                      <th style={{ width: '10%' }}>Width</th>
-                      <th style={{ width: '10%' }}>Length</th>
-                      <th style={{ width: '5%' }}>Nos</th>
-                      <th style={{ width: '5%' }}>Rate</th>
-                      <th style={{ width: '5%' }}>Rate Type</th>
-                  </tr>
-              </thead>
-              <tbody>
-                  {items.map((item, index) => (
-                      <tr key={item.id}>
-                          <td>{index + 1}</td>
-                          <td style={{ textAlign: 'left' }}>{item.partName || item.cuttingType}</td>
-                          <td>{item.materialGrade || '-'}</td>
-                          <td>{item.thickness || '-'}</td>
-                          <td>{item.width || item.innerDiameter || '-'}</td>
-                          <td>{item.length || item.outerDiameter || '-'}</td>
-                          <td>{item.quantity}</td>
-                          <td>{item.rate}</td>
-                          <td>{item.unitType}</td>
+            <table className="sales-order-print-table items-table">
+                <thead>
+                    <tr>
+                        <th>Sr</th>
+                        <th>Item</th>
+                        <th>Grade</th>
+                        <th>Thickness</th>
+                        <th>Width</th>
+                        <th>Length</th>
+                        <th>Nos</th>
+                        <th>Rate</th>
+                        <th>Rate Type</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {items.map((item, index) => (
+                      <tr key={item.id || index}>
+                        <td>{index + 1}</td>
+                        <td style={{ textAlign: 'left', paddingLeft: '8px' }}>{item.partName || item.drawingNumber || '-'}</td>
+                        <td>{item.materialGrade || '-'}</td>
+                        <td>{item.thickness ? `${item.thickness.replace(/mm/gi, '')}mm` : '-'}</td>
+                        <td>{item.width || item.innerDiameter || '-'}</td>
+                        <td>{item.length || item.outerDiameter || '-'}</td>
+                        <td>{item.quantity}</td>
+                        <td>{item.rate > 0 ? `₹${item.rate.toLocaleString('en-IN')}` : '-'}</td>
+                        <td>{item.unitType || '-'}</td>
                       </tr>
-                  ))}
-                  {emptyRows.map((_, index) => (
+                    ))}
+                    {emptyRows.map((_, index) => (
                       <tr key={`empty-${index}`}>
-                          <td>{items.length + index + 1}</td>
-                          <td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td>
+                        <td>{items.length + index + 1}</td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
                       </tr>
-                  ))}
-              </tbody>
-          </table>
+                    ))}
+                </tbody>
+            </table>
 
-          {/* Footer */}
-          <table className="footer-table-print">
+            <table className="sales-order-print-table footer-table">
               <tbody>
-                  <tr>
-                      <td style={{ width: '20%' }}><b>Delivery Address</b></td>
-                      <td style={{ width: '30%' }}>{order.partyName} - {order.deliveryAddress || ''}</td>
-                      <td style={{ width: '20%' }}><b>Payment Terms</b></td>
-                      <td style={{ width: '30%' }}>{order.paymentTerms || ''}</td>
-                  </tr>
-
-                  <tr>
-                      <td><b>TC</b></td>
-                      <td>{tcText}</td>
-                      <td><b>UT</b></td>
-                      <td>{utText}</td>
-                  </tr>
-
-                  <tr>
-                      <td><b>Transport</b></td>
-                      <td>{transportText}</td>
-                      <td><b>Loading</b></td>
-                      <td>{loadingText}</td>
-                  </tr>
-
-                  <tr>
-                      <td><b>Remarks</b></td>
-                      <td colSpan={3}>{order.remark || ''}</td>
-                  </tr>
+                <tr>
+                    <td className="label">Delivery Address</td>
+                    <td className="input">{order.deliveryAddress || '-'}</td>
+                    <td className="label">Payment Terms</td>
+                    <td className="input">{order.paymentTerms || '-'}</td>
+                </tr>
+                <tr>
+                    <td className="label">TC</td>
+                    <td className="center" style={{ fontWeight: 'bold' }}>{order.tc === 'Yes' ? 'YES' : 'NO'}</td>
+                    <td className="label">UT</td>
+                    <td className="center" style={{ fontWeight: 'bold' }}>{order.ut === 'Yes' ? 'YES' : 'NO'}</td>
+                </tr>
+                <tr>
+                    <td className="label">Transport</td>
+                    <td className="center" style={{ fontWeight: 'bold' }}>{order.handledBy ? 'YES' : 'NO'}</td>
+                    <td className="label">Loading</td>
+                    <td className="center" style={{ fontWeight: 'bold' }}>{(order.loadingUnloadingCharges && order.loadingUnloadingCharges > 0) ? 'YES' : 'NO'}</td>
+                </tr>
+                <tr>
+                    <td className="label">Remarks</td>
+                    <td colSpan={3}>{order.remark || '-'}</td>
+                </tr>
               </tbody>
-          </table>
+            </table>
 
-          {/* Signature */}
-          <table className="signature-table-print">
+            <table className="sales-order-print-table signature-table">
               <tbody>
-                  <tr>
-                      <td style={{ width: '33.33%' }}>Prepared By</td>
-                      <td style={{ width: '33.33%' }}>Checked By</td>
-                      <td style={{ width: '33.33%' }}>Authorized Signature</td>
-                  </tr>
+                <tr>
+                    <td>Prepared By</td>
+                    <td>Checked By</td>
+                    <td>Authorized Signature</td>
+                </tr>
               </tbody>
-          </table>
+            </table>
+
+        </div>
       </div>
     </div>
   );
