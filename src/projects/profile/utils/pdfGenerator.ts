@@ -952,12 +952,16 @@ export const generateChallanPDF = async (
             </tr>
           </table>
 
-          <div class="section-header-dup" style="text-align: center;">VEHICLE TRANSPORT DETAILS</div>
-          <div class="transport-grid-dup">
-            <div class="grid-cell-dup" style="border-bottom: none;"><label>Vehicle Number:</label><span class="val">${vehicleNo}</span></div>
-            <div class="grid-cell-dup" style="border-bottom: none;"><label>Driver Mobile No:</label><span class="val">${driverMobile}</span></div>
-            <div class="grid-cell-dup no-right" style="border-bottom: none;"><label>Payment Terms :</label><span class="val">${order?.paymentTerms || ''}</span></div>
-          </div>
+          <table style="width: 100%; border-collapse: collapse; border-bottom: 1px solid #000; text-align: left;">
+            <tr>
+              <td colspan="3" class="section-header-dup" style="border-bottom: 1px solid #000; padding: 4px; text-align: center;">VEHICLE TRANSPORT DETAILS</td>
+            </tr>
+            <tr>
+              <td style="width: 33.33%; border-right: 1px solid #000; padding: 6px;"><label style="font-weight:bold;margin-right:5px;">Vehicle Number:</label> ${vehicleNo}</td>
+              <td style="width: 33.33%; border-left: 1px solid #000; border-right: 1px solid #000; padding: 6px;"><label style="font-weight:bold;margin-right:5px;">Driver Mobile No:</label> ${driverMobile}</td>
+              <td style="width: 33.33%; border-left: 1px solid #000; padding: 6px;"><label style="font-weight:bold;margin-right:5px;">Payment Terms :</label> ${order?.paymentTerms || ''}</td>
+            </tr>
+          </table>
 
           <table class="items-table-dup">
             <thead>
