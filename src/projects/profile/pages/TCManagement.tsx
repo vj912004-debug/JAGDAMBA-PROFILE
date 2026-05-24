@@ -335,9 +335,11 @@ export const TCManagement: React.FC = () => {
       {/* Header Section */}
       <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 bg-white dark:bg-slate-900 p-6 rounded-3xl shadow-sm border border-slate-100 dark:border-slate-800 transition-colors">
         <div>
-          <h1 className="text-3xl font-black bg-gradient-to-r from-slate-905 to-slate-600 dark:from-slate-100 dark:to-slate-400 bg-clip-text text-transparent flex items-center gap-3">
+          <h1 className="text-3xl font-black flex items-center gap-3">
             <FileSearch className="w-8 h-8 text-blue-600 dark:text-blue-400" />
-            {t('tcManagement')}
+            <span className="bg-gradient-to-r from-slate-900 to-slate-600 dark:from-slate-100 dark:to-slate-400 bg-clip-text text-transparent">
+              {t('tcManagement')}
+            </span>
           </h1>
           <p className="text-slate-500 dark:text-slate-400 font-medium mt-1">Manage Test Certificates & Material History</p>
         </div>
