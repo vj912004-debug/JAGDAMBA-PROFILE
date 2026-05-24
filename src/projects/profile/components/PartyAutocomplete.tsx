@@ -171,13 +171,13 @@ export const PartyAutocomplete: React.FC<PartyAutocompleteProps> = ({
             className
           )}
         />
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 dark:text-slate-500" />
+        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 dark:text-slate-500 dark:text-slate-400" />
       </div>
 
       {isOpen && dropdownItems.length > 0 && (
         <div className="absolute left-0 right-0 mt-1.5 max-h-60 overflow-y-auto z-50 bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl shadow-xl divide-y divide-slate-100 dark:divide-slate-900 transition-all animate-in fade-in slide-in-from-top-1.5 duration-100">
           <div className="px-3 py-1.5 bg-slate-50 dark:bg-slate-900/50 flex items-center justify-between">
-            <span className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest flex items-center gap-1.5">
+            <span className="text-[10px] font-black text-slate-400 dark:text-slate-500 dark:text-slate-400 uppercase tracking-widest flex items-center gap-1.5">
               <Building2 className="w-3.5 h-3.5" />
               List of Ledgers (Tally Prime)
             </span>
@@ -200,7 +200,7 @@ export const PartyAutocomplete: React.FC<PartyAutocompleteProps> = ({
                       "w-full text-left px-3.5 py-2.5 rounded-lg text-xs font-semibold flex flex-col gap-0.5 transition-all outline-none",
                       isHighlighted 
                         ? "bg-blue-600 text-white shadow-md shadow-blue-100 dark:shadow-none" 
-                        : "text-slate-700 dark:text-slate-350 hover:bg-slate-50 dark:bg-slate-800/50 dark:hover:bg-slate-900"
+                        : "text-slate-700 dark:text-slate-350 hover:bg-slate-50 dark:hover:bg-slate-800/50 dark:bg-slate-800/50 dark:hover:bg-slate-900"
                     )}
                   >
                     <span className="font-bold flex items-center justify-between">
@@ -234,7 +234,7 @@ export const PartyAutocomplete: React.FC<PartyAutocompleteProps> = ({
                       "w-full text-left px-3.5 py-3 rounded-lg text-xs font-bold flex items-center justify-between transition-all outline-none",
                       isHighlighted 
                         ? "bg-emerald-600 text-white shadow-md shadow-emerald-100 dark:shadow-none" 
-                        : "text-emerald-600 dark:text-emerald-450 bg-emerald-50/50 dark:bg-emerald-950/10 hover:bg-emerald-50 dark:hover:bg-emerald-950/20"
+                        : "text-emerald-600 dark:text-emerald-450 bg-emerald-50 dark:bg-emerald-900/30/50 dark:bg-emerald-950/10 hover:bg-emerald-50 dark:bg-emerald-900/30 dark:hover:bg-emerald-950/20"
                     )}
                   >
                     <span className="flex items-center gap-2">

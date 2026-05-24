@@ -37,7 +37,7 @@ export const MobileNav: React.FC = () => {
             <h2 className="text-lg font-bold text-slate-800 dark:text-slate-100">Menu</h2>
             <p className="text-[10px] text-slate-400 font-medium">Jagdamba Profile ERP</p>
           </div>
-          <button onClick={() => setIsOpen(false)} className="text-slate-400 hover:text-slate-700 dark:text-slate-200 p-2 rounded-lg hover:bg-slate-100 dark:bg-slate-800 transition-colors">
+          <button onClick={() => setIsOpen(false)} className="text-slate-400 hover:text-slate-700 dark:text-slate-200 p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 dark:bg-slate-800 transition-colors">
             <X className="w-5 h-5" />
           </button>
         </div>
@@ -63,7 +63,7 @@ export const MobileNav: React.FC = () => {
                           "flex items-center gap-4 px-4 py-3 rounded-xl text-base font-semibold transition-all duration-300",
                           isActive
                             ? "bg-blue-600 text-white shadow-lg shadow-blue-100"
-                            : "text-slate-500 hover:bg-slate-50 dark:bg-slate-800/50 hover:text-blue-600"
+                            : "text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/50 dark:bg-slate-800/50 hover:text-blue-600 dark:text-blue-400"
                         )}
                       >
                         <item.icon className={cn("w-5 h-5", isActive ? "text-white" : "text-slate-400")} />

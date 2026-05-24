@@ -36,10 +36,10 @@ export const AlertCenter: React.FC = () => {
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold text-slate-800 dark:text-slate-100 flex items-center gap-3">
-            <ShieldAlert className="w-8 h-8 text-red-600" />
+            <ShieldAlert className="w-8 h-8 text-red-600 dark:text-red-400" />
             {t('alertCenter')}
           </h1>
-          <p className="text-sm text-slate-500 mt-1">Audit trail and security notifications</p>
+          <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">Audit trail and security notifications</p>
         </div>
         <div className="flex gap-2 w-full sm:w-auto">
           <div className="relative flex-1 sm:w-64">
@@ -58,9 +58,9 @@ export const AlertCenter: React.FC = () => {
             className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-sm font-semibold text-slate-600 dark:text-slate-300"
           >
             <option value="All">All Logs</option>
-            <option value="alert" className="text-red-600 font-bold">Red Alerts</option>
+            <option value="alert" className="text-red-600 dark:text-red-400 font-bold">Red Alerts</option>
             <option value="warning" className="text-amber-600 font-bold">Warnings</option>
-            <option value="info" className="text-blue-600 font-bold">Info</option>
+            <option value="info" className="text-blue-600 dark:text-blue-400 font-bold">Info</option>
           </select>
         </div>
       </div>
@@ -93,12 +93,12 @@ export const AlertCenter: React.FC = () => {
           <table className="w-full text-left border-collapse">
             <thead>
               <tr className="bg-slate-50 dark:bg-slate-800/50 border-b border-slate-100 dark:border-slate-800">
-                <th className="p-4 text-[10px] font-bold text-slate-500 uppercase tracking-wider w-16 text-center">Type</th>
-                <th className="p-4 text-[10px] font-bold text-slate-500 uppercase tracking-wider">Time</th>
-                <th className="p-4 text-[10px] font-bold text-slate-500 uppercase tracking-wider">User</th>
-                <th className="p-4 text-[10px] font-bold text-slate-500 uppercase tracking-wider">Action</th>
-                <th className="p-4 text-[10px] font-bold text-slate-500 uppercase tracking-wider">Details</th>
-                <th className="p-4 text-[10px] font-bold text-slate-500 uppercase tracking-wider">Order</th>
+                <th className="p-4 text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider w-16 text-center">Type</th>
+                <th className="p-4 text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Time</th>
+                <th className="p-4 text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">User</th>
+                <th className="p-4 text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Action</th>
+                <th className="p-4 text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Details</th>
+                <th className="p-4 text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Order</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
@@ -112,10 +112,10 @@ export const AlertCenter: React.FC = () => {
                   </td>
                 </tr>
               ) : filteredLogs.map(log => (
-                <tr key={log.id} className={clsx("hover:bg-slate-50 dark:bg-slate-800/50 transition-colors", log.type === 'alert' && "bg-red-50/30")}>
+                <tr key={log.id} className={clsx("hover:bg-slate-50 dark:hover:bg-slate-800/50 dark:bg-slate-800/50 transition-colors", log.type === 'alert' && "bg-red-50 dark:bg-red-900/30/30")}>
                   <td className="p-4 text-center">
                     <div className="flex justify-center">
-                      {log.type === 'alert' && <ShieldAlert className="w-5 h-5 text-red-600 animate-pulse" />}
+                      {log.type === 'alert' && <ShieldAlert className="w-5 h-5 text-red-600 dark:text-red-400 animate-pulse" />}
                       {log.type === 'warning' && <AlertCircle className="w-5 h-5 text-amber-500" />}
                       {log.type === 'info' && <Info className="w-5 h-5 text-blue-500" />}
                     </div>
@@ -140,7 +140,7 @@ export const AlertCenter: React.FC = () => {
                   <td className="p-4">
                     <span className={clsx(
                       "text-xs font-bold px-2 py-0.5 rounded-full uppercase tracking-tighter",
-                      log.type === 'alert' ? "text-red-700" : log.type === 'warning' ? "text-amber-700" : "text-blue-700"
+                      log.type === 'alert' ? "text-red-700" : log.type === 'warning' ? "text-amber-700" : "text-blue-700 dark:text-blue-300"
                     )}>
                       {log.action}
                     </span>
@@ -152,7 +152,7 @@ export const AlertCenter: React.FC = () => {
                   </td>
                   <td className="p-4">
                     {log.orderNo && (
-                      <span className="text-xs font-mono font-bold text-blue-600 bg-blue-50 px-2 py-1 rounded border border-blue-100">
+                      <span className="text-xs font-mono font-bold text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/30 px-2 py-1 rounded border border-blue-100 dark:border-blue-800">
                         {log.orderNo}
                       </span>
                     )}
@@ -171,9 +171,9 @@ const StatCard: React.FC<{ label: string; value: number; icon: any; color: 'blue
   <div className="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-100 dark:border-slate-800 shadow-sm flex items-center gap-4">
     <div className={clsx(
       "w-12 h-12 rounded-xl flex items-center justify-center shadow-sm",
-      color === 'blue' ? "bg-blue-50 text-blue-600" : 
-      color === 'red' ? "bg-red-50 text-red-600" : 
-      "bg-amber-50 text-amber-600"
+      color === 'blue' ? "bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400" : 
+      color === 'red' ? "bg-red-50 dark:bg-red-900/30 text-red-600 dark:text-red-400" : 
+      "bg-amber-50 dark:bg-amber-900/30 text-amber-600"
     )}>
       <Icon className="w-6 h-6" />
     </div>

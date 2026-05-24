@@ -229,10 +229,10 @@ export const OrderEntry: React.FC = () => {
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
         <div>
           <h1 className="text-2xl font-bold text-slate-800 dark:text-slate-100">{t('orderEntry')}</h1>
-          <p className="text-sm text-slate-500 mt-0.5">Create new cutting job order • <span className="font-semibold text-blue-600">{orderNo}</span></p>
+          <p className="text-sm text-slate-500 dark:text-slate-400 mt-0.5">Create new cutting job order • <span className="font-semibold text-blue-600 dark:text-blue-400">{orderNo}</span></p>
         </div>
         <div className="flex gap-2">
-          <button onClick={handleReset} className="flex items-center gap-2 text-slate-600 dark:text-slate-300 hover:text-slate-800 dark:text-slate-100 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 px-4 py-2 rounded-xl text-sm font-medium transition-colors hover:bg-slate-50 dark:bg-slate-800/50">
+          <button onClick={handleReset} className="flex items-center gap-2 text-slate-600 dark:text-slate-300 hover:text-slate-800 dark:text-slate-100 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 px-4 py-2 rounded-xl text-sm font-medium transition-colors hover:bg-slate-50 dark:hover:bg-slate-800/50 dark:bg-slate-800/50">
             <RotateCcw className="w-4 h-4" /> Reset
           </button>
           <button
@@ -246,7 +246,7 @@ export const OrderEntry: React.FC = () => {
       </div>
 
       {!canCreate && (
-        <div className="bg-amber-50 border border-amber-200 rounded-xl px-4 py-3 text-sm text-amber-800 font-medium">
+        <div className="bg-amber-50 dark:bg-amber-900/30 border border-amber-200 dark:border-amber-800 rounded-xl px-4 py-3 text-sm text-amber-800 dark:text-amber-200 font-medium">
           ⚠️ Only Admin or Office Entry role can create orders. Current role: <strong>{role}</strong>
         </div>
       )}
@@ -266,7 +266,7 @@ export const OrderEntry: React.FC = () => {
             />
             <button 
               onClick={() => fileInputRef.current?.click()}
-              className="flex items-center gap-1.5 text-blue-600 hover:text-blue-700 bg-blue-50 hover:bg-blue-100 px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors border border-blue-100"
+              className="flex items-center gap-1.5 text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:text-blue-300 bg-blue-50 dark:bg-blue-900/30 hover:bg-blue-100 dark:hover:bg-blue-900/50 dark:bg-blue-900/50 px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors border border-blue-100 dark:border-blue-800"
               title="Upload CSV to auto-fill details (Format: Party, Contact, Mobile, Location, Address, Remark)"
             >
               <Upload className="w-3.5 h-3.5" /> Auto-fill Details
@@ -275,19 +275,19 @@ export const OrderEntry: React.FC = () => {
         </h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           <div>
-            <label className="block text-xs font-semibold text-slate-500 mb-1 uppercase tracking-wider">Internal Order No</label>
+            <label className="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1 uppercase tracking-wider">Internal Order No</label>
             <input type="text" className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 rounded-lg px-3 py-2 text-sm font-mono" value={orderNo} readOnly />
           </div>
           <div>
-            <label className="block text-xs font-semibold text-slate-500 mb-1 uppercase tracking-wider">Customer PO No</label>
+            <label className="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1 uppercase tracking-wider">Customer PO No</label>
             <input type="text" value={customerPONo} onChange={(e) => setCustomerPONo(e.target.value.toUpperCase())} className="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-100 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 transition" placeholder="PO-12345" />
           </div>
           <div>
-            <label className="block text-xs font-semibold text-slate-500 mb-1 uppercase tracking-wider">Customer PO Date</label>
+            <label className="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1 uppercase tracking-wider">Customer PO Date</label>
             <input type="date" value={customerPODate} onChange={(e) => setCustomerPODate(e.target.value)} className="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-100 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 transition" />
           </div>
           <div>
-            <label className="block text-xs font-semibold text-slate-500 mb-1 uppercase tracking-wider flex items-center justify-between">
+            <label className="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1 uppercase tracking-wider flex items-center justify-between">
               <span>Party Name *</span>
               {partyName && parties.some(p => p.partyName === partyName) && (
                 <span className="text-[10px] text-blue-500 font-bold lowercase normal-case tracking-normal">✨ Linked to Master</span>
@@ -301,15 +301,15 @@ export const OrderEntry: React.FC = () => {
             />
           </div>
           <div>
-            <label className="block text-xs font-semibold text-slate-500 mb-1 uppercase tracking-wider">Contact Person</label>
+            <label className="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1 uppercase tracking-wider">Contact Person</label>
             <input type="text" value={contactPerson} onChange={(e) => setContactPerson(e.target.value.toUpperCase())} className="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-100 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 transition" placeholder="Person name" />
           </div>
           <div>
-            <label className="block text-xs font-semibold text-slate-500 mb-1 uppercase tracking-wider">Delivery Date *</label>
+            <label className="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1 uppercase tracking-wider">Delivery Date *</label>
             <input type="date" value={deliveryDate} onChange={(e) => setDeliveryDate(e.target.value)} className="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-100 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 transition" />
           </div>
           <div>
-            <label className="block text-xs font-semibold text-slate-500 mb-1 uppercase tracking-wider">Location / Branch *</label>
+            <label className="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1 uppercase tracking-wider">Location / Branch *</label>
             <EditableSelect 
               value={location} 
               onChange={(v) => setLocation(v)} 
@@ -320,16 +320,16 @@ export const OrderEntry: React.FC = () => {
           </div>
           <div className="flex items-end">
             <label className="flex items-center gap-2 cursor-pointer select-none">
-              <input type="checkbox" checked={urgent} onChange={(e) => setUrgent(e.target.checked)} className="w-4 h-4 text-red-600 border-slate-300 rounded focus:ring-red-500" />
-              <span className="text-sm font-semibold text-red-600">🔥 Urgent Order</span>
+              <input type="checkbox" checked={urgent} onChange={(e) => setUrgent(e.target.checked)} className="w-4 h-4 text-red-600 dark:text-red-400 border-slate-300 dark:border-slate-600 rounded focus:ring-red-500" />
+              <span className="text-sm font-semibold text-red-600 dark:text-red-400">🔥 Urgent Order</span>
             </label>
           </div>
           <div className="sm:col-span-2">
-            <label className="block text-xs font-semibold text-slate-500 mb-1 uppercase tracking-wider">Delivery Address</label>
+            <label className="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1 uppercase tracking-wider">Delivery Address</label>
             <input type="text" value={deliveryAddress} onChange={(e) => setDeliveryAddress(e.target.value.toUpperCase())} className="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-100 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 transition" placeholder="Full delivery address" />
           </div>
           <div className="sm:col-span-1">
-            <label className="block text-xs font-semibold text-slate-500 mb-1 uppercase tracking-wider">Handled By</label>
+            <label className="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1 uppercase tracking-wider">Handled By</label>
             <EditableSelect 
               value={handledBy} 
               onChange={(v) => setHandledBy(v)} 
@@ -339,14 +339,14 @@ export const OrderEntry: React.FC = () => {
             />
           </div>
           <div className="sm:col-span-1">
-            <label className="block text-xs font-semibold text-slate-500 mb-1 uppercase tracking-wider">Remark</label>
+            <label className="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1 uppercase tracking-wider">Remark</label>
             <input type="text" value={remark} onChange={(e) => setRemark(e.target.value.toUpperCase())} className="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-100 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 transition" placeholder="Any special remarks..." />
           </div>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mt-6 pt-6 border-t border-slate-100 dark:border-slate-800">
           <div>
-            <label className="block text-xs font-semibold text-slate-500 mb-1 uppercase tracking-wider">Payment Terms</label>
+            <label className="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1 uppercase tracking-wider">Payment Terms</label>
             <EditableSelect 
               value={paymentTerms} 
               onChange={(v) => setPaymentTerms(v.toUpperCase())} 
@@ -356,25 +356,25 @@ export const OrderEntry: React.FC = () => {
             />
           </div>
           <div>
-            <label className="block text-xs font-semibold text-slate-500 mb-1 uppercase tracking-wider">GST Option (Default)</label>
+            <label className="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1 uppercase tracking-wider">GST Option (Default)</label>
             <EditableSelect 
               value={gstType} 
               onChange={(v) => setGstType(v.toUpperCase())} 
               options={['GST 18%', 'GST 12%', 'GST 5%', 'GST 0%', 'IGST 18%', 'IGST 12%']} 
               placeholder="Select GST Type"
-              className="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-100 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 transition font-bold text-blue-600"
+              className="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-100 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 transition font-bold text-blue-600 dark:text-blue-400"
             />
           </div>
           <div>
-            <label className="block text-xs font-semibold text-slate-500 mb-1 uppercase tracking-wider">Transportation Charges (₹)</label>
+            <label className="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1 uppercase tracking-wider">Transportation Charges (₹)</label>
             <input type="number" value={transportationCharges || ''} onChange={(e) => setTransportationCharges(Number(e.target.value))} className="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-100 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 transition" placeholder="0" />
           </div>
           <div>
-            <label className="block text-xs font-semibold text-slate-500 mb-1 uppercase tracking-wider">Loading & Unloading Charges (₹)</label>
+            <label className="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1 uppercase tracking-wider">Loading & Unloading Charges (₹)</label>
             <input type="number" value={loadingUnloadingCharges || ''} onChange={(e) => setLoadingUnloadingCharges(Number(e.target.value))} className="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-100 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 transition" placeholder="0" />
           </div>
           <div className="flex flex-col">
-            <label className="block text-xs font-semibold text-slate-500 mb-1.5 uppercase tracking-wider">Test Certificate (TC)</label>
+            <label className="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1.5 uppercase tracking-wider">Test Certificate (TC)</label>
             <div className="flex gap-2">
               <button
                 type="button"
@@ -382,7 +382,7 @@ export const OrderEntry: React.FC = () => {
                 className={`flex-1 py-2 px-4 rounded-lg text-xs font-bold transition-all border ${
                   tc === 'Yes'
                     ? 'bg-blue-600 border-blue-600 text-white shadow-sm'
-                    : 'bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:bg-slate-800/50'
+                    : 'bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800/50 dark:bg-slate-800/50'
                 }`}
               >
                 Yes
@@ -393,7 +393,7 @@ export const OrderEntry: React.FC = () => {
                 className={`flex-1 py-2 px-4 rounded-lg text-xs font-bold transition-all border ${
                   tc === 'No'
                     ? 'bg-slate-700 border-slate-700 text-white shadow-sm'
-                    : 'bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:bg-slate-800/50'
+                    : 'bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800/50 dark:bg-slate-800/50'
                 }`}
               >
                 No
@@ -401,7 +401,7 @@ export const OrderEntry: React.FC = () => {
             </div>
           </div>
           <div className="flex flex-col">
-            <label className="block text-xs font-semibold text-slate-500 mb-1.5 uppercase tracking-wider">Ultrasonic Test (UT)</label>
+            <label className="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1.5 uppercase tracking-wider">Ultrasonic Test (UT)</label>
             <div className="flex gap-2">
               <button
                 type="button"
@@ -409,7 +409,7 @@ export const OrderEntry: React.FC = () => {
                 className={`flex-1 py-2 px-4 rounded-lg text-xs font-bold transition-all border ${
                   ut === 'Yes'
                     ? 'bg-blue-600 border-blue-600 text-white shadow-sm'
-                    : 'bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:bg-slate-800/50'
+                    : 'bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800/50 dark:bg-slate-800/50'
                 }`}
               >
                 Yes
@@ -420,7 +420,7 @@ export const OrderEntry: React.FC = () => {
                 className={`flex-1 py-2 px-4 rounded-lg text-xs font-bold transition-all border ${
                   ut === 'No'
                     ? 'bg-slate-700 border-slate-700 text-white shadow-sm'
-                    : 'bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:bg-slate-800/50'
+                    : 'bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800/50 dark:bg-slate-800/50'
                 }`}
               >
                 No
@@ -428,7 +428,7 @@ export const OrderEntry: React.FC = () => {
             </div>
           </div>
           <div className="sm:col-span-4">
-            <label className="block text-xs font-semibold text-slate-500 mb-1 uppercase tracking-wider">Terms & Conditions</label>
+            <label className="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1 uppercase tracking-wider">Terms & Conditions</label>
             <textarea 
               value={termsAndConditions} 
               onChange={(e) => setTermsAndConditions(e.target.value.toUpperCase())} 
@@ -446,7 +446,7 @@ export const OrderEntry: React.FC = () => {
             <span className="w-1.5 h-5 bg-emerald-500 rounded-full inline-block"></span>
             Job Specifications ({lines.length} item{lines.length > 1 ? 's' : ''})
           </h2>
-          <button onClick={addLine} className="flex items-center gap-1.5 text-blue-600 hover:text-blue-700 bg-blue-50 hover:bg-blue-100 px-3 py-1.5 rounded-lg text-sm font-semibold transition-colors border border-blue-100">
+          <button onClick={addLine} className="flex items-center gap-1.5 text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:text-blue-300 bg-blue-50 dark:bg-blue-900/30 hover:bg-blue-100 dark:hover:bg-blue-900/50 dark:bg-blue-900/50 px-3 py-1.5 rounded-lg text-sm font-semibold transition-colors border border-blue-100 dark:border-blue-800">
             <Plus className="w-4 h-4" /> {t('addItem')}
           </button>
         </div>
@@ -455,26 +455,26 @@ export const OrderEntry: React.FC = () => {
           <table className="w-full text-left border-collapse whitespace-nowrap">
             <thead>
               <tr className="bg-slate-50 dark:bg-slate-800/50 border-b border-slate-100 dark:border-slate-800">
-                <th className="p-2.5 text-[10px] font-bold tracking-wider text-slate-500 uppercase">Cutting Type</th>
-                <th className="p-2.5 text-[10px] font-bold tracking-wider text-slate-500 uppercase">Material</th>
-                <th className="p-2.5 text-[10px] font-bold tracking-wider text-slate-500 uppercase">Grade</th>
-                <th className="p-2.5 text-[10px] font-bold tracking-wider text-slate-500 uppercase">Thickness</th>
-                <th className="p-2.5 text-[10px] font-bold tracking-wider text-slate-500 uppercase">Dimensions</th>
-                <th className="p-2.5 text-[10px] font-bold tracking-wider text-slate-500 uppercase">Drawing No</th>
-                <th className="p-2.5 text-[10px] font-bold tracking-wider text-slate-500 uppercase">Part Name</th>
-                <th className="p-2.5 text-[10px] font-bold tracking-wider text-slate-500 uppercase">Unit</th>
-                <th className="p-2.5 text-[10px] font-bold tracking-wider text-slate-500 uppercase">Qty (Nos)</th>
-                <th className="p-2.5 text-[10px] font-bold tracking-wider text-slate-500 uppercase">Weight (Kg)</th>
-                <th className="p-2.5 text-[10px] font-bold tracking-wider text-slate-500 uppercase">Rate (₹)</th>
-                <th className="p-2.5 text-[10px] font-bold tracking-wider text-slate-500 uppercase">Amount (₹)</th>
-                <th className="p-2.5 text-[10px] font-bold tracking-wider text-slate-500 uppercase">Scrap</th>
-                <th className="p-2.5 text-[10px] font-bold tracking-wider text-slate-500 uppercase">File</th>
+                <th className="p-2.5 text-[10px] font-bold tracking-wider text-slate-500 dark:text-slate-400 uppercase">Cutting Type</th>
+                <th className="p-2.5 text-[10px] font-bold tracking-wider text-slate-500 dark:text-slate-400 uppercase">Material</th>
+                <th className="p-2.5 text-[10px] font-bold tracking-wider text-slate-500 dark:text-slate-400 uppercase">Grade</th>
+                <th className="p-2.5 text-[10px] font-bold tracking-wider text-slate-500 dark:text-slate-400 uppercase">Thickness</th>
+                <th className="p-2.5 text-[10px] font-bold tracking-wider text-slate-500 dark:text-slate-400 uppercase">Dimensions</th>
+                <th className="p-2.5 text-[10px] font-bold tracking-wider text-slate-500 dark:text-slate-400 uppercase">Drawing No</th>
+                <th className="p-2.5 text-[10px] font-bold tracking-wider text-slate-500 dark:text-slate-400 uppercase">Part Name</th>
+                <th className="p-2.5 text-[10px] font-bold tracking-wider text-slate-500 dark:text-slate-400 uppercase">Unit</th>
+                <th className="p-2.5 text-[10px] font-bold tracking-wider text-slate-500 dark:text-slate-400 uppercase">Qty (Nos)</th>
+                <th className="p-2.5 text-[10px] font-bold tracking-wider text-slate-500 dark:text-slate-400 uppercase">Weight (Kg)</th>
+                <th className="p-2.5 text-[10px] font-bold tracking-wider text-slate-500 dark:text-slate-400 uppercase">Rate (₹)</th>
+                <th className="p-2.5 text-[10px] font-bold tracking-wider text-slate-500 dark:text-slate-400 uppercase">Amount (₹)</th>
+                <th className="p-2.5 text-[10px] font-bold tracking-wider text-slate-500 dark:text-slate-400 uppercase">Scrap</th>
+                <th className="p-2.5 text-[10px] font-bold tracking-wider text-slate-500 dark:text-slate-400 uppercase">File</th>
                 <th className="p-2.5 w-10"></th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
               {lines.map((line) => (
-                <tr key={line.id} className="hover:bg-blue-50/30 transition-colors">
+                <tr key={line.id} className="hover:bg-blue-50/30 dark:hover:bg-blue-900/30 dark:bg-blue-900/30 transition-colors">
                   <td className="p-1.5">
                     <EditableSelect 
                       value={line.cuttingType} 
@@ -549,7 +549,7 @@ export const OrderEntry: React.FC = () => {
                        onChange={(e) => updateLine(line.id, 'totalWeight', Number(e.target.value))} 
                        disabled={line.unitType !== 'Kg'}
                        className={`w-16 border rounded-lg p-1.5 text-xs focus:ring-2 focus:ring-blue-500 outline-none transition-all ${
-                         line.unitType === 'Kg' ? "bg-white dark:bg-slate-900 border-blue-200 text-blue-700 font-bold" : "bg-slate-50 dark:bg-slate-800/50 border-slate-200 dark:border-slate-700 text-slate-400 cursor-not-allowed"
+                         line.unitType === 'Kg' ? "bg-white dark:bg-slate-900 border-blue-200 dark:border-blue-700 text-blue-700 dark:text-blue-300 font-bold" : "bg-slate-50 dark:bg-slate-800/50 border-slate-200 dark:border-slate-700 text-slate-400 cursor-not-allowed"
                        }`}
                        placeholder={line.unitType === 'Kg' ? "Weight" : "-"}
                      />
@@ -559,7 +559,7 @@ export const OrderEntry: React.FC = () => {
                    </td>
                    <td className="p-1.5">
                      <span className={`text-xs font-bold px-2 py-1.5 rounded-lg inline-block min-w-[70px] text-right shadow-sm ${
-                       line.unitType === 'Kg' ? "bg-blue-50 text-blue-700" : "bg-emerald-50 text-emerald-700"
+                       line.unitType === 'Kg' ? "bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300" : "bg-emerald-50 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400"
                      }`}>
                        ₹{line.amount.toLocaleString()}
                      </span>
@@ -575,18 +575,18 @@ export const OrderEntry: React.FC = () => {
                   </td>
                   <td className="p-1.5">
                     {line.fileName ? (
-                      <div className="flex items-center gap-1 text-emerald-600 bg-emerald-50 px-1.5 py-1 rounded-lg border border-emerald-100 w-max">
+                      <div className="flex items-center gap-1 text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-900/30 px-1.5 py-1 rounded-lg border border-emerald-100 dark:border-emerald-800 w-max">
                         <File className="w-3 h-3" />
                         <span className="text-[10px] font-medium truncate max-w-[50px]" title={line.fileName}>{line.fileName}</span>
                       </div>
                     ) : (
-                      <button onClick={() => handleFileUpload(line.id)} className="flex items-center gap-1 text-slate-500 hover:text-blue-600 hover:bg-blue-50 px-1.5 py-1 rounded-lg border border-slate-200 dark:border-slate-700 hover:border-blue-200 transition-colors text-[10px] font-medium w-max">
+                      <button onClick={() => handleFileUpload(line.id)} className="flex items-center gap-1 text-slate-500 dark:text-slate-400 hover:text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/30 dark:bg-blue-900/30 px-1.5 py-1 rounded-lg border border-slate-200 dark:border-slate-700 hover:border-blue-200 dark:border-blue-700 transition-colors text-[10px] font-medium w-max">
                         <Upload className="w-3 h-3" /> File
                       </button>
                     )}
                   </td>
                   <td className="p-1.5">
-                    <button onClick={() => removeLine(line.id)} disabled={lines.length === 1} className="p-1 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors disabled:opacity-30 disabled:cursor-not-allowed">
+                    <button onClick={() => removeLine(line.id)} disabled={lines.length === 1} className="p-1 text-slate-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/30 dark:bg-red-900/30 rounded-lg transition-colors disabled:opacity-30 disabled:cursor-not-allowed">
                       <Trash2 className="w-3.5 h-3.5" />
                     </button>
                   </td>
@@ -599,12 +599,12 @@ export const OrderEntry: React.FC = () => {
         {/* Totals */}
         <div className="p-4 bg-slate-50 dark:bg-slate-800/50 border-t border-slate-100 dark:border-slate-800 flex flex-wrap items-center justify-between gap-4">
           <div className="flex gap-6 text-sm">
-            <div><span className="text-slate-500">Total Items:</span> <strong className="text-slate-800 dark:text-slate-100">{lines.length}</strong></div>
-            <div><span className="text-slate-500">Total Qty:</span> <strong className="text-slate-800 dark:text-slate-100">{totalQty}</strong></div>
+            <div><span className="text-slate-500 dark:text-slate-400">Total Items:</span> <strong className="text-slate-800 dark:text-slate-100">{lines.length}</strong></div>
+            <div><span className="text-slate-500 dark:text-slate-400">Total Qty:</span> <strong className="text-slate-800 dark:text-slate-100">{totalQty}</strong></div>
           </div>
           <div className="text-right">
-            <span className="text-sm text-slate-500">Total Amount: </span>
-            <span className="text-lg font-bold text-blue-700">₹{totalAmount.toLocaleString()}</span>
+            <span className="text-sm text-slate-500 dark:text-slate-400">Total Amount: </span>
+            <span className="text-lg font-bold text-blue-700 dark:text-blue-300">₹{totalAmount.toLocaleString()}</span>
           </div>
         </div>
       </div>
@@ -615,7 +615,7 @@ export const OrderEntry: React.FC = () => {
           <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-xl w-full max-w-4xl flex flex-col max-h-[90vh]">
             <div className="p-4 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center bg-slate-50 dark:bg-slate-800/50/50 rounded-t-2xl">
               <h2 className="text-lg font-bold text-slate-800 dark:text-slate-100 flex items-center gap-2">
-                <Printer className="w-5 h-5 text-blue-600" />
+                <Printer className="w-5 h-5 text-blue-600 dark:text-blue-400" />
                 Order Entry Print
               </h2>
               <button 
@@ -623,7 +623,7 @@ export const OrderEntry: React.FC = () => {
                   setShowReceiptModal(false);
                   navigate('/production-list');
                 }}
-                className="p-1.5 text-slate-400 hover:text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:bg-slate-800 rounded-lg transition-colors"
+                className="p-1.5 text-slate-400 hover:text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 dark:bg-slate-800 rounded-lg transition-colors"
               >
                 <X className="w-5 h-5" />
               </button>

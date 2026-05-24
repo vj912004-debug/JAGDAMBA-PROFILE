@@ -231,7 +231,7 @@ export const CNCQuotation: React.FC = () => {
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-2xl font-bold text-slate-800 dark:text-slate-100">Saved CNC Quotations</h1>
-            <p className="text-sm text-slate-500">{cncQuotations.length} records found</p>
+            <p className="text-sm text-slate-500 dark:text-slate-400">{cncQuotations.length} records found</p>
           </div>
           <button onClick={() => setViewMode('create')} className="bg-blue-600 text-white px-5 py-2 rounded-xl text-sm font-semibold hover:bg-blue-700 transition-all shadow-md">
             + New CNC Quote
@@ -252,7 +252,7 @@ export const CNCQuotation: React.FC = () => {
         <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-800 overflow-hidden">
           <table className="w-full text-left border-collapse whitespace-nowrap">
             <thead>
-              <tr className="bg-slate-50 dark:bg-slate-800/50 text-[10px] uppercase font-black text-slate-500">
+              <tr className="bg-slate-50 dark:bg-slate-800/50 text-[10px] uppercase font-black text-slate-500 dark:text-slate-400">
                 <th className="p-4">Quote No</th>
                 <th className="p-4">Party Name</th>
                 <th className="p-4">Date</th>
@@ -263,8 +263,8 @@ export const CNCQuotation: React.FC = () => {
             </thead>
             <tbody className="divide-y divide-slate-50">
               {filteredQuotations.map((q: CNCQuotationRecord) => (
-                <tr key={q.id} className="hover:bg-slate-50 dark:bg-slate-800/50 transition-all">
-                  <td className="p-4 font-mono font-bold text-blue-600">{q.quoteNo}</td>
+                <tr key={q.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/50 dark:bg-slate-800/50 transition-all">
+                  <td className="p-4 font-mono font-bold text-blue-600 dark:text-blue-400">{q.quoteNo}</td>
                   <td className="p-4">
                     <p className="font-bold text-slate-800 dark:text-slate-100">{q.partyName}</p>
                     <p className="text-[10px] text-slate-400">{q.mobileNo}</p>
@@ -273,8 +273,8 @@ export const CNCQuotation: React.FC = () => {
                   <td className="p-4 text-sm text-slate-600 dark:text-slate-300">{q.items.length} Parts</td>
                   <td className="p-4 font-bold text-slate-800 dark:text-slate-100">₹{q.grandTotal.toLocaleString()}</td>
                   <td className="p-4 text-right space-x-2">
-                    <button onClick={() => loadQuotation(q)} className="text-blue-600 hover:bg-blue-50 px-2 py-1 rounded text-xs font-bold transition-all">Edit</button>
-                    <button onClick={() => deleteCNCQuotation(q.id)} className="text-red-500 hover:bg-red-50 px-2 py-1 rounded text-xs font-bold transition-all">Delete</button>
+                    <button onClick={() => loadQuotation(q)} className="text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/30 dark:bg-blue-900/30 px-2 py-1 rounded text-xs font-bold transition-all">Edit</button>
+                    <button onClick={() => deleteCNCQuotation(q.id)} className="text-red-500 hover:bg-red-50 dark:hover:bg-red-900/30 dark:bg-red-900/30 px-2 py-1 rounded text-xs font-bold transition-all">Delete</button>
                   </td>
                 </tr>
               ))}
@@ -296,16 +296,16 @@ export const CNCQuotation: React.FC = () => {
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 print:hidden px-4">
         <div>
           <h1 className="text-2xl font-bold text-slate-800 dark:text-slate-100 flex items-center gap-2">
-            <Scissors className="w-7 h-7 text-blue-600" />
+            <Scissors className="w-7 h-7 text-blue-600 dark:text-blue-400" />
             CNC Quotation Module
           </h1>
-          <p className="text-sm text-slate-500 mt-0.5">Specialized pricing for CNC Profile cutting</p>
+          <p className="text-sm text-slate-500 dark:text-slate-400 mt-0.5">Specialized pricing for CNC Profile cutting</p>
         </div>
         <div className="flex gap-2">
-          <button onClick={() => setViewMode('list')} className="flex items-center gap-2 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 px-4 py-2 rounded-xl text-sm font-semibold hover:bg-slate-200 transition-all">
+          <button onClick={() => setViewMode('list')} className="flex items-center gap-2 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 px-4 py-2 rounded-xl text-sm font-semibold hover:bg-slate-200 dark:bg-slate-700 transition-all">
             <List className="w-4 h-4" /> Saved Quotes
           </button>
-          <button onClick={handleReset} className="flex items-center gap-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 px-4 py-2 rounded-xl text-sm font-semibold hover:bg-slate-50 dark:bg-slate-800/50 transition-all">
+          <button onClick={handleReset} className="flex items-center gap-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 px-4 py-2 rounded-xl text-sm font-semibold hover:bg-slate-50 dark:hover:bg-slate-800/50 dark:bg-slate-800/50 transition-all">
             <RotateCcw className="w-4 h-4" /> Reset
           </button>
           <button onClick={handleSave} className="flex items-center gap-2 bg-emerald-600 text-white px-5 py-2 rounded-xl text-sm font-semibold hover:bg-emerald-700 transition-all shadow-md">
@@ -322,7 +322,7 @@ export const CNCQuotation: React.FC = () => {
         <div className="lg:col-span-1 space-y-6 print:hidden">
           <div className="bg-white dark:bg-slate-900 rounded-2xl p-6 shadow-sm border border-slate-100 dark:border-slate-800">
             <h2 className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-6 flex items-center gap-2">
-              <User className="w-4 h-4 text-blue-600" />
+              <User className="w-4 h-4 text-blue-600 dark:text-blue-400" />
               Customer Info
             </h2>
             <div className="space-y-4">
@@ -373,7 +373,7 @@ export const CNCQuotation: React.FC = () => {
           <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-800 overflow-x-auto print:border-none">
             <div className="p-4 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between bg-slate-50 dark:bg-slate-800/50/50 print:hidden">
               <h2 className="text-sm font-bold text-slate-800 dark:text-slate-100 uppercase flex items-center gap-2">
-                <Ruler className="w-4 h-4 text-blue-600" />
+                <Ruler className="w-4 h-4 text-blue-600 dark:text-blue-400" />
                 Material & Cutting Parameters
               </h2>
               <button onClick={addItem} className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-xl text-sm font-bold hover:bg-blue-700 shadow-lg shadow-blue-100 transition-all">
@@ -383,7 +383,7 @@ export const CNCQuotation: React.FC = () => {
 
             <table className="w-full text-left border-collapse min-w-[1200px]">
               <thead>
-                <tr className="bg-slate-50 dark:bg-slate-800/50 text-slate-500 uppercase font-black">
+                <tr className="bg-slate-50 dark:bg-slate-800/50 text-slate-500 dark:text-slate-400 uppercase font-black">
                   <th className="p-3 border-r w-12 text-center text-sm font-bold">Sr</th>
                   <th className="p-3 border-r text-sm font-bold min-w-[160px]">Shape / Drawing</th>
                   <th className="p-3 border-r text-sm font-bold min-w-[280px]">Plate Details</th>
@@ -391,9 +391,9 @@ export const CNCQuotation: React.FC = () => {
                   <th className="p-3 border-r text-sm font-bold min-w-[160px]">Plate Rate / Nos</th>
                   <th className="p-3 border-r text-sm font-bold min-w-[100px]">Part of Nos</th>
                   <th className="p-3 border-r text-sm font-bold min-w-[160px]">FG Total Weight (Kg)</th>
-                  <th className="p-3 border-r text-sm font-bold text-blue-600 min-w-[280px]">Cutting</th>
+                  <th className="p-3 border-r text-sm font-bold text-blue-600 dark:text-blue-400 min-w-[280px]">Cutting</th>
                   <th className="p-3 border-r text-sm font-bold min-w-[280px]">Scrap Rate</th>
-                  <th className="p-3 border-r text-sm font-bold text-emerald-600 min-w-[120px]">Final Rate</th>
+                  <th className="p-3 border-r text-sm font-bold text-emerald-600 dark:text-emerald-400 min-w-[120px]">Final Rate</th>
                   <th className="p-3 text-right text-sm font-bold min-w-[120px]">Amount</th>
                   <th className="p-3 w-10 print:hidden"></th>
                 </tr>
@@ -401,14 +401,14 @@ export const CNCQuotation: React.FC = () => {
               <tbody className="divide-y divide-slate-50">
                 {items.map((item: CNCItem, idx: number) => (
                   <tr key={item.id} className="hover:bg-blue-50/20 transition-all text-xs border-b border-slate-100 dark:border-slate-800">
-                    <td className="p-3 border-r text-center font-black text-slate-500 text-sm">
+                    <td className="p-3 border-r text-center font-black text-slate-500 dark:text-slate-400 text-sm">
                       {idx + 1}
                     </td>
                     <td className="p-3 border-r">
                       <select 
                         value={item.shape} 
                         onChange={(e) => updateItem(item.id, 'shape', e.target.value)}
-                        className="text-xs font-bold text-blue-600 bg-transparent outline-none mb-1 cursor-pointer"
+                        className="text-xs font-bold text-blue-600 dark:text-blue-400 bg-transparent outline-none mb-1 cursor-pointer"
                       >
                         <option value="CNC Profile">CNC Profile</option>
                       </select>
@@ -421,7 +421,7 @@ export const CNCQuotation: React.FC = () => {
                           <span className="text-slate-400 font-bold">x</span>
                           <input type="number" value={item.width ?? ''} onChange={(e) => updateItem(item.id, 'width', e.target.value)} className="w-20 bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded px-2 py-1 text-sm font-bold" placeholder="W" />
                           <span className="text-slate-400 font-bold">x</span>
-                          <input type="number" value={item.thickness ?? ''} onChange={(e) => updateItem(item.id, 'thickness', e.target.value)} className="w-16 bg-blue-50 border border-blue-200 text-blue-700 font-black rounded px-2 py-1 text-sm" placeholder="T" />
+                          <input type="number" value={item.thickness ?? ''} onChange={(e) => updateItem(item.id, 'thickness', e.target.value)} className="w-16 bg-blue-50 dark:bg-blue-900/30 border border-blue-200 dark:border-blue-700 text-blue-700 dark:text-blue-300 font-black rounded px-2 py-1 text-sm" placeholder="T" />
                         </div>
                         <EditableSelect 
                           value={item.grade} 
@@ -443,7 +443,7 @@ export const CNCQuotation: React.FC = () => {
                         </div>
                         <div className="flex items-center gap-1">
                           <span className="text-[10px] font-bold text-slate-400">RATE</span>
-                          <input type="number" value={item.plateRate ?? ''} onChange={(e) => updateItem(item.id, 'plateRate', e.target.value)} className="w-full bg-emerald-50 text-emerald-600 font-bold rounded px-1.5 py-0.5" />
+                          <input type="number" value={item.plateRate ?? ''} onChange={(e) => updateItem(item.id, 'plateRate', e.target.value)} className="w-full bg-emerald-50 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 font-bold rounded px-1.5 py-0.5" />
                         </div>
                       </div>
                     </td>
@@ -456,14 +456,14 @@ export const CNCQuotation: React.FC = () => {
                       ) : (
                         <div className="flex flex-col gap-1.5">
                           <input type="number" value={item.finishGoodWeight ?? ''} onChange={(e) => updateItem(item.id, 'finishGoodWeight', e.target.value)} className="w-24 bg-slate-50 dark:bg-slate-800/50 rounded px-2 py-1 font-bold text-right" placeholder="0.00" />
-                          <div className="flex flex-col gap-1 text-xs text-slate-500 font-bold border-t border-slate-100 dark:border-slate-800 pt-1">
+                          <div className="flex flex-col gap-1 text-xs text-slate-500 dark:text-slate-400 font-bold border-t border-slate-100 dark:border-slate-800 pt-1">
                             <div className="flex justify-between">
                               <span>Per Part:</span>
                               <span className="text-slate-700 dark:text-slate-200">{(item.partOfNos > 0 ? item.finishGoodWeight / item.partOfNos : 0).toFixed(2)} Kg</span>
                             </div>
                             <div className="flex justify-between">
                               <span>Rate/Kg:</span>
-                              <span className="text-blue-700">₹{(item.finishGoodWeight > 0 ? (item.finalRate * item.partOfNos) / item.finishGoodWeight : 0).toFixed(2)}</span>
+                              <span className="text-blue-700 dark:text-blue-300">₹{(item.finishGoodWeight > 0 ? (item.finalRate * item.partOfNos) / item.finishGoodWeight : 0).toFixed(2)}</span>
                             </div>
                           </div>
                         </div>
@@ -471,25 +471,25 @@ export const CNCQuotation: React.FC = () => {
                     </td>
                     <td className="p-3 border-r">
                       {item.shape === 'Square' ? (
-                        <span className="text-slate-500 font-medium italic text-center block">-</span>
+                        <span className="text-slate-500 dark:text-slate-400 font-medium italic text-center block">-</span>
                       ) : (
                         <div className="flex flex-col gap-1.5">
                           <div className="flex items-center gap-1">
-                            <span className="text-xs font-bold text-slate-500 w-12 uppercase">MTR</span>
-                            <input type="number" value={item.mtr ?? ''} onChange={(e) => updateItem(item.id, 'mtr', e.target.value)} className="w-24 bg-blue-50 border border-blue-100 rounded px-2 py-1 text-sm font-bold" />
+                            <span className="text-xs font-bold text-slate-500 dark:text-slate-400 w-12 uppercase">MTR</span>
+                            <input type="number" value={item.mtr ?? ''} onChange={(e) => updateItem(item.id, 'mtr', e.target.value)} className="w-24 bg-blue-50 dark:bg-blue-900/30 border border-blue-100 dark:border-blue-800 rounded px-2 py-1 text-sm font-bold" />
                             <div className="flex flex-col ml-1">
-                              <span className="text-xs font-black text-slate-500">FACTOR</span>
+                              <span className="text-xs font-black text-slate-500 dark:text-slate-400">FACTOR</span>
                               <input type="number" value={item.meterFactor ?? ''} onChange={(e) => updateItem(item.id, 'meterFactor', e.target.value)} className="w-14 bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded px-1 text-xs font-bold" />
                             </div>
                           </div>
                           <div className="border-t border-slate-100 dark:border-slate-800 my-1"></div>
                           <div className="flex flex-col gap-1.5">
                             <div className="flex items-center gap-1">
-                              <span className="text-xs font-bold text-slate-500 w-12 uppercase">PIER QTY</span>
-                              <input type="number" value={item.piercing ?? ''} onChange={(e) => updateItem(item.id, 'piercing', e.target.value)} className="w-24 bg-blue-50 border border-blue-100 rounded px-2 py-1 text-sm font-bold" />
+                              <span className="text-xs font-bold text-slate-500 dark:text-slate-400 w-12 uppercase">PIER QTY</span>
+                              <input type="number" value={item.piercing ?? ''} onChange={(e) => updateItem(item.id, 'piercing', e.target.value)} className="w-24 bg-blue-50 dark:bg-blue-900/30 border border-blue-100 dark:border-blue-800 rounded px-2 py-1 text-sm font-bold" />
                             </div>
                             <div className="flex items-center gap-1">
-                              <span className="text-xs font-black text-slate-500 w-12 uppercase">TYPE</span>
+                              <span className="text-xs font-black text-slate-500 dark:text-slate-400 w-12 uppercase">TYPE</span>
                               <select 
                                 value={item.piercingType} 
                                 onChange={(e) => updateItem(item.id, 'piercingType', e.target.value)}
@@ -502,32 +502,32 @@ export const CNCQuotation: React.FC = () => {
                             </div>
                             {item.piercingType === 'Manual' && (
                               <div className="flex items-center gap-1">
-                                <span className="text-xs font-black text-slate-500 w-12 uppercase">RATE</span>
-                                <input type="number" value={item.piercingRate ?? ''} onChange={(e) => updateItem(item.id, 'piercingRate', e.target.value)} className="w-24 bg-amber-50 border border-amber-200 rounded px-2 py-1 text-sm font-bold text-amber-700" />
+                                <span className="text-xs font-black text-slate-500 dark:text-slate-400 w-12 uppercase">RATE</span>
+                                <input type="number" value={item.piercingRate ?? ''} onChange={(e) => updateItem(item.id, 'piercingRate', e.target.value)} className="w-24 bg-amber-50 dark:bg-amber-900/30 border border-amber-200 dark:border-amber-800 rounded px-2 py-1 text-sm font-bold text-amber-700" />
                               </div>
                             )}
                           </div>
                           <div className="flex justify-between border-t border-slate-100 dark:border-slate-800 pt-1 mt-1 font-bold">
-                            <span className="text-xs text-slate-500 font-bold uppercase">Total Labour:</span>
-                            <span className="text-blue-700 text-sm font-bold">₹{Math.round((item.mtr * (item.thickness * item.meterFactor)) + (item.piercing * (item.piercingType === 'Full' ? item.thickness : item.piercingType === 'Half' ? item.thickness / 2 : item.piercingRate))).toLocaleString()}</span>
+                            <span className="text-xs text-slate-500 dark:text-slate-400 font-bold uppercase">Total Labour:</span>
+                            <span className="text-blue-700 dark:text-blue-300 text-sm font-bold">₹{Math.round((item.mtr * (item.thickness * item.meterFactor)) + (item.piercing * (item.piercingType === 'Full' ? item.thickness : item.piercingType === 'Half' ? item.thickness / 2 : item.piercingRate))).toLocaleString()}</span>
                           </div>
                         </div>
                       )}
                     </td>
                     <td className="p-3 border-r">
                       {item.shape === 'Square' ? (
-                        <span className="text-slate-500 font-medium italic text-center block">-</span>
+                        <span className="text-slate-500 dark:text-slate-400 font-medium italic text-center block">-</span>
                       ) : (
                         <div className="flex flex-col gap-1.5">
                           <div className="flex items-center gap-1">
-                            <span className="text-xs font-bold text-slate-500 w-14 uppercase">Scrap Rate</span>
-                            <input type="number" value={item.scrapRate ?? ''} onChange={(e) => updateItem(item.id, 'scrapRate', e.target.value)} className="w-24 bg-amber-50 border border-amber-200 rounded px-2 py-1 font-black text-amber-700 text-sm" />
+                            <span className="text-xs font-bold text-slate-500 dark:text-slate-400 w-14 uppercase">Scrap Rate</span>
+                            <input type="number" value={item.scrapRate ?? ''} onChange={(e) => updateItem(item.id, 'scrapRate', e.target.value)} className="w-24 bg-amber-50 dark:bg-amber-900/30 border border-amber-200 dark:border-amber-800 rounded px-2 py-1 font-black text-amber-700 text-sm" />
                           </div>
                           <div className="flex items-center gap-1">
-                            <span className="text-xs font-bold text-slate-500 w-14 uppercase">Loss Factor</span>
+                            <span className="text-xs font-bold text-slate-500 dark:text-slate-400 w-14 uppercase">Loss Factor</span>
                             <input type="number" value={item.burningLossFactor ?? ''} onChange={(e) => updateItem(item.id, 'burningLossFactor', e.target.value)} className="w-24 bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded px-2 py-1 font-black text-slate-700 dark:text-slate-200 text-sm" />
                           </div>
-                          <div className="flex flex-col gap-1 text-xs text-slate-500 font-bold border-t border-slate-100 dark:border-slate-800 pt-1">
+                          <div className="flex flex-col gap-1 text-xs text-slate-500 dark:text-slate-400 font-bold border-t border-slate-100 dark:border-slate-800 pt-1">
                             <div className="flex justify-between">
                               <span>Loss:</span>
                               <span className="text-red-500">{( (item.mtr * item.thickness * item.burningLossFactor * 8) / 1000 ).toFixed(2)} Kg</span>
@@ -544,8 +544,8 @@ export const CNCQuotation: React.FC = () => {
                         </div>
                       )}
                     </td>
-                    <td className="p-3 border-r bg-emerald-50/30">
-                      <span className="text-sm font-black text-emerald-700">₹{item.finalRate.toLocaleString()}</span>
+                    <td className="p-3 border-r bg-emerald-50 dark:bg-emerald-900/30/30">
+                      <span className="text-sm font-black text-emerald-700 dark:text-emerald-400">₹{item.finalRate.toLocaleString()}</span>
                       <p className="text-[10px] text-slate-400 uppercase font-bold">Per Part</p>
                     </td>
                     <td className="p-3 text-right font-black">
@@ -554,7 +554,7 @@ export const CNCQuotation: React.FC = () => {
                     <td className="p-3 text-center print:hidden">
                       <button 
                         onClick={() => removeItem(item.id)} 
-                        className="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-xl transition-all shadow-sm group"
+                        className="p-2 text-slate-400 hover:text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30 dark:bg-red-900/30 rounded-xl transition-all shadow-sm group"
                         title="Remove Item"
                       >
                         <Trash2 className="w-5 h-5 group-hover:scale-110 transition-transform" />

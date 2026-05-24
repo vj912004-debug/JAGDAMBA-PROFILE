@@ -10,9 +10,9 @@ const STAGE_COLORS: Record<Stage, { border: string; bg: string; text: string; do
   'Nesting Pending': { border: 'border-violet-400', bg: 'bg-violet-50', text: 'text-violet-700', dot: 'bg-violet-400' },
   'Nesting Done': { border: 'border-purple-400', bg: 'bg-purple-50', text: 'text-purple-700', dot: 'bg-purple-400' },
   'Production Pending': { border: 'border-orange-400', bg: 'bg-orange-50', text: 'text-orange-700', dot: 'bg-orange-400' },
-  'Cutting In Process': { border: 'border-amber-500', bg: 'bg-amber-50', text: 'text-amber-700', dot: 'bg-amber-500' },
-  'Ready': { border: 'border-emerald-500', bg: 'bg-emerald-50', text: 'text-emerald-700', dot: 'bg-emerald-500' },
-  'Dispatch Done': { border: 'border-blue-500', bg: 'bg-blue-50', text: 'text-blue-700', dot: 'bg-blue-500' },
+  'Cutting In Process': { border: 'border-amber-500', bg: 'bg-amber-50 dark:bg-amber-900/30', text: 'text-amber-700', dot: 'bg-amber-500' },
+  'Ready': { border: 'border-emerald-500', bg: 'bg-emerald-50 dark:bg-emerald-900/30', text: 'text-emerald-700 dark:text-emerald-400', dot: 'bg-emerald-500' },
+  'Dispatch Done': { border: 'border-blue-500', bg: 'bg-blue-50 dark:bg-blue-900/30', text: 'text-blue-700 dark:text-blue-300', dot: 'bg-blue-500' },
   'Challan Done': { border: 'border-teal-500', bg: 'bg-teal-50', text: 'text-teal-700', dot: 'bg-teal-500' },
   'Payment Pending': { border: 'border-rose-400', bg: 'bg-rose-50', text: 'text-rose-700', dot: 'bg-rose-400' },
   'Payment Received': { border: 'border-green-600', bg: 'bg-green-50', text: 'text-green-700', dot: 'bg-green-600' },
@@ -79,11 +79,11 @@ export const ProductionStatus: React.FC = () => {
       <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-3">
         <div>
           <h1 className="text-2xl font-bold text-slate-800 dark:text-slate-100">{t('productionStatus')}</h1>
-          <p className="text-sm text-slate-500">{filteredOrders.length} orders • Live tracking</p>
+          <p className="text-sm text-slate-500 dark:text-slate-400">{filteredOrders.length} orders • Live tracking</p>
         </div>
         <div className="flex flex-wrap gap-2 w-full lg:w-auto items-center">
           {branch && branch !== 'All' && (
-            <div className="text-[10px] font-bold text-amber-600 bg-amber-50 px-2 py-1 rounded-lg border border-amber-100 flex items-center gap-1">
+            <div className="text-[10px] font-bold text-amber-600 bg-amber-50 dark:bg-amber-900/30 px-2 py-1 rounded-lg border border-amber-100 flex items-center gap-1">
               <MapPin className="w-3 h-3" /> Filtered by {branch}
             </div>
           )}
@@ -106,8 +106,8 @@ export const ProductionStatus: React.FC = () => {
             {ALL_STAGES.map(s => <option key={s} value={s}>{s}</option>)}
           </select>
           <div className="flex bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl overflow-hidden">
-            <button onClick={() => setViewMode('kanban')} className={`px-3 py-2 text-xs font-semibold transition-colors ${viewMode === 'kanban' ? 'bg-blue-50 text-blue-700' : 'text-slate-500 hover:bg-slate-50 dark:bg-slate-800/50'}`}>Kanban</button>
-            <button onClick={() => setViewMode('list')} className={`px-3 py-2 text-xs font-semibold transition-colors ${viewMode === 'list' ? 'bg-blue-50 text-blue-700' : 'text-slate-500 hover:bg-slate-50 dark:bg-slate-800/50'}`}>List</button>
+            <button onClick={() => setViewMode('kanban')} className={`px-3 py-2 text-xs font-semibold transition-colors ${viewMode === 'kanban' ? 'bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300' : 'text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/50 dark:bg-slate-800/50'}`}>Kanban</button>
+            <button onClick={() => setViewMode('list')} className={`px-3 py-2 text-xs font-semibold transition-colors ${viewMode === 'list' ? 'bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300' : 'text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/50 dark:bg-slate-800/50'}`}>List</button>
           </div>
         </div>
       </div>
@@ -125,7 +125,7 @@ export const ProductionStatus: React.FC = () => {
                     <span className={`w-2 h-2 rounded-full ${colors.dot}`}></span>
                     {stage}
                   </span>
-                  <span className="bg-white dark:bg-slate-900 text-slate-500 text-[10px] py-0.5 px-2 rounded-full shadow-sm font-bold">
+                  <span className="bg-white dark:bg-slate-900 text-slate-500 dark:text-slate-400 text-[10px] py-0.5 px-2 rounded-full shadow-sm font-bold">
                     {stageOrders.length}
                   </span>
                 </h2>
@@ -133,15 +133,15 @@ export const ProductionStatus: React.FC = () => {
                   {stageOrders.map(order => (
                     <div key={order.id} className={`p-3 rounded-xl border-l-[3px] shadow-sm bg-white dark:bg-slate-900 hover:shadow-md transition-all ${order.urgent && stage !== 'Ready' && stage !== 'Dispatch Done' ? 'border-red-500' : colors.border}`}>
                       <div className="flex justify-between items-start mb-1.5">
-                        <span className="text-[10px] font-bold text-slate-500 bg-slate-100 dark:bg-slate-800 px-1.5 py-0.5 rounded font-mono">{order.orderNo}</span>
+                        <span className="text-[10px] font-bold text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-slate-800 px-1.5 py-0.5 rounded font-mono">{order.orderNo}</span>
                         <div className="flex gap-1">
                           {order.urgent && stage !== 'Ready' && stage !== 'Dispatch Done' && (
-                            <span className="flex items-center text-[10px] font-bold text-red-600 gap-0.5 bg-red-100 px-1.5 py-0.5 rounded-full">
+                            <span className="flex items-center text-[10px] font-bold text-red-600 dark:text-red-400 gap-0.5 bg-red-100 px-1.5 py-0.5 rounded-full">
                               <AlertCircle className="w-2.5 h-2.5" /> Urgent
                             </span>
                           )}
                           {stage === 'Ready' && (
-                            <span className="flex items-center text-[10px] font-bold text-emerald-600 gap-0.5 bg-emerald-100 px-1.5 py-0.5 rounded-full">
+                            <span className="flex items-center text-[10px] font-bold text-emerald-600 dark:text-emerald-400 gap-0.5 bg-emerald-100 px-1.5 py-0.5 rounded-full">
                               <CheckCircle2 className="w-2.5 h-2.5" /> Ready
                             </span>
                           )}
@@ -156,12 +156,12 @@ export const ProductionStatus: React.FC = () => {
                           </>
                         )}
                         <p>Qty: <span className="font-medium text-slate-800 dark:text-slate-100">{totalQty(order)} {order.items[0]?.unitType}</span>
-                          {order.items.length > 1 && <span className="text-blue-600 ml-1">({order.items.length} items)</span>}
+                          {order.items.length > 1 && <span className="text-blue-600 dark:text-blue-400 ml-1">({order.items.length} items)</span>}
                         </p>
                         {order.deliveryDate && (
                           <p>Due: <span className="font-medium text-slate-800 dark:text-slate-100">{new Date(order.deliveryDate).toLocaleDateString('en-IN', { day: '2-digit', month: 'short' })}</span></p>
                         )}
-                        <p>By: <span className="font-medium text-blue-600 italic">{order.handledBy || 'System'}</span></p>
+                        <p>By: <span className="font-medium text-blue-600 dark:text-blue-400 italic">{order.handledBy || 'System'}</span></p>
                       </div>
 
                       {canEditStatus && (
@@ -173,10 +173,10 @@ export const ProductionStatus: React.FC = () => {
                           >
                             {ALL_STAGES.map(s => <option key={s} value={s}>{s}</option>)}
                           </select>
-                          <button onClick={() => advanceStage(order)} title="Advance Stage" className="p-1.5 text-blue-600 bg-blue-50 hover:bg-blue-100 rounded-lg border border-blue-100 transition-colors">
+                          <button onClick={() => advanceStage(order)} title="Advance Stage" className="p-1.5 text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/30 hover:bg-blue-100 dark:hover:bg-blue-900/50 dark:bg-blue-900/50 rounded-lg border border-blue-100 dark:border-blue-800 transition-colors">
                             <FastForward className="w-3.5 h-3.5" />
                           </button>
-                          <button onClick={() => generateOrderEntryPDF(order)} title="Print Order" className="p-1.5 text-slate-600 dark:text-slate-300 bg-slate-50 dark:bg-slate-800/50 hover:bg-slate-100 dark:bg-slate-800 rounded-lg border border-slate-100 dark:border-slate-800 transition-colors">
+                          <button onClick={() => generateOrderEntryPDF(order)} title="Print Order" className="p-1.5 text-slate-600 dark:text-slate-300 bg-slate-50 dark:bg-slate-800/50 hover:bg-slate-100 dark:hover:bg-slate-800 dark:bg-slate-800 rounded-lg border border-slate-100 dark:border-slate-800 transition-colors">
                             <Printer className="w-3.5 h-3.5" />
                           </button>
                         </div>
@@ -202,14 +202,14 @@ export const ProductionStatus: React.FC = () => {
             <table className="w-full text-left border-collapse whitespace-nowrap">
               <thead>
                 <tr className="bg-slate-50 dark:bg-slate-800/50 border-b border-slate-100 dark:border-slate-800">
-                  <th className="p-3 text-[10px] font-bold tracking-wider text-slate-500 uppercase">Order No</th>
-                  <th className="p-3 text-[10px] font-bold tracking-wider text-slate-500 uppercase">Party</th>
-                  <th className="p-3 text-[10px] font-bold tracking-wider text-slate-500 uppercase">Items</th>
-                  <th className="p-3 text-[10px] font-bold tracking-wider text-slate-500 uppercase">Material</th>
-                  <th className="p-3 text-[10px] font-bold tracking-wider text-slate-500 uppercase">Qty</th>
-                  <th className="p-3 text-[10px] font-bold tracking-wider text-slate-500 uppercase">Due Date</th>
-                  <th className="p-3 text-[10px] font-bold tracking-wider text-slate-500 uppercase">Status</th>
-                  {canEditStatus && <th className="p-3 text-[10px] font-bold tracking-wider text-slate-500 uppercase">Action</th>}
+                  <th className="p-3 text-[10px] font-bold tracking-wider text-slate-500 dark:text-slate-400 uppercase">Order No</th>
+                  <th className="p-3 text-[10px] font-bold tracking-wider text-slate-500 dark:text-slate-400 uppercase">Party</th>
+                  <th className="p-3 text-[10px] font-bold tracking-wider text-slate-500 dark:text-slate-400 uppercase">Items</th>
+                  <th className="p-3 text-[10px] font-bold tracking-wider text-slate-500 dark:text-slate-400 uppercase">Material</th>
+                  <th className="p-3 text-[10px] font-bold tracking-wider text-slate-500 dark:text-slate-400 uppercase">Qty</th>
+                  <th className="p-3 text-[10px] font-bold tracking-wider text-slate-500 dark:text-slate-400 uppercase">Due Date</th>
+                  <th className="p-3 text-[10px] font-bold tracking-wider text-slate-500 dark:text-slate-400 uppercase">Status</th>
+                  {canEditStatus && <th className="p-3 text-[10px] font-bold tracking-wider text-slate-500 dark:text-slate-400 uppercase">Action</th>}
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100">
@@ -217,7 +217,7 @@ export const ProductionStatus: React.FC = () => {
                   const colors = STAGE_COLORS[order.stage];
                   return (
                     <React.Fragment key={order.id}>
-                      <tr className="hover:bg-slate-50 dark:bg-slate-800/50/50 transition-colors cursor-pointer" onClick={() => setExpandedOrder(expandedOrder === order.id ? null : order.id)}>
+                      <tr className="hover:bg-slate-50 dark:hover:bg-slate-800/50 dark:bg-slate-800/50/50 transition-colors cursor-pointer" onClick={() => setExpandedOrder(expandedOrder === order.id ? null : order.id)}>
                         <td className="p-3 text-sm font-bold text-slate-700 dark:text-slate-200 font-mono">
                           <div className="flex items-center gap-2">
                             {order.urgent && <span className="w-1.5 h-1.5 rounded-full bg-red-500 pulse-dot"></span>}
@@ -238,10 +238,10 @@ export const ProductionStatus: React.FC = () => {
                         {canEditStatus && (
                           <td className="p-3">
                             <div className="flex gap-1.5">
-                              <button onClick={(e) => { e.stopPropagation(); advanceStage(order); }} title="Advance" className="p-1.5 text-blue-600 bg-blue-50 hover:bg-blue-100 rounded-lg border border-blue-100 transition-colors">
+                              <button onClick={(e) => { e.stopPropagation(); advanceStage(order); }} title="Advance" className="p-1.5 text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/30 hover:bg-blue-100 dark:hover:bg-blue-900/50 dark:bg-blue-900/50 rounded-lg border border-blue-100 dark:border-blue-800 transition-colors">
                                 <FastForward className="w-3.5 h-3.5" />
                               </button>
-                              <button onClick={(e) => { e.stopPropagation(); generateOrderEntryPDF(order); }} title="Print" className="p-1.5 text-slate-600 dark:text-slate-300 bg-slate-50 dark:bg-slate-800/50 hover:bg-slate-100 dark:bg-slate-800 rounded-lg border border-slate-100 dark:border-slate-800 transition-colors">
+                              <button onClick={(e) => { e.stopPropagation(); generateOrderEntryPDF(order); }} title="Print" className="p-1.5 text-slate-600 dark:text-slate-300 bg-slate-50 dark:bg-slate-800/50 hover:bg-slate-100 dark:hover:bg-slate-800 dark:bg-slate-800 rounded-lg border border-slate-100 dark:border-slate-800 transition-colors">
                                 <Printer className="w-3.5 h-3.5" />
                               </button>
                             </div>
@@ -252,27 +252,27 @@ export const ProductionStatus: React.FC = () => {
                       {expandedOrder === order.id && (
                         <tr>
                           <td colSpan={canEditStatus ? 8 : 7} className="p-0">
-                            <div className="bg-blue-50/50 p-4 border-t border-blue-100 slide-up">
+                            <div className="bg-blue-50/50 p-4 border-t border-blue-100 dark:border-blue-800 slide-up">
                               <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-3 text-xs">
-                                <div><span className="text-slate-500">Contact:</span> <strong>{order.contactPerson || '-'}</strong></div>
-                                <div><span className="text-slate-500">Mobile:</span> <strong>{order.mobileNumber || '-'}</strong></div>
-                                <div><span className="text-slate-500">Location:</span> <strong>{order.location || '-'}</strong></div>
-                                <div><span className="text-slate-500">Handled By:</span> <strong className="text-blue-600">{order.handledBy || 'System'}</strong></div>
-                                <div><span className="text-slate-500">Address:</span> <strong>{order.deliveryAddress || '-'}</strong></div>
+                                <div><span className="text-slate-500 dark:text-slate-400">Contact:</span> <strong>{order.contactPerson || '-'}</strong></div>
+                                <div><span className="text-slate-500 dark:text-slate-400">Mobile:</span> <strong>{order.mobileNumber || '-'}</strong></div>
+                                <div><span className="text-slate-500 dark:text-slate-400">Location:</span> <strong>{order.location || '-'}</strong></div>
+                                <div><span className="text-slate-500 dark:text-slate-400">Handled By:</span> <strong className="text-blue-600 dark:text-blue-400">{order.handledBy || 'System'}</strong></div>
+                                <div><span className="text-slate-500 dark:text-slate-400">Address:</span> <strong>{order.deliveryAddress || '-'}</strong></div>
                               </div>
-                              {order.remark && <p className="text-xs text-slate-600 dark:text-slate-300 mb-3"><span className="text-slate-500">Remark:</span> <strong>{order.remark}</strong></p>}
+                              {order.remark && <p className="text-xs text-slate-600 dark:text-slate-300 mb-3"><span className="text-slate-500 dark:text-slate-400">Remark:</span> <strong>{order.remark}</strong></p>}
                               <table className="w-full text-left border-collapse text-xs">
                                 <thead>
                                   <tr className="bg-white dark:bg-slate-900/60">
-                                    <th className="p-2 font-semibold text-slate-500">Type</th>
-                                    <th className="p-2 font-semibold text-slate-500">Drawing</th>
-                                    <th className="p-2 font-semibold text-slate-500">Part</th>
-                                    <th className="p-2 font-semibold text-slate-500">Material</th>
-                                    <th className="p-2 font-semibold text-slate-500">Thickness</th>
-                                    <th className="p-2 font-semibold text-slate-500">Qty</th>
-                                    <th className="p-2 font-semibold text-slate-500">Unit</th>
-                                    <th className="p-2 font-semibold text-slate-500">Rate</th>
-                                    <th className="p-2 font-semibold text-slate-500">Amount</th>
+                                    <th className="p-2 font-semibold text-slate-500 dark:text-slate-400">Type</th>
+                                    <th className="p-2 font-semibold text-slate-500 dark:text-slate-400">Drawing</th>
+                                    <th className="p-2 font-semibold text-slate-500 dark:text-slate-400">Part</th>
+                                    <th className="p-2 font-semibold text-slate-500 dark:text-slate-400">Material</th>
+                                    <th className="p-2 font-semibold text-slate-500 dark:text-slate-400">Thickness</th>
+                                    <th className="p-2 font-semibold text-slate-500 dark:text-slate-400">Qty</th>
+                                    <th className="p-2 font-semibold text-slate-500 dark:text-slate-400">Unit</th>
+                                    <th className="p-2 font-semibold text-slate-500 dark:text-slate-400">Rate</th>
+                                    <th className="p-2 font-semibold text-slate-500 dark:text-slate-400">Amount</th>
                                   </tr>
                                 </thead>
                                 <tbody>

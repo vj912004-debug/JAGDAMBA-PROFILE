@@ -229,10 +229,10 @@ export const PurchaseOrderEntry: React.FC = () => {
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
         <div>
           <h1 className="text-2xl font-bold text-slate-800 dark:text-slate-100">{editId ? 'Edit Purchase Order' : t('purchaseOrder')}</h1>
-          <p className="text-sm text-slate-500 mt-0.5">{editId ? 'Modify existing purchase order' : 'Create new purchase order'} • <span className="font-semibold text-blue-600">{poNumber}</span></p>
+          <p className="text-sm text-slate-500 dark:text-slate-400 mt-0.5">{editId ? 'Modify existing purchase order' : 'Create new purchase order'} • <span className="font-semibold text-blue-600 dark:text-blue-400">{poNumber}</span></p>
         </div>
         <div className="flex gap-2">
-          <button onClick={handleReset} className="flex items-center gap-2 text-slate-600 dark:text-slate-300 hover:text-slate-800 dark:text-slate-100 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 px-4 py-2 rounded-xl text-sm font-medium transition-colors hover:bg-slate-50 dark:bg-slate-800/50">
+          <button onClick={handleReset} className="flex items-center gap-2 text-slate-600 dark:text-slate-300 hover:text-slate-800 dark:text-slate-100 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 px-4 py-2 rounded-xl text-sm font-medium transition-colors hover:bg-slate-50 dark:hover:bg-slate-800/50 dark:bg-slate-800/50">
             <RotateCcw className="w-4 h-4" /> Reset
           </button>
           <button
@@ -253,7 +253,7 @@ export const PurchaseOrderEntry: React.FC = () => {
       </div>
 
       {!canCreate && (
-        <div className="bg-amber-50 border border-amber-200 rounded-xl px-4 py-3 text-sm text-amber-800 font-medium">
+        <div className="bg-amber-50 dark:bg-amber-900/30 border border-amber-200 dark:border-amber-800 rounded-xl px-4 py-3 text-sm text-amber-800 dark:text-amber-200 font-medium">
           ⚠️ Only Admin or Office Entry role can create purchase orders.
         </div>
       )}
@@ -268,7 +268,7 @@ export const PurchaseOrderEntry: React.FC = () => {
           {/* Supplier Details */}
           <div className="bg-white dark:bg-slate-900 rounded-2xl p-6 shadow-sm border border-slate-100 dark:border-slate-800">
             <h2 className="text-base font-semibold text-slate-800 dark:text-slate-100 mb-6 pb-2 border-b border-slate-100 dark:border-slate-800 flex items-center gap-2">
-              <ShoppingBag className="w-5 h-5 text-blue-600" />
+              <ShoppingBag className="w-5 h-5 text-blue-600 dark:text-blue-400" />
               Supplier / Party Details
             </h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -312,7 +312,7 @@ export const PurchaseOrderEntry: React.FC = () => {
             <div className="overflow-x-auto">
               <table className="w-full text-left border-collapse min-w-[800px]">
                 <thead>
-                  <tr className="bg-slate-50 dark:bg-slate-800/50 text-[10px] uppercase font-bold text-slate-500">
+                  <tr className="bg-slate-50 dark:bg-slate-800/50 text-[10px] uppercase font-bold text-slate-500 dark:text-slate-400">
                     <th className="p-3 border-b">Grade</th>
                     <th className="p-3 border-b">Thk</th>
                     <th className="p-3 border-b">Width</th>
@@ -350,10 +350,10 @@ export const PurchaseOrderEntry: React.FC = () => {
                         <input type="number" value={item.nos || ''} onChange={(e) => updateItem(item.id, 'nos', Number(e.target.value))} className="w-full border-transparent bg-transparent group-hover:bg-white dark:bg-slate-900 group-hover:border-slate-200 dark:border-slate-700 rounded px-2 py-1.5 text-sm transition-all" placeholder="0" />
                       </td>
                       <td className="p-2 w-24">
-                        <input type="number" step="0.001" value={item.kg || ''} onChange={(e) => updateItem(item.id, 'kg', Number(e.target.value))} className="w-full border-transparent bg-transparent group-hover:bg-white dark:bg-slate-900 group-hover:border-slate-200 dark:border-slate-700 rounded px-2 py-1.5 text-sm transition-all font-semibold text-blue-600" placeholder="0.000" />
+                        <input type="number" step="0.001" value={item.kg || ''} onChange={(e) => updateItem(item.id, 'kg', Number(e.target.value))} className="w-full border-transparent bg-transparent group-hover:bg-white dark:bg-slate-900 group-hover:border-slate-200 dark:border-slate-700 rounded px-2 py-1.5 text-sm transition-all font-semibold text-blue-600 dark:text-blue-400" placeholder="0.000" />
                       </td>
                       <td className="p-2 w-24">
-                        <input type="number" step="0.001" value={item.actualWeight || ''} onChange={(e) => updateItem(item.id, 'actualWeight', Number(e.target.value))} className="w-full border-transparent bg-transparent group-hover:bg-white dark:bg-slate-900 group-hover:border-slate-200 dark:border-slate-700 rounded px-2 py-1.5 text-sm transition-all font-semibold text-emerald-600" placeholder="0.000" />
+                        <input type="number" step="0.001" value={item.actualWeight || ''} onChange={(e) => updateItem(item.id, 'actualWeight', Number(e.target.value))} className="w-full border-transparent bg-transparent group-hover:bg-white dark:bg-slate-900 group-hover:border-slate-200 dark:border-slate-700 rounded px-2 py-1.5 text-sm transition-all font-semibold text-emerald-600 dark:text-emerald-400" placeholder="0.000" />
                       </td>
                       <td className="p-2 w-24">
                         <input type="number" value={item.rate || ''} onChange={(e) => updateItem(item.id, 'rate', Number(e.target.value))} className="w-full border-transparent bg-transparent group-hover:bg-white dark:bg-slate-900 group-hover:border-slate-200 dark:border-slate-700 rounded px-2 py-1.5 text-sm transition-all" placeholder="0.00" />
@@ -362,7 +362,7 @@ export const PurchaseOrderEntry: React.FC = () => {
                         {item.amount.toLocaleString()}
                       </td>
                       <td className="p-2 text-center">
-                        <button onClick={() => handleRemoveItem(item.id)} className="p-1.5 text-slate-300 hover:text-red-500 hover:bg-red-50 rounded-lg transition-all">
+                        <button onClick={() => handleRemoveItem(item.id)} className="p-1.5 text-slate-300 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/30 dark:bg-red-900/30 rounded-lg transition-all">
                           <Trash2 className="w-4 h-4" />
                         </button>
                       </td>
@@ -371,8 +371,8 @@ export const PurchaseOrderEntry: React.FC = () => {
                 </tbody>
                 <tfoot className="bg-slate-50 dark:bg-slate-800/50/50">
                   <tr className="font-bold text-slate-800 dark:text-slate-100">
-                    <td colSpan={5} className="p-4 text-right text-xs uppercase text-slate-500">Grand Total</td>
-                    <td className="p-4 text-blue-600">{totalKg.toFixed(3)}</td>
+                    <td colSpan={5} className="p-4 text-right text-xs uppercase text-slate-500 dark:text-slate-400">Grand Total</td>
+                    <td className="p-4 text-blue-600 dark:text-blue-400">{totalKg.toFixed(3)}</td>
                     <td className="p-4"></td>
                     <td className="p-4 text-right text-lg">₹{totalAmount.toLocaleString()}</td>
                     <td></td>
@@ -390,7 +390,7 @@ export const PurchaseOrderEntry: React.FC = () => {
             <div className="space-y-4">
               <div>
                 <label className="block text-[10px] font-bold text-slate-400 mb-1 uppercase tracking-wider">PO Number</label>
-                <input type="text" className="w-full bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 text-slate-500 rounded-lg px-3 py-2 text-sm font-mono focus:outline-none" value={poNumber} readOnly />
+                <input type="text" className="w-full bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 text-slate-500 dark:text-slate-400 rounded-lg px-3 py-2 text-sm font-mono focus:outline-none" value={poNumber} readOnly />
               </div>
               <div>
                 <label className="block text-[10px] font-bold text-slate-400 mb-1 uppercase tracking-wider">Date</label>

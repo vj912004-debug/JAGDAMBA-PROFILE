@@ -61,12 +61,12 @@ export const DispatchPage: React.FC = () => {
     <div className="max-w-7xl mx-auto space-y-5 fade-in pb-10">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <div className="p-2.5 bg-blue-100 rounded-xl">
-            <Truck className="w-5 h-5 text-blue-600" />
+          <div className="p-2.5 bg-blue-100 dark:bg-blue-900/50 rounded-xl">
+            <Truck className="w-5 h-5 text-blue-600 dark:text-blue-400" />
           </div>
           <div>
             <h1 className="text-2xl font-bold text-slate-800 dark:text-slate-100">{t('dispatch')} Control</h1>
-            <p className="text-sm text-slate-500">{readyOrders.length} orders ready for partial or full dispatch</p>
+            <p className="text-sm text-slate-500 dark:text-slate-400">{readyOrders.length} orders ready for partial or full dispatch</p>
           </div>
         </div>
       </div>
@@ -90,7 +90,7 @@ export const DispatchPage: React.FC = () => {
                   });
                   setDispatchQuantities(initialQtys);
                 }}
-                className={`p-4 rounded-2xl border transition-all cursor-pointer group ${selectedOrderId === order.id ? 'bg-blue-600 border-blue-600 text-white shadow-lg' : 'bg-white dark:bg-slate-900 border-slate-100 dark:border-slate-800 hover:border-blue-200 text-slate-600 dark:text-slate-300 shadow-sm'}`}
+                className={`p-4 rounded-2xl border transition-all cursor-pointer group ${selectedOrderId === order.id ? 'bg-blue-600 border-blue-600 text-white shadow-lg' : 'bg-white dark:bg-slate-900 border-slate-100 dark:border-slate-800 hover:border-blue-200 dark:border-blue-700 text-slate-600 dark:text-slate-300 shadow-sm'}`}
               >
                 <div className="flex justify-between items-start mb-2">
                   <span className={`text-xs font-mono font-bold ${selectedOrderId === order.id ? 'text-blue-100' : 'text-slate-400'}`}>{order.orderNo}</span>
@@ -98,7 +98,7 @@ export const DispatchPage: React.FC = () => {
                 </div>
                 <h3 className={`font-bold text-sm mb-1 truncate ${selectedOrderId === order.id ? 'text-white' : 'text-slate-800 dark:text-slate-100'}`}>{order.partyName}</h3>
                 <div className="flex items-center gap-2">
-                  <span className={`text-[10px] px-1.5 py-0.5 rounded-full ${selectedOrderId === order.id ? 'bg-white dark:bg-slate-900/20 text-white' : 'bg-emerald-50 text-emerald-600 font-bold'}`}>
+                  <span className={`text-[10px] px-1.5 py-0.5 rounded-full ${selectedOrderId === order.id ? 'bg-white dark:bg-slate-900/20 text-white' : 'bg-emerald-50 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 font-bold'}`}>
                     {order.items.filter(i => (i.completedQty || 0) > (i.dispatchedQty || 0)).length} Items Ready
                   </span>
                 </div>
@@ -120,7 +120,7 @@ export const DispatchPage: React.FC = () => {
               <div className="p-6 border-b border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50/50 flex justify-between items-center">
                 <div>
                   <h2 className="text-xl font-bold text-slate-800 dark:text-slate-100">{selectedOrder.partyName}</h2>
-                  <p className="text-xs text-slate-500 font-medium font-mono">{selectedOrder.orderNo} • {selectedOrder.deliveryAddress}</p>
+                  <p className="text-xs text-slate-500 dark:text-slate-400 font-medium font-mono">{selectedOrder.orderNo} • {selectedOrder.deliveryAddress}</p>
                 </div>
                 <Truck className="w-8 h-8 text-blue-500 opacity-20" />
               </div>
@@ -145,7 +145,7 @@ export const DispatchPage: React.FC = () => {
                           </div>
                         </td>
                         <td className="py-4 text-center">
-                          <span className="text-sm font-bold text-emerald-600">{item.completedQty || 0}</span>
+                          <span className="text-sm font-bold text-emerald-600 dark:text-emerald-400">{item.completedQty || 0}</span>
                         </td>
                         <td className="py-4 text-center">
                           <span className="text-sm text-slate-400 font-medium">{item.dispatchedQty || 0}</span>
@@ -157,7 +157,7 @@ export const DispatchPage: React.FC = () => {
                             max={(item.completedQty || 0) - (item.dispatchedQty || 0)}
                             value={dispatchQuantities[item.id] || 0}
                             onChange={(e) => setDispatchQuantities(prev => ({ ...prev, [item.id]: Number(e.target.value) }))}
-                            className="w-20 bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-lg px-2 py-1.5 text-center text-sm font-bold text-blue-600 focus:ring-2 focus:ring-blue-500 outline-none"
+                            className="w-20 bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-lg px-2 py-1.5 text-center text-sm font-bold text-blue-600 dark:text-blue-400 focus:ring-2 focus:ring-blue-500 outline-none"
                           />
                         </td>
                       </tr>
@@ -192,7 +192,7 @@ export const DispatchPage: React.FC = () => {
                 <div className="flex justify-end gap-3 pt-2">
                   <button 
                     onClick={() => setSelectedOrderId(null)}
-                    className="px-6 py-2.5 text-sm font-bold text-slate-500 hover:bg-slate-200 rounded-xl transition-all"
+                    className="px-6 py-2.5 text-sm font-bold text-slate-500 dark:text-slate-400 hover:bg-slate-200 dark:bg-slate-700 rounded-xl transition-all"
                   >
                     Cancel
                   </button>
@@ -223,24 +223,24 @@ export const DispatchPage: React.FC = () => {
         <div className="p-6 border-b border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50/50 flex items-center justify-between">
           <h2 className="text-lg font-bold text-slate-800 dark:text-slate-100 flex items-center gap-2">
             Dispatch History
-            <span className="bg-emerald-100 text-emerald-600 text-[10px] px-2 py-0.5 rounded-full font-bold uppercase">{completedDispatches.length}</span>
+            <span className="bg-emerald-100 text-emerald-600 dark:text-emerald-400 text-[10px] px-2 py-0.5 rounded-full font-bold uppercase">{completedDispatches.length}</span>
           </h2>
         </div>
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse whitespace-nowrap">
             <thead>
               <tr className="bg-slate-50 dark:bg-slate-800/50 border-b border-slate-100 dark:border-slate-800">
-                <th className="p-4 text-[10px] font-bold tracking-wider text-slate-500 uppercase">Dispatch Date</th>
-                <th className="p-4 text-[10px] font-bold tracking-wider text-slate-500 uppercase">Order / Party</th>
-                <th className="p-4 text-[10px] font-bold tracking-wider text-slate-500 uppercase text-center">Qty Dispatched</th>
-                <th className="p-4 text-[10px] font-bold tracking-wider text-slate-500 uppercase">Vehicle No</th>
-                <th className="p-4 text-[10px] font-bold tracking-wider text-slate-500 uppercase">DN Number</th>
-                <th className="p-4 text-[10px] font-bold tracking-wider text-slate-500 uppercase">Remark</th>
+                <th className="p-4 text-[10px] font-bold tracking-wider text-slate-500 dark:text-slate-400 uppercase">Dispatch Date</th>
+                <th className="p-4 text-[10px] font-bold tracking-wider text-slate-500 dark:text-slate-400 uppercase">Order / Party</th>
+                <th className="p-4 text-[10px] font-bold tracking-wider text-slate-500 dark:text-slate-400 uppercase text-center">Qty Dispatched</th>
+                <th className="p-4 text-[10px] font-bold tracking-wider text-slate-500 dark:text-slate-400 uppercase">Vehicle No</th>
+                <th className="p-4 text-[10px] font-bold tracking-wider text-slate-500 dark:text-slate-400 uppercase">DN Number</th>
+                <th className="p-4 text-[10px] font-bold tracking-wider text-slate-500 dark:text-slate-400 uppercase">Remark</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
               {completedDispatches.map(item => (
-                <tr key={item.id} className="hover:bg-slate-50 dark:bg-slate-800/50/50 transition-colors">
+                <tr key={item.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/50 dark:bg-slate-800/50/50 transition-colors">
                   <td className="p-4">
                     <span className="text-sm font-medium text-slate-700 dark:text-slate-200">{item.dispatchDate}</span>
                   </td>
@@ -251,11 +251,11 @@ export const DispatchPage: React.FC = () => {
                     </div>
                   </td>
                   <td className="p-4 text-center">
-                    <span className="text-sm font-bold text-emerald-600">{item.dispatchQty}</span>
+                    <span className="text-sm font-bold text-emerald-600 dark:text-emerald-400">{item.dispatchQty}</span>
                   </td>
                   <td className="p-4 text-sm text-slate-600 dark:text-slate-300 font-medium uppercase">{item.vehicleNo}</td>
-                  <td className="p-4 text-sm font-mono text-blue-600 font-bold">{item.deliveryNote}</td>
-                  <td className="p-4 text-sm text-slate-500 italic">{item.remark || '-'}</td>
+                  <td className="p-4 text-sm font-mono text-blue-600 dark:text-blue-400 font-bold">{item.deliveryNote}</td>
+                  <td className="p-4 text-sm text-slate-500 dark:text-slate-400 italic">{item.remark || '-'}</td>
                 </tr>
               ))}
               {completedDispatches.length === 0 && (

@@ -186,7 +186,7 @@ export const Quotation: React.FC = () => {
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-2xl font-bold text-slate-800 dark:text-slate-100">Saved Quotations</h1>
-            <p className="text-sm text-slate-500">{quotations.length} records found</p>
+            <p className="text-sm text-slate-500 dark:text-slate-400">{quotations.length} records found</p>
           </div>
           <button onClick={() => setViewMode('create')} className="bg-blue-600 text-white px-5 py-2 rounded-xl text-sm font-semibold hover:bg-blue-700 transition-all shadow-md">
             + New Quotation
@@ -207,7 +207,7 @@ export const Quotation: React.FC = () => {
         <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-800 overflow-hidden">
           <table className="w-full text-left border-collapse whitespace-nowrap">
             <thead>
-              <tr className="bg-slate-50 dark:bg-slate-800/50 text-[10px] uppercase font-black text-slate-500">
+              <tr className="bg-slate-50 dark:bg-slate-800/50 text-[10px] uppercase font-black text-slate-500 dark:text-slate-400">
                 <th className="p-4">Quote No</th>
                 <th className="p-4">Party Name</th>
                 <th className="p-4">Date</th>
@@ -218,8 +218,8 @@ export const Quotation: React.FC = () => {
             </thead>
             <tbody className="divide-y divide-slate-50">
               {filteredQuotations.map((q: QuotationRecord) => (
-                <tr key={q.id} className="hover:bg-slate-50 dark:bg-slate-800/50 transition-all">
-                  <td className="p-4 font-mono font-bold text-blue-600">{q.quoteNo}</td>
+                <tr key={q.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/50 dark:bg-slate-800/50 transition-all">
+                  <td className="p-4 font-mono font-bold text-blue-600 dark:text-blue-400">{q.quoteNo}</td>
                   <td className="p-4">
                     <p className="font-bold text-slate-800 dark:text-slate-100">{q.partyName}</p>
                     <p className="text-[10px] text-slate-400">{q.mobileNo}</p>
@@ -228,8 +228,8 @@ export const Quotation: React.FC = () => {
                   <td className="p-4 text-sm text-slate-600 dark:text-slate-300">{q.items.length} Nos</td>
                   <td className="p-4 font-bold text-slate-800 dark:text-slate-100">₹{q.grandTotal.toLocaleString()}</td>
                   <td className="p-4 text-right space-x-2">
-                    <button onClick={() => loadQuotation(q)} className="text-blue-600 hover:bg-blue-50 px-2 py-1 rounded text-xs font-bold transition-all">Edit</button>
-                    <button onClick={() => deleteQuotation(q.id)} className="text-red-500 hover:bg-red-50 px-2 py-1 rounded text-xs font-bold transition-all">Delete</button>
+                    <button onClick={() => loadQuotation(q)} className="text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/30 dark:bg-blue-900/30 px-2 py-1 rounded text-xs font-bold transition-all">Edit</button>
+                    <button onClick={() => deleteQuotation(q.id)} className="text-red-500 hover:bg-red-50 dark:hover:bg-red-900/30 dark:bg-red-900/30 px-2 py-1 rounded text-xs font-bold transition-all">Delete</button>
                   </td>
                 </tr>
               ))}
@@ -251,16 +251,16 @@ export const Quotation: React.FC = () => {
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 print:hidden">
         <div>
           <h1 className="text-2xl font-bold text-slate-800 dark:text-slate-100 flex items-center gap-2">
-            <Calculator className="w-7 h-7 text-blue-600" />
+            <Calculator className="w-7 h-7 text-blue-600 dark:text-blue-400" />
             {t('quotation')} Module
           </h1>
-          <p className="text-sm text-slate-500 mt-0.5">Quick weight & cost estimation for customers</p>
+          <p className="text-sm text-slate-500 dark:text-slate-400 mt-0.5">Quick weight & cost estimation for customers</p>
         </div>
         <div className="flex gap-2 w-full sm:w-auto">
-          <button onClick={() => setViewMode('list')} className="flex-1 sm:flex-none flex items-center justify-center gap-2 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 px-4 py-2 rounded-xl text-sm font-semibold hover:bg-slate-200 transition-all">
+          <button onClick={() => setViewMode('list')} className="flex-1 sm:flex-none flex items-center justify-center gap-2 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 px-4 py-2 rounded-xl text-sm font-semibold hover:bg-slate-200 dark:bg-slate-700 transition-all">
             <List className="w-4 h-4" /> Saved Quotes
           </button>
-          <button onClick={handleReset} className="flex-1 sm:flex-none flex items-center justify-center gap-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 px-4 py-2 rounded-xl text-sm font-semibold hover:bg-slate-50 dark:bg-slate-800/50 transition-all">
+          <button onClick={handleReset} className="flex-1 sm:flex-none flex items-center justify-center gap-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 px-4 py-2 rounded-xl text-sm font-semibold hover:bg-slate-50 dark:hover:bg-slate-800/50 dark:bg-slate-800/50 transition-all">
             <RotateCcw className="w-4 h-4" /> Reset
           </button>
           <button onClick={handleSave} className="flex-1 sm:flex-none flex items-center justify-center gap-2 bg-emerald-600 text-white px-5 py-2 rounded-xl text-sm font-semibold hover:bg-emerald-700 transition-all shadow-md">
@@ -278,7 +278,7 @@ export const Quotation: React.FC = () => {
         <div className="lg:col-span-1 space-y-6 print:hidden">
           <div className="bg-white dark:bg-slate-900 rounded-2xl p-6 shadow-sm border border-slate-100 dark:border-slate-800">
             <h2 className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-6 flex items-center gap-2">
-              <User className="w-4 h-4 text-blue-600" />
+              <User className="w-4 h-4 text-blue-600 dark:text-blue-400" />
               Quote Details
             </h2>
             <div className="space-y-4">
@@ -360,12 +360,12 @@ export const Quotation: React.FC = () => {
             <div className="hidden print:block p-8 border-b-2 border-slate-200 dark:border-slate-700 mb-6">
               <div className="flex justify-between items-start">
                 <div>
-                  <h1 className="text-3xl font-black text-blue-600">JAGDAMBA PROFILE</h1>
-                  <p className="text-sm font-bold text-slate-500 mt-1 uppercase tracking-widest">Quotation / Proforma Invoice</p>
+                  <h1 className="text-3xl font-black text-blue-600 dark:text-blue-400">JAGDAMBA PROFILE</h1>
+                  <p className="text-sm font-bold text-slate-500 dark:text-slate-400 mt-1 uppercase tracking-widest">Quotation / Proforma Invoice</p>
                 </div>
                 <div className="text-right">
                   <p className="text-sm font-bold text-slate-800 dark:text-slate-100">Quote #: {quoteNo}</p>
-                  <p className="text-sm font-medium text-slate-500">Date: {date}</p>
+                  <p className="text-sm font-medium text-slate-500 dark:text-slate-400">Date: {date}</p>
                 </div>
               </div>
               <div className="mt-8">
@@ -387,7 +387,7 @@ export const Quotation: React.FC = () => {
             <div className="overflow-x-auto">
               <table className="w-full text-left border-collapse min-w-[1050px]">
                 <thead>
-                  <tr className="bg-slate-50 dark:bg-slate-800/50 text-[10px] uppercase font-black text-slate-500 print:bg-white dark:bg-slate-900 print:border-b-2 print:border-slate-300">
+                  <tr className="bg-slate-50 dark:bg-slate-800/50 text-[10px] uppercase font-black text-slate-500 dark:text-slate-400 print:bg-white dark:bg-slate-900 print:border-b-2 print:border-slate-300 dark:border-slate-600">
                     <th className="p-4">Shape</th>
                     <th className="p-4">Grade</th>
                     <th className="p-4">Thk</th>
@@ -395,7 +395,7 @@ export const Quotation: React.FC = () => {
                     <th className="p-4">Nos</th>
                     <th className="p-4">Weight (Kg)</th>
                     <th className="p-4 min-w-[160px]">Rate</th>
-                    <th className="p-4 text-blue-600">Rate / Nos</th>
+                    <th className="p-4 text-blue-600 dark:text-blue-400">Rate / Nos</th>
                     <th className="p-4 text-right">Amount</th>
                     <th className="p-4 text-center w-10 print:hidden"></th>
                   </tr>
@@ -423,7 +423,7 @@ export const Quotation: React.FC = () => {
                         />
                       </td>
                       <td className="p-3 w-24">
-                        <input type="number" value={item.thickness ?? ''} onChange={(e) => updateItem(item.id, 'thickness', e.target.value)} className="w-full bg-transparent border-transparent focus:ring-0 text-sm font-bold text-blue-600" placeholder="0" />
+                        <input type="number" value={item.thickness ?? ''} onChange={(e) => updateItem(item.id, 'thickness', e.target.value)} className="w-full bg-transparent border-transparent focus:ring-0 text-sm font-bold text-blue-600 dark:text-blue-400" placeholder="0" />
                       </td>
                       <td className="p-3 w-72 min-w-[240px]">
                         {item.shape === 'Ring' ? (
@@ -461,7 +461,7 @@ export const Quotation: React.FC = () => {
                                 type="number" 
                                 value={item.odRate ?? ''} 
                                 onChange={(e) => updateItem(item.id, 'odRate', e.target.value)} 
-                                className="w-full bg-blue-50/50 border border-blue-100 rounded px-2 py-0.5 text-xs font-bold text-blue-700 outline-none focus:bg-white dark:bg-slate-900 focus:ring-1 focus:ring-blue-500" 
+                                className="w-full bg-blue-50/50 border border-blue-100 dark:border-blue-800 rounded px-2 py-0.5 text-xs font-bold text-blue-700 dark:text-blue-300 outline-none focus:bg-white dark:bg-slate-900 focus:ring-1 focus:ring-blue-500" 
                                 placeholder="OD Rate" 
                               />
                             </div>
@@ -471,23 +471,23 @@ export const Quotation: React.FC = () => {
                                 type="number" 
                                 value={item.idRate ?? ''} 
                                 onChange={(e) => updateItem(item.id, 'idRate', e.target.value)} 
-                                className="w-full bg-amber-50/50 border border-amber-100 rounded px-2 py-0.5 text-xs font-bold text-amber-700 outline-none focus:bg-white dark:bg-slate-900 focus:ring-1 focus:ring-amber-500" 
+                                className="w-full bg-amber-50 dark:bg-amber-900/30/50 border border-amber-100 rounded px-2 py-0.5 text-xs font-bold text-amber-700 outline-none focus:bg-white dark:bg-slate-900 focus:ring-1 focus:ring-amber-500" 
                                 placeholder="ID Rate" 
                               />
                             </div>
                           </div>
                         ) : (
-                          <input type="number" value={item.rate ?? ''} onChange={(e) => updateItem(item.id, 'rate', e.target.value)} className="w-full bg-transparent border-transparent focus:ring-0 text-sm font-bold text-emerald-600" placeholder="0.00" />
+                          <input type="number" value={item.rate ?? ''} onChange={(e) => updateItem(item.id, 'rate', e.target.value)} className="w-full bg-transparent border-transparent focus:ring-0 text-sm font-bold text-emerald-600 dark:text-emerald-400" placeholder="0.00" />
                         )}
                       </td>
                       <td className="p-3">
-                        <span className="text-sm font-bold text-blue-700">₹{(item.amount / (item.nos || 1)).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+                        <span className="text-sm font-bold text-blue-700 dark:text-blue-300">₹{(item.amount / (item.nos || 1)).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
                       </td>
                       <td className="p-3 text-right">
                         <span className="text-sm font-bold text-slate-800 dark:text-slate-100">₹{item.amount.toLocaleString()}</span>
                       </td>
                       <td className="p-3 text-center print:hidden">
-                        <button onClick={() => removeItem(item.id)} className="p-1.5 text-slate-300 hover:text-red-500 hover:bg-red-50 rounded-lg transition-all opacity-0 group-hover:opacity-100">
+                        <button onClick={() => removeItem(item.id)} className="p-1.5 text-slate-300 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/30 dark:bg-red-900/30 rounded-lg transition-all opacity-0 group-hover:opacity-100">
                            <Trash2 className="w-4 h-4" />
                         </button>
                       </td>
@@ -545,7 +545,7 @@ export const Quotation: React.FC = () => {
                     <td className="print:hidden"></td>
                   </tr>
                   <tr className="bg-blue-50/50 print:bg-white dark:bg-slate-900">
-                    <td colSpan={8} className="p-4 text-right text-xs font-black uppercase text-blue-600 tracking-wider">Grand Total Amount</td>
+                    <td colSpan={8} className="p-4 text-right text-xs font-black uppercase text-blue-600 dark:text-blue-400 tracking-wider">Grand Total Amount</td>
                     <td className="p-4 text-right text-xl font-black text-slate-900 dark:text-slate-50 border-t-2 border-blue-600">
                       ₹ {Math.ceil((totalAmount + loadingCharges + transportCharges) * (1 + gstRate / 100)).toLocaleString()}
                     </td>

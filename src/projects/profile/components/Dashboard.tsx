@@ -93,7 +93,7 @@ export const Dashboard: React.FC = () => {
           <div
             key={idx}
             onClick={() => navigate(stat.route)}
-            className={`bg-white dark:bg-slate-900 rounded-xl p-3.5 shadow-sm border flex items-center gap-3 cursor-pointer hover:bg-slate-50 dark:bg-slate-800/50 dark:hover:bg-slate-800/50 transition-all ${stat.border}`}
+            className={`bg-white dark:bg-slate-900 rounded-xl p-3.5 shadow-sm border flex items-center gap-3 cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800/50 dark:bg-slate-800/50 dark:hover:bg-slate-800/50 transition-all ${stat.border}`}
           >
             <div className={`p-2 rounded-lg ${stat.bg}`}>
               <stat.icon className={`w-4 h-4 ${stat.color}`} />
@@ -129,11 +129,11 @@ export const Dashboard: React.FC = () => {
         <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-800 overflow-hidden transition-all duration-300">
           <div className="p-4 border-b border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50/50 dark:bg-slate-900/50 flex items-center justify-between transition-colors">
             <h2 className="text-sm font-semibold text-slate-800 dark:text-slate-200">Recent Orders</h2>
-            <button onClick={() => navigate('/production-status')} className="text-xs text-blue-600 dark:text-blue-400 hover:text-blue-700 font-semibold">View All →</button>
+            <button onClick={() => navigate('/production-status')} className="text-xs text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:text-blue-300 font-semibold">View All →</button>
           </div>
           <div className="divide-y divide-slate-100 dark:divide-slate-800">
             {recentOrders.map(order => (
-              <div key={order.id} className="px-4 py-3 flex items-center justify-between hover:bg-slate-50 dark:bg-slate-800/50/50 dark:hover:bg-slate-800/30 transition-colors">
+              <div key={order.id} className="px-4 py-3 flex items-center justify-between hover:bg-slate-50 dark:hover:bg-slate-800/50 dark:bg-slate-800/50/50 dark:hover:bg-slate-800/30 transition-colors">
                 <div className="flex items-center gap-3">
                   {order.urgent && <span className="w-1.5 h-1.5 rounded-full bg-red-500 pulse-dot flex-shrink-0"></span>}
                   <div>
@@ -159,7 +159,7 @@ export const Dashboard: React.FC = () => {
 
         {/* Urgent Orders */}
         <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-800 overflow-hidden transition-all duration-300">
-          <div className="p-4 border-b border-red-50 dark:border-red-900/30 bg-red-50/50 dark:bg-red-950/20 flex items-center justify-between transition-colors">
+          <div className="p-4 border-b border-red-50 dark:border-red-900/30 bg-red-50 dark:bg-red-900/30/50 dark:bg-red-950/20 flex items-center justify-between transition-colors">
             <h2 className="text-sm font-semibold text-red-800 dark:text-red-400 flex items-center gap-2">
               <AlertTriangle className="w-4 h-4" /> Urgent Delivery Orders
             </h2>
@@ -167,7 +167,7 @@ export const Dashboard: React.FC = () => {
           </div>
           <div className="divide-y divide-slate-100 dark:divide-slate-800">
             {urgentOrders.map(order => (
-              <div key={order.id} className="px-4 py-3 flex items-center justify-between hover:bg-red-50/30 dark:hover:bg-red-950/10 transition-colors">
+              <div key={order.id} className="px-4 py-3 flex items-center justify-between hover:bg-red-50 dark:hover:bg-red-900/30 dark:bg-red-900/30/30 dark:hover:bg-red-950/10 transition-colors">
                 <div>
                   <p className="text-sm font-bold text-slate-800 dark:text-slate-100">{order.partyName}</p>
                   <p className="text-[11px] text-slate-500 dark:text-slate-400">

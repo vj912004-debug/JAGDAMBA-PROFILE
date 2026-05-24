@@ -34,13 +34,13 @@ export const Header: React.FC = () => {
           <div className="flex bg-white dark:bg-slate-900 rounded-full p-0.5 shadow-sm transition-colors">
             <button
               onClick={() => setLanguage('English')}
-              className={`px-2.5 py-1 text-[11px] font-semibold rounded-full transition-all ${language === 'English' ? 'bg-blue-600 text-white shadow-sm' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:bg-slate-800/50 dark:hover:bg-slate-800'}`}
+              className={`px-2.5 py-1 text-[11px] font-semibold rounded-full transition-all ${language === 'English' ? 'bg-blue-600 text-white shadow-sm' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/50 dark:bg-slate-800/50 dark:hover:bg-slate-800'}`}
             >
               EN
             </button>
             <button
               onClick={() => setLanguage('Gujarati')}
-              className={`px-2.5 py-1 text-[11px] font-semibold rounded-full transition-all ${language === 'Gujarati' ? 'bg-blue-600 text-white shadow-sm' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:bg-slate-800/50 dark:hover:bg-slate-800'}`}
+              className={`px-2.5 py-1 text-[11px] font-semibold rounded-full transition-all ${language === 'Gujarati' ? 'bg-blue-600 text-white shadow-sm' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/50 dark:bg-slate-800/50 dark:hover:bg-slate-800'}`}
             >
               ગુજ
             </button>
@@ -50,7 +50,7 @@ export const Header: React.FC = () => {
         {/* Theme Toggle */}
         <button
           onClick={() => setTheme(theme === 'light' ? 'dark' : 'light')}
-          className="p-1.5 bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 rounded-full border border-slate-200 dark:border-slate-700 transition-all hover:scale-105 active:scale-95"
+          className="p-1.5 bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 hover:text-blue-600 dark:text-blue-400 dark:hover:text-blue-400 rounded-full border border-slate-200 dark:border-slate-700 transition-all hover:scale-105 active:scale-95"
           title={theme === 'light' ? 'Switch to Dark Mode' : 'Switch to Light Mode'}
         >
           {theme === 'light' ? <Moon className="w-4 h-4" /> : <Sun className="w-4 h-4" />}
@@ -65,7 +65,7 @@ export const Header: React.FC = () => {
           <div className="h-6 w-px bg-slate-300 dark:bg-slate-700 mx-1 hidden sm:block"></div>
           <button
             onClick={logout}
-            className="p-1 text-slate-500 dark:text-slate-400 hover:text-red-600 dark:hover:text-red-400 transition-colors"
+            className="p-1 text-slate-500 dark:text-slate-400 hover:text-red-600 dark:text-red-400 dark:hover:text-red-400 transition-colors"
             title="Logout"
           >
             <LogOut className="w-4 h-4" />

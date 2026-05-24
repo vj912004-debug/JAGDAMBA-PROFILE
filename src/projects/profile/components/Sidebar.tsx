@@ -88,7 +88,7 @@ export const Sidebar: React.FC = () => {
       <div className="p-6 border-b border-slate-50 dark:border-slate-800/50">
         <button 
           onClick={() => { localStorage.removeItem('jagdamba-project'); window.location.reload(); }}
-          className="w-full mb-6 flex items-center justify-center gap-2 px-4 py-2.5 rounded-2xl text-[11px] font-black text-slate-500 dark:text-slate-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 hover:text-blue-600 dark:hover:text-blue-400 transition-all border border-slate-100 dark:border-slate-800 hover:border-blue-100 dark:hover:border-blue-900 shadow-xs uppercase tracking-wider"
+          className="w-full mb-6 flex items-center justify-center gap-2 px-4 py-2.5 rounded-2xl text-[11px] font-black text-slate-500 dark:text-slate-400 hover:bg-blue-50 dark:hover:bg-blue-900/30 dark:bg-blue-900/30 dark:hover:bg-blue-900/20 hover:text-blue-600 dark:text-blue-400 dark:hover:text-blue-400 transition-all border border-slate-100 dark:border-slate-800 hover:border-blue-100 dark:border-blue-800 dark:hover:border-blue-900 shadow-xs uppercase tracking-wider"
         >
           <ArrowLeft className="w-3.5 h-3.5" />
           Back to Portal
@@ -100,7 +100,7 @@ export const Sidebar: React.FC = () => {
           <h1 className="text-lg font-black bg-gradient-to-r from-blue-700 to-sky-500 bg-clip-text text-transparent tracking-tighter">
             JAGDAMBA PROFILE
           </h1>
-          <p className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest">Steel Cutting ERP</p>
+          <p className="text-[10px] font-bold text-slate-400 dark:text-slate-500 dark:text-slate-400 uppercase tracking-widest">Steel Cutting ERP</p>
         </div>
       </div>
 
@@ -112,7 +112,7 @@ export const Sidebar: React.FC = () => {
 
           return (
             <div key={section.title} className="space-y-1.5">
-              <h3 className="px-3 text-[10px] font-extrabold text-slate-400 dark:text-slate-500 uppercase tracking-[0.15em] mb-2">
+              <h3 className="px-3 text-[10px] font-extrabold text-slate-400 dark:text-slate-500 dark:text-slate-400 uppercase tracking-[0.15em] mb-2">
                 {section.title}
               </h3>
               <div className="space-y-1">
@@ -126,11 +126,11 @@ export const Sidebar: React.FC = () => {
                         "flex items-center justify-between px-3 py-2 rounded-xl text-sm font-semibold transition-all duration-300 group",
                         isActive
                           ? "bg-blue-600 text-white shadow-md shadow-blue-100 dark:shadow-none border border-blue-600"
-                          : "text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:bg-slate-800/50 dark:hover:bg-slate-800/50 hover:text-blue-600 dark:hover:text-blue-400"
+                          : "text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/50 dark:bg-slate-800/50 dark:hover:bg-slate-800/50 hover:text-blue-600 dark:text-blue-400 dark:hover:text-blue-400"
                       )}
                     >
                       <div className="flex items-center gap-3">
-                        <item.icon className={cn("w-[18px] h-[18px]", isActive ? "text-white" : "text-slate-400 dark:text-slate-500 group-hover:text-blue-600 dark:group-hover:text-blue-400")} />
+                        <item.icon className={cn("w-[18px] h-[18px]", isActive ? "text-white" : "text-slate-400 dark:text-slate-500 dark:text-slate-400 group-hover:text-blue-600 dark:text-blue-400 dark:group-hover:text-blue-400")} />
                         {t(item.labelKey)}
                       </div>
                       {item.path === '/alert-center' && role === 'Admin' && <NotificationBadge />}
@@ -151,7 +151,7 @@ export const Sidebar: React.FC = () => {
           </div>
           <div>
             <p className="text-xs font-bold text-slate-700 dark:text-slate-300">{role}</p>
-            <p className="text-[10px] text-slate-400 dark:text-slate-500">v2.0 Stable</p>
+            <p className="text-[10px] text-slate-400 dark:text-slate-500 dark:text-slate-400">v2.0 Stable</p>
           </div>
         </div>
       </div>

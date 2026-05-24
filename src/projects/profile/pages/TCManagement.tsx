@@ -355,8 +355,8 @@ export const TCManagement: React.FC = () => {
                 : waStatus === 'QR_READY'
                 ? "bg-amber-50 dark:bg-amber-950/20 border-amber-200 dark:border-amber-900/30 text-amber-700 dark:text-amber-400 hover:bg-amber-100 dark:hover:bg-amber-900/30 animate-pulse"
                 : waStatus === 'INITIALIZING'
-                ? "bg-blue-50 dark:bg-blue-950/20 border-blue-200 dark:border-blue-900/30 text-blue-700 dark:text-blue-400 hover:bg-blue-100 dark:hover:bg-blue-900/30 animate-pulse"
-                : "bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-350 hover:bg-slate-100 dark:bg-slate-800 dark:hover:bg-slate-700/50"
+                ? "bg-blue-50 dark:bg-blue-950/20 border-blue-200 dark:border-blue-900/30 text-blue-700 dark:text-blue-400 hover:bg-blue-100 dark:hover:bg-blue-900/50 dark:bg-blue-900/50 dark:hover:bg-blue-900/30 animate-pulse"
+                : "bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-350 hover:bg-slate-100 dark:hover:bg-slate-800 dark:bg-slate-800 dark:hover:bg-slate-700/50"
             )}
           >
             <MessageSquare className="w-4 h-4" />
@@ -364,7 +364,7 @@ export const TCManagement: React.FC = () => {
           </button>
 
           <div className="flex flex-col items-end px-4 border-r border-slate-100 dark:border-slate-800">
-            <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest">Total Certificates</span>
+            <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500 dark:text-slate-400 uppercase tracking-widest">Total Certificates</span>
             <span className="text-xl font-black text-slate-800 dark:text-slate-100">{tcRecords.length}</span>
           </div>
           
@@ -397,7 +397,7 @@ export const TCManagement: React.FC = () => {
               onClick={() => setShowAdvancedSearch(!showAdvancedSearch)}
               className={cn(
                 "w-full flex items-center justify-center gap-2 py-2 rounded-xl text-xs font-bold transition-all",
-                showAdvancedSearch ? "bg-blue-50 text-blue-600" : "bg-slate-50 dark:bg-slate-800/50 text-slate-500 hover:bg-slate-100 dark:bg-slate-800"
+                showAdvancedSearch ? "bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400" : "bg-slate-50 dark:bg-slate-800/50 text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 dark:bg-slate-800"
               )}
             >
               <Filter className="w-4 h-4" />
@@ -445,7 +445,7 @@ export const TCManagement: React.FC = () => {
                 ))}
                 <button 
                   onClick={() => setFilters({ heatNumber: '', plateNumber: '', tcNumber: '', salesOrderNumber: '', partyName: '', grade: '', thickness: '', make: '', invoiceNumber: '' })}
-                  className="col-span-2 text-[10px] font-bold text-red-500 uppercase py-2 hover:bg-red-50 rounded-lg transition-colors"
+                  className="col-span-2 text-[10px] font-bold text-red-500 uppercase py-2 hover:bg-red-50 dark:hover:bg-red-900/30 dark:bg-red-900/30 rounded-lg transition-colors"
                 >
                   Clear All Filters
                 </button>
@@ -463,15 +463,15 @@ export const TCManagement: React.FC = () => {
                   key={record.id}
                   onClick={() => handleSelectRecord(record)}
                   className={cn(
-                    "p-4 hover:bg-blue-50/30 cursor-pointer transition-all group",
-                    selectedTC?.id === record.id ? "bg-blue-50 border-l-4 border-blue-600" : ""
+                    "p-4 hover:bg-blue-50/30 dark:hover:bg-blue-900/30 dark:bg-blue-900/30 cursor-pointer transition-all group",
+                    selectedTC?.id === record.id ? "bg-blue-50 dark:bg-blue-900/30 border-l-4 border-blue-600" : ""
                   )}
                 >
                   <div className="flex items-center justify-between mb-1">
-                    <span className="text-sm font-black text-slate-800 dark:text-slate-100 group-hover:text-blue-600 transition-colors">{record.heatNumber}</span>
-                    <span className="text-[10px] font-bold bg-slate-100 dark:bg-slate-800 text-slate-500 px-2 py-0.5 rounded-full uppercase">{record.grade}</span>
+                    <span className="text-sm font-black text-slate-800 dark:text-slate-100 group-hover:text-blue-600 dark:text-blue-400 transition-colors">{record.heatNumber}</span>
+                    <span className="text-[10px] font-bold bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 px-2 py-0.5 rounded-full uppercase">{record.grade}</span>
                   </div>
-                  <div className="flex items-center gap-3 text-xs text-slate-500 font-medium">
+                  <div className="flex items-center gap-3 text-xs text-slate-500 dark:text-slate-400 font-medium">
                     <span className="flex items-center gap-1"><Hash className="w-3 h-3" /> {record.plateNumber}</span>
                     <span className="flex items-center gap-1"><FileSearch className="w-3 h-3" /> {record.tcNumber}</span>
                   </div>
@@ -490,7 +490,7 @@ export const TCManagement: React.FC = () => {
         {/* Right Column: Form or History */}
         <div className="lg:col-span-8 space-y-6">
           {isAdding ? (
-            <div className="bg-white dark:bg-slate-900 rounded-3xl shadow-xl border border-blue-100 overflow-hidden slide-up">
+            <div className="bg-white dark:bg-slate-900 rounded-3xl shadow-xl border border-blue-100 dark:border-blue-800 overflow-hidden slide-up">
               <div className="bg-blue-600 p-6 text-white flex items-center justify-between">
                 <div>
                   <h2 className="text-xl font-bold flex items-center gap-2">
@@ -509,7 +509,7 @@ export const TCManagement: React.FC = () => {
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                   {/* Basic Info */}
                   <div className="space-y-4">
-                    <h3 className="text-xs font-black text-blue-600 uppercase tracking-[0.2em] flex items-center gap-2">
+                    <h3 className="text-xs font-black text-blue-600 dark:text-blue-400 uppercase tracking-[0.2em] flex items-center gap-2">
                       <Hash className="w-4 h-4" /> Core Tracking
                     </h3>
                     <div className="space-y-3">
@@ -534,7 +534,7 @@ export const TCManagement: React.FC = () => {
 
                   {/* Orders Info */}
                   <div className="space-y-4">
-                    <h3 className="text-xs font-black text-blue-600 uppercase tracking-[0.2em] flex items-center gap-2">
+                    <h3 className="text-xs font-black text-blue-600 dark:text-blue-400 uppercase tracking-[0.2em] flex items-center gap-2">
                       <ClipboardList className="w-4 h-4" /> Order & Invoice
                     </h3>
                     <div className="space-y-3">
@@ -577,7 +577,7 @@ export const TCManagement: React.FC = () => {
 
                   {/* Specifications */}
                   <div className="space-y-4">
-                    <h3 className="text-xs font-black text-blue-600 uppercase tracking-[0.2em] flex items-center gap-2">
+                    <h3 className="text-xs font-black text-blue-600 dark:text-blue-400 uppercase tracking-[0.2em] flex items-center gap-2">
                       <Ruler className="w-4 h-4" /> Technical Specs
                     </h3>
                     <div className="space-y-3">
@@ -645,11 +645,11 @@ export const TCManagement: React.FC = () => {
 
                 {/* PDF Upload */}
                 <div className="pt-6 border-t border-slate-50">
-                  <h3 className="text-xs font-black text-blue-600 uppercase tracking-[0.2em] flex items-center gap-2 mb-4">
+                  <h3 className="text-xs font-black text-blue-600 dark:text-blue-400 uppercase tracking-[0.2em] flex items-center gap-2 mb-4">
                     <Printer className="w-4 h-4" /> Attachments
                   </h3>
                   <div className="flex items-center gap-4">
-                    <label className="flex-1 flex flex-col items-center justify-center border-2 border-dashed border-slate-200 dark:border-slate-700 rounded-2xl p-6 hover:border-blue-400 hover:bg-blue-50 transition-all cursor-pointer group">
+                    <label className="flex-1 flex flex-col items-center justify-center border-2 border-dashed border-slate-200 dark:border-slate-700 rounded-2xl p-6 hover:border-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/30 dark:bg-blue-900/30 transition-all cursor-pointer group">
                       <Download className="w-8 h-8 text-slate-300 group-hover:text-blue-500 mb-2" />
                       <span className="text-sm font-bold text-slate-600 dark:text-slate-300">
                         {formData.pdfName ? formData.pdfName : 'Upload TC PDF or Photo'}
@@ -688,7 +688,7 @@ export const TCManagement: React.FC = () => {
                               const win = window.open();
                               win?.document.write(`<iframe src="${formData.pdfData}" frameborder="0" style="border:0; top:0px; left:0px; bottom:0px; right:0px; width:100%; height:100%;" allowfullscreen></iframe>`);
                             }}
-                            className="p-4 bg-blue-50 text-blue-600 rounded-2xl font-bold hover:bg-blue-100 transition-colors"
+                            className="p-4 bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 rounded-2xl font-bold hover:bg-blue-100 dark:hover:bg-blue-900/50 dark:bg-blue-900/50 transition-colors"
                           >
                             Preview PDF
                           </button>
@@ -699,7 +699,7 @@ export const TCManagement: React.FC = () => {
                 </div>
 
                 <div className="flex items-center justify-end gap-3 pt-4">
-                  <button type="button" onClick={() => setIsAdding(false)} className="px-8 py-3 rounded-2xl text-sm font-bold text-slate-500 hover:bg-slate-50 dark:bg-slate-800/50 transition-colors">Cancel</button>
+                  <button type="button" onClick={() => setIsAdding(false)} className="px-8 py-3 rounded-2xl text-sm font-bold text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/50 dark:bg-slate-800/50 transition-colors">Cancel</button>
                   <button type="submit" className="px-10 py-3 rounded-2xl text-sm font-bold bg-blue-600 hover:bg-blue-700 text-white shadow-lg shadow-blue-200 transition-all active:scale-95 flex items-center gap-2">
                     {selectedTC ? <CheckCircle2 className="w-4 h-4" /> : <Plus className="w-4 h-4" />}
                     {selectedTC ? 'Update Record' : 'Save TC Master'}
@@ -718,8 +718,8 @@ export const TCManagement: React.FC = () => {
                     </div>
                     <div>
                       <h2 className="text-xl font-black text-slate-800 dark:text-slate-100">TC Record: {selectedTC.tcNumber}</h2>
-                      <p className="text-xs text-slate-500 font-medium flex items-center gap-2">
-                        <History className="w-3 h-3 text-blue-600" />
+                      <p className="text-xs text-slate-500 dark:text-slate-400 font-medium flex items-center gap-2">
+                        <History className="w-3 h-3 text-blue-600 dark:text-blue-400" />
                         Heat: {selectedTC.heatNumber} • Plate: {selectedTC.plateNumber}
                       </p>
                     </div>
@@ -731,7 +731,7 @@ export const TCManagement: React.FC = () => {
                           const win = window.open();
                           win?.document.write(`<iframe src="${selectedTC.pdfData}" frameborder="0" style="border:0; top:0px; left:0px; bottom:0px; right:0px; width:100%; height:100%;" allowfullscreen></iframe>`);
                         }}
-                        className="flex items-center gap-2 bg-blue-50 text-blue-600 px-4 py-2 rounded-xl text-xs font-bold hover:bg-blue-100 transition-all"
+                        className="flex items-center gap-2 bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 px-4 py-2 rounded-xl text-xs font-bold hover:bg-blue-100 dark:hover:bg-blue-900/50 dark:bg-blue-900/50 transition-all"
                       >
                         <FileSearch className="w-4 h-4" />
                         View Attachment
@@ -751,9 +751,9 @@ export const TCManagement: React.FC = () => {
                       <MessageSquare className="w-4 h-4" />
                       WhatsApp TC
                     </button>
-                    <button onClick={() => handleEdit(selectedTC)} className="p-2 text-blue-600 hover:bg-blue-50 rounded-xl transition-colors" title="Edit Record"><Edit3 className="w-5 h-5" /></button>
-                    <button onClick={() => handleDelete(selectedTC.id)} className="p-2 text-red-500 hover:bg-red-50 rounded-xl transition-colors" title="Delete Record"><Trash2 className="w-5 h-5" /></button>
-                    <button className="p-2 text-slate-400 hover:bg-slate-100 dark:bg-slate-800 rounded-xl transition-colors" title="Print TC"><Printer className="w-5 h-5" /></button>
+                    <button onClick={() => handleEdit(selectedTC)} className="p-2 text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/30 dark:bg-blue-900/30 rounded-xl transition-colors" title="Edit Record"><Edit3 className="w-5 h-5" /></button>
+                    <button onClick={() => handleDelete(selectedTC.id)} className="p-2 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/30 dark:bg-red-900/30 rounded-xl transition-colors" title="Delete Record"><Trash2 className="w-5 h-5" /></button>
+                    <button className="p-2 text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 dark:bg-slate-800 rounded-xl transition-colors" title="Print TC"><Printer className="w-5 h-5" /></button>
                   </div>
                 </div>
 
@@ -773,12 +773,12 @@ export const TCManagement: React.FC = () => {
               <div className="bg-white dark:bg-slate-900 rounded-3xl shadow-sm border border-slate-100 dark:border-slate-800 overflow-hidden">
                 <div className="p-6 border-b border-slate-50 flex items-center justify-between">
                   <h3 className="text-lg font-bold text-slate-800 dark:text-slate-100 flex items-center gap-2">
-                    <History className="w-5 h-5 text-blue-600" />
+                    <History className="w-5 h-5 text-blue-600 dark:text-blue-400" />
                     Dispatch History & Tracking
                   </h3>
                   <button 
                     onClick={() => handleResendEmail(selectedTC)}
-                    className="flex items-center gap-2 text-xs font-bold text-blue-600 hover:bg-blue-50 px-4 py-2 rounded-xl transition-all"
+                    className="flex items-center gap-2 text-xs font-bold text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/30 dark:bg-blue-900/30 px-4 py-2 rounded-xl transition-all"
                   >
                     <Send className="w-4 h-4" />
                     Resend Email to All
@@ -799,15 +799,15 @@ export const TCManagement: React.FC = () => {
                     </thead>
                     <tbody className="divide-y divide-slate-50">
                       {selectedTC.dispatchHistory.map((history, idx) => (
-                        <tr key={idx} className="hover:bg-slate-50 dark:bg-slate-800/50/30 transition-colors">
+                        <tr key={idx} className="hover:bg-slate-50 dark:hover:bg-slate-800/50 dark:bg-slate-800/50/30 transition-colors">
                           <td className="px-6 py-4 font-bold text-slate-800 dark:text-slate-100 text-sm">{history.partyName}</td>
-                          <td className="px-6 py-4 text-xs font-medium text-slate-500">{history.dispatchDate}</td>
+                          <td className="px-6 py-4 text-xs font-medium text-slate-500 dark:text-slate-400">{history.dispatchDate}</td>
                           <td className="px-6 py-4 text-xs font-bold text-slate-700 dark:text-slate-200">{history.salesOrderNumber}</td>
-                          <td className="px-6 py-4 text-xs font-mono text-slate-500">{history.tcNumber}</td>
+                          <td className="px-6 py-4 text-xs font-mono text-slate-500 dark:text-slate-400">{history.tcNumber}</td>
                           <td className="px-6 py-4">
                             <span className={cn(
                               "px-2 py-1 rounded-full text-[9px] font-black uppercase tracking-tighter",
-                              history.emailStatus === 'Sent' ? "bg-emerald-100 text-emerald-700" : "bg-amber-100 text-amber-700"
+                              history.emailStatus === 'Sent' ? "bg-emerald-100 text-emerald-700 dark:text-emerald-400" : "bg-amber-100 text-amber-700"
                             )}>
                               {history.emailStatus}
                             </span>
@@ -815,7 +815,7 @@ export const TCManagement: React.FC = () => {
                           <td className="px-6 py-4 text-right">
                             <button 
                               onClick={() => handleResendEmail(selectedTC)}
-                              className="text-blue-600 hover:text-blue-700 text-xs font-bold"
+                              className="text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:text-blue-300 text-xs font-bold"
                             >
                               Resend
                             </button>
@@ -838,10 +838,10 @@ export const TCManagement: React.FC = () => {
                 <FileSearch className="w-10 h-10 text-slate-300" />
               </div>
               <h3 className="text-xl font-bold text-slate-800 dark:text-slate-100">Select a Certificate</h3>
-              <p className="text-slate-500 max-w-xs mt-2">Choose a TC from the left sidebar to view its complete specifications and history.</p>
+              <p className="text-slate-500 dark:text-slate-400 max-w-xs mt-2">Choose a TC from the left sidebar to view its complete specifications and history.</p>
               <button 
                 onClick={() => setIsAdding(true)}
-                className="mt-6 flex items-center gap-2 text-blue-600 font-bold text-sm hover:underline"
+                className="mt-6 flex items-center gap-2 text-blue-600 dark:text-blue-400 font-bold text-sm hover:underline"
               >
                 <Plus className="w-4 h-4" /> Or create a new one
               </button>
@@ -904,13 +904,13 @@ export const TCManagement: React.FC = () => {
                 />
               </div>
 
-              <div className="flex items-center gap-3 p-4 bg-emerald-50 rounded-2xl border border-emerald-100">
+              <div className="flex items-center gap-3 p-4 bg-emerald-50 dark:bg-emerald-900/30 rounded-2xl border border-emerald-100 dark:border-emerald-800">
                 <div className="w-10 h-10 bg-emerald-100 rounded-xl flex items-center justify-center">
-                  <Download className="w-5 h-5 text-emerald-600" />
+                  <Download className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
                 </div>
                 <div className="flex-1 min-w-0">
                   <p className="text-xs font-black text-emerald-900 truncate">{selectedTC?.pdfName || `Generated_TC_${selectedTC?.heatNumber}.pdf`}</p>
-                  <p className="text-[10px] text-emerald-600 font-bold uppercase tracking-wider">{selectedTC?.pdfData ? 'Ready as Attachment' : 'Auto-Generated Attachment'}</p>
+                  <p className="text-[10px] text-emerald-600 dark:text-emerald-400 font-bold uppercase tracking-wider">{selectedTC?.pdfData ? 'Ready as Attachment' : 'Auto-Generated Attachment'}</p>
                 </div>
               </div>
             </div>
@@ -918,7 +918,7 @@ export const TCManagement: React.FC = () => {
             <div className="flex gap-3">
               <button 
                 onClick={() => setShowMailModal(false)}
-                className="flex-1 py-4 rounded-2xl text-sm font-black text-slate-500 hover:bg-slate-50 dark:bg-slate-800/50 transition-colors"
+                className="flex-1 py-4 rounded-2xl text-sm font-black text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/50 dark:bg-slate-800/50 transition-colors"
               >
                 Cancel
               </button>
@@ -1003,7 +1003,7 @@ export const TCManagement: React.FC = () => {
                 <div className="flex gap-3">
                   <button 
                     onClick={() => setShowWhatsAppModal(false)}
-                    className="flex-1 py-4 rounded-2xl text-sm font-black text-slate-500 hover:bg-slate-50 dark:bg-slate-800/50 transition-colors"
+                    className="flex-1 py-4 rounded-2xl text-sm font-black text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/50 dark:bg-slate-800/50 transition-colors"
                   >
                     Cancel
                   </button>
@@ -1029,7 +1029,7 @@ export const TCManagement: React.FC = () => {
                   <MessageSquare className="w-8 h-8 text-slate-400" />
                 </div>
                 <h4 className="text-lg font-bold text-slate-800 dark:text-slate-100 mb-2">WhatsApp Disconnected</h4>
-                <p className="text-sm text-slate-500 mb-6">You need to connect your WhatsApp account before sending certificates.</p>
+                <p className="text-sm text-slate-500 dark:text-slate-400 mb-6">You need to connect your WhatsApp account before sending certificates.</p>
                 <button 
                   onClick={handleWaInit} 
                   disabled={isWaLoading || waStatus === 'INITIALIZING'}
@@ -1064,12 +1064,12 @@ export const TCManagement: React.FC = () => {
           <div className="p-8 space-y-6 bg-white dark:bg-slate-900 transition-colors">
             <div className="flex items-center justify-between p-4 bg-slate-50 dark:bg-slate-800/50 rounded-2xl border border-slate-100 dark:border-slate-800">
               <div>
-                <p className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest">Connection Status</p>
+                <p className="text-[10px] font-black text-slate-400 dark:text-slate-500 dark:text-slate-400 uppercase tracking-widest">Connection Status</p>
                 <p className={cn(
                   "text-lg font-black mt-0.5",
                   waStatus === 'CONNECTED' ? "text-green-600 dark:text-green-400" :
                   waStatus === 'QR_READY' ? "text-amber-500" :
-                  waStatus === 'INITIALIZING' ? "text-blue-500" : "text-slate-500"
+                  waStatus === 'INITIALIZING' ? "text-blue-500" : "text-slate-500 dark:text-slate-400"
                 )}>
                   {waStatus}
                 </p>
@@ -1109,7 +1109,7 @@ export const TCManagement: React.FC = () => {
                   <button 
                     onClick={handleWaDisconnect} 
                     disabled={isWaLoading}
-                    className="flex-1 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 text-slate-700 dark:text-slate-200 dark:bg-slate-800 dark:text-slate-350 py-3 rounded-xl text-xs font-bold transition-all"
+                    className="flex-1 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-200 dark:bg-slate-800 dark:text-slate-350 py-3 rounded-xl text-xs font-bold transition-all"
                   >
                     Reset/Disconnect
                   </button>
@@ -1124,7 +1124,7 @@ export const TCManagement: React.FC = () => {
             ) : (
               <div className="text-center space-y-4">
                 <div className="w-20 h-20 bg-slate-50 dark:bg-slate-800 rounded-full flex items-center justify-center mx-auto">
-                  <MessageSquare className="w-10 h-10 text-slate-400 dark:text-slate-500" />
+                  <MessageSquare className="w-10 h-10 text-slate-400 dark:text-slate-500 dark:text-slate-400" />
                 </div>
                 <div>
                   <h4 className="text-lg font-bold text-slate-800 dark:text-slate-100">WhatsApp is Disconnected</h4>
@@ -1165,7 +1165,7 @@ const DetailCard: React.FC<{ icon: any, label: string, value: string, variant?: 
     </div>
     <p className={cn(
       "text-sm font-black",
-      variant === 'success' ? "text-emerald-600" : variant === 'warning' ? "text-amber-600" : "text-slate-800 dark:text-slate-100"
+      variant === 'success' ? "text-emerald-600 dark:text-emerald-400" : variant === 'warning' ? "text-amber-600" : "text-slate-800 dark:text-slate-100"
     )}>
       {value || '-'}
     </p>

@@ -82,7 +82,7 @@ export const EditableSelect: React.FC<EditableSelectProps> = ({
         <button
           type="button"
           onClick={handleBackToList}
-          className="absolute right-2 text-slate-400 hover:text-blue-600 transition-colors p-1 rounded-md hover:bg-slate-100 dark:bg-slate-800"
+          className="absolute right-2 text-slate-400 hover:text-blue-600 dark:text-blue-400 transition-colors p-1 rounded-md hover:bg-slate-100 dark:hover:bg-slate-800 dark:bg-slate-800"
           title="Switch back to list"
         >
           <List className="w-3 h-3" />
@@ -103,7 +103,7 @@ export const EditableSelect: React.FC<EditableSelectProps> = ({
           {displayTransform ? displayTransform(opt) : opt}
         </option>
       ))}
-      <option value="OTHER_MANUAL" className="font-bold text-blue-600">+ Other (Type Manually)</option>
+      <option value="OTHER_MANUAL" className="font-bold text-blue-600 dark:text-blue-400">+ Other (Type Manually)</option>
     </select>
   );
 };
