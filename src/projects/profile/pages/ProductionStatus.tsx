@@ -173,7 +173,7 @@ export const ProductionStatus: React.FC = () => {
                           >
                             {ALL_STAGES.map(s => <option key={s} value={s}>{s}</option>)}
                           </select>
-                          <button onClick={() => advanceStage(order)} title="Advance Stage" className="p-1.5 text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/30 hover:bg-blue-100 dark:hover:bg-blue-900/50 dark:bg-blue-900/50 rounded-lg border border-blue-100 dark:border-blue-800 transition-colors">
+                          <button onClick={() => advanceStage(order)} title="Advance Stage" className="p-1.5 text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/30 hover:bg-blue-100 dark:hover:bg-blue-900/50 rounded-lg border border-blue-100 dark:border-blue-800 transition-colors">
                             <FastForward className="w-3.5 h-3.5" />
                           </button>
                           <button onClick={() => generateOrderEntryPDF(order)} title="Print Order" className="p-1.5 text-slate-600 dark:text-slate-300 bg-slate-50 dark:bg-slate-800/50 hover:bg-slate-100 dark:hover:bg-slate-800 dark:bg-slate-800 rounded-lg border border-slate-100 dark:border-slate-800 transition-colors">
@@ -238,7 +238,7 @@ export const ProductionStatus: React.FC = () => {
                         {canEditStatus && (
                           <td className="p-3">
                             <div className="flex gap-1.5">
-                              <button onClick={(e) => { e.stopPropagation(); advanceStage(order); }} title="Advance" className="p-1.5 text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/30 hover:bg-blue-100 dark:hover:bg-blue-900/50 dark:bg-blue-900/50 rounded-lg border border-blue-100 dark:border-blue-800 transition-colors">
+                              <button onClick={(e) => { e.stopPropagation(); advanceStage(order); }} title="Advance" className="p-1.5 text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/30 hover:bg-blue-100 dark:hover:bg-blue-900/50 rounded-lg border border-blue-100 dark:border-blue-800 transition-colors">
                                 <FastForward className="w-3.5 h-3.5" />
                               </button>
                               <button onClick={(e) => { e.stopPropagation(); generateOrderEntryPDF(order); }} title="Print" className="p-1.5 text-slate-600 dark:text-slate-300 bg-slate-50 dark:bg-slate-800/50 hover:bg-slate-100 dark:hover:bg-slate-800 dark:bg-slate-800 rounded-lg border border-slate-100 dark:border-slate-800 transition-colors">

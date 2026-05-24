@@ -355,7 +355,7 @@ export const TCManagement: React.FC = () => {
                 : waStatus === 'QR_READY'
                 ? "bg-amber-50 dark:bg-amber-950/20 border-amber-200 dark:border-amber-900/30 text-amber-700 dark:text-amber-400 hover:bg-amber-100 dark:hover:bg-amber-900/30 animate-pulse"
                 : waStatus === 'INITIALIZING'
-                ? "bg-blue-50 dark:bg-blue-950/20 border-blue-200 dark:border-blue-900/30 text-blue-700 dark:text-blue-400 hover:bg-blue-100 dark:hover:bg-blue-900/50 dark:bg-blue-900/50 dark:hover:bg-blue-900/30 animate-pulse"
+                ? "bg-blue-50 dark:bg-blue-950/20 border-blue-200 dark:border-blue-900/30 text-blue-700 dark:text-blue-400 hover:bg-blue-100 dark:hover:bg-blue-900/50 dark:hover:bg-blue-900/30 animate-pulse"
                 : "bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-350 hover:bg-slate-100 dark:hover:bg-slate-800 dark:bg-slate-800 dark:hover:bg-slate-700/50"
             )}
           >
@@ -688,7 +688,7 @@ export const TCManagement: React.FC = () => {
                               const win = window.open();
                               win?.document.write(`<iframe src="${formData.pdfData}" frameborder="0" style="border:0; top:0px; left:0px; bottom:0px; right:0px; width:100%; height:100%;" allowfullscreen></iframe>`);
                             }}
-                            className="p-4 bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 rounded-2xl font-bold hover:bg-blue-100 dark:hover:bg-blue-900/50 dark:bg-blue-900/50 transition-colors"
+                            className="p-4 bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 rounded-2xl font-bold hover:bg-blue-100 dark:hover:bg-blue-900/50 transition-colors"
                           >
                             Preview PDF
                           </button>
@@ -731,7 +731,7 @@ export const TCManagement: React.FC = () => {
                           const win = window.open();
                           win?.document.write(`<iframe src="${selectedTC.pdfData}" frameborder="0" style="border:0; top:0px; left:0px; bottom:0px; right:0px; width:100%; height:100%;" allowfullscreen></iframe>`);
                         }}
-                        className="flex items-center gap-2 bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 px-4 py-2 rounded-xl text-xs font-bold hover:bg-blue-100 dark:hover:bg-blue-900/50 dark:bg-blue-900/50 transition-all"
+                        className="flex items-center gap-2 bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 px-4 py-2 rounded-xl text-xs font-bold hover:bg-blue-100 dark:hover:bg-blue-900/50 transition-all"
                       >
                         <FileSearch className="w-4 h-4" />
                         View Attachment

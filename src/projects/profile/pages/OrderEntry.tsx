@@ -266,7 +266,7 @@ export const OrderEntry: React.FC = () => {
             />
             <button 
               onClick={() => fileInputRef.current?.click()}
-              className="flex items-center gap-1.5 text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:text-blue-300 bg-blue-50 dark:bg-blue-900/30 hover:bg-blue-100 dark:hover:bg-blue-900/50 dark:bg-blue-900/50 px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors border border-blue-100 dark:border-blue-800"
+              className="flex items-center gap-1.5 text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:text-blue-300 bg-blue-50 dark:bg-blue-900/30 hover:bg-blue-100 dark:hover:bg-blue-900/50 px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors border border-blue-100 dark:border-blue-800"
               title="Upload CSV to auto-fill details (Format: Party, Contact, Mobile, Location, Address, Remark)"
             >
               <Upload className="w-3.5 h-3.5" /> Auto-fill Details
@@ -441,12 +441,12 @@ export const OrderEntry: React.FC = () => {
 
       {/* Job Line Items */}
       <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-800 overflow-hidden">
-        <div className="p-4 border-b border-slate-100 dark:border-slate-800 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 bg-slate-50 dark:bg-slate-800/50/60">
+        <div className="p-4 border-b border-slate-100 dark:border-slate-800 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 bg-slate-50/60 dark:bg-slate-800/60">
           <h2 className="text-base font-semibold text-slate-800 dark:text-slate-100 flex items-center gap-2">
             <span className="w-1.5 h-5 bg-emerald-500 rounded-full inline-block"></span>
             Job Specifications ({lines.length} item{lines.length > 1 ? 's' : ''})
           </h2>
-          <button onClick={addLine} className="flex items-center gap-1.5 text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:text-blue-300 bg-blue-50 dark:bg-blue-900/30 hover:bg-blue-100 dark:hover:bg-blue-900/50 dark:bg-blue-900/50 px-3 py-1.5 rounded-lg text-sm font-semibold transition-colors border border-blue-100 dark:border-blue-800">
+          <button onClick={addLine} className="flex items-center gap-1.5 text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:text-blue-300 bg-blue-50 dark:bg-blue-900/30 hover:bg-blue-100 dark:hover:bg-blue-900/50 px-3 py-1.5 rounded-lg text-sm font-semibold transition-colors border border-blue-100 dark:border-blue-800">
             <Plus className="w-4 h-4" /> {t('addItem')}
           </button>
         </div>
@@ -633,14 +633,14 @@ export const OrderEntry: React.FC = () => {
               <div className="flex flex-col gap-8">
                 <div>
                   <h3 className="text-sm font-bold text-slate-400 uppercase tracking-wider mb-4 border-b pb-2">1. Order Acknowledgement</h3>
-                  <div id="printable-receipt" className="p-4 border rounded-xl bg-slate-50 dark:bg-slate-800/50/30">
+                  <div id="printable-receipt" className="p-4 border rounded-xl bg-slate-50/30 dark:bg-slate-800/30">
                     <OrderEntryPrint order={currentOrder} />
                   </div>
                 </div>
                 
                 <div>
                   <h3 className="text-sm font-bold text-slate-400 uppercase tracking-wider mb-4 border-b pb-2">2. Sales Order (Full Format)</h3>
-                  <div id="sales-order-receipt" className="p-4 border rounded-xl bg-slate-50 dark:bg-slate-800/50/30">
+                  <div id="sales-order-receipt" className="p-4 border rounded-xl bg-slate-50/30 dark:bg-slate-800/30">
                     <SalesOrderPrint order={currentOrder} />
                   </div>
                 </div>
