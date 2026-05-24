@@ -454,7 +454,7 @@ export const TCManagement: React.FC = () => {
           </div>
 
           <div className="bg-white dark:bg-slate-900 rounded-3xl shadow-sm border border-slate-100 dark:border-slate-800 overflow-hidden min-h-[500px]">
-            <div className="p-4 border-b border-slate-50 bg-slate-50 dark:bg-slate-800/50/50 flex items-center justify-between">
+            <div className="p-4 border-b border-slate-50 bg-slate-50/50 dark:bg-slate-800/50 flex items-center justify-between">
               <h3 className="text-sm font-bold text-slate-800 dark:text-slate-100">Results ({filteredRecords.length})</h3>
             </div>
             <div className="divide-y divide-slate-50 max-h-[600px] overflow-y-auto">
@@ -711,7 +711,7 @@ export const TCManagement: React.FC = () => {
             <div className="space-y-6 slide-up">
               {/* Detailed View */}
               <div className="bg-white dark:bg-slate-900 rounded-3xl shadow-sm border border-slate-100 dark:border-slate-800 overflow-hidden">
-                <div className="p-6 border-b border-slate-50 flex items-center justify-between bg-slate-50 dark:bg-slate-800/50/50">
+                <div className="p-6 border-b border-slate-50 flex items-center justify-between bg-slate-50/50 dark:bg-slate-800/50">
                   <div className="flex items-center gap-4">
                     <div className="w-12 h-12 bg-blue-600 rounded-2xl flex items-center justify-center text-white shadow-lg shadow-blue-100">
                       <FileSearch className="w-6 h-6" />
@@ -788,7 +788,7 @@ export const TCManagement: React.FC = () => {
                 <div className="overflow-x-auto">
                   <table className="w-full text-left">
                     <thead>
-                      <tr className="bg-slate-50 dark:bg-slate-800/50/50 text-[10px] font-black text-slate-400 uppercase tracking-widest border-b border-slate-50">
+                      <tr className="bg-slate-50/50 dark:bg-slate-800/50 text-[10px] font-black text-slate-400 uppercase tracking-widest border-b border-slate-50">
                         <th className="px-6 py-4">Party Name</th>
                         <th className="px-6 py-4">Date of Dispatch</th>
                         <th className="px-6 py-4">SO Number</th>
@@ -799,7 +799,7 @@ export const TCManagement: React.FC = () => {
                     </thead>
                     <tbody className="divide-y divide-slate-50">
                       {selectedTC.dispatchHistory.map((history, idx) => (
-                        <tr key={idx} className="hover:bg-slate-50 dark:hover:bg-slate-800/50 dark:bg-slate-800/50/30 transition-colors">
+                        <tr key={idx} className="hover:bg-slate-50/30 dark:hover:bg-slate-800/50 dark:bg-slate-800/30 transition-colors">
                           <td className="px-6 py-4 font-bold text-slate-800 dark:text-slate-100 text-sm">{history.partyName}</td>
                           <td className="px-6 py-4 text-xs font-medium text-slate-500 dark:text-slate-400">{history.dispatchDate}</td>
                           <td className="px-6 py-4 text-xs font-bold text-slate-700 dark:text-slate-200">{history.salesOrderNumber}</td>

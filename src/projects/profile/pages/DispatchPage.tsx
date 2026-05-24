@@ -117,7 +117,7 @@ export const DispatchPage: React.FC = () => {
         <div className="lg:col-span-2">
           {selectedOrder ? (
             <div className="bg-white dark:bg-slate-900 rounded-3xl shadow-sm border border-slate-100 dark:border-slate-800 overflow-hidden flex flex-col h-full min-h-[500px]">
-              <div className="p-6 border-b border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50/50 flex justify-between items-center">
+              <div className="p-6 border-b border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/50 flex justify-between items-center">
                 <div>
                   <h2 className="text-xl font-bold text-slate-800 dark:text-slate-100">{selectedOrder.partyName}</h2>
                   <p className="text-xs text-slate-500 dark:text-slate-400 font-medium font-mono">{selectedOrder.orderNo} • {selectedOrder.deliveryAddress}</p>
@@ -166,7 +166,7 @@ export const DispatchPage: React.FC = () => {
                 </table>
               </div>
 
-              <div className="p-6 bg-slate-50 dark:bg-slate-800/50/80 border-t border-slate-100 dark:border-slate-800 space-y-4">
+              <div className="p-6 bg-slate-50/80 dark:bg-slate-800/80 border-t border-slate-100 dark:border-slate-800 space-y-4">
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div className="space-y-1">
                     <label className="text-[10px] font-bold text-slate-400 uppercase ml-1">Vehicle Number</label>
@@ -220,7 +220,7 @@ export const DispatchPage: React.FC = () => {
 
       {/* Dispatch History */}
       <div className="bg-white dark:bg-slate-900 rounded-3xl shadow-sm border border-slate-100 dark:border-slate-800 overflow-hidden">
-        <div className="p-6 border-b border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50/50 flex items-center justify-between">
+        <div className="p-6 border-b border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/50 flex items-center justify-between">
           <h2 className="text-lg font-bold text-slate-800 dark:text-slate-100 flex items-center gap-2">
             Dispatch History
             <span className="bg-emerald-100 text-emerald-600 dark:text-emerald-400 text-[10px] px-2 py-0.5 rounded-full font-bold uppercase">{completedDispatches.length}</span>
@@ -240,7 +240,7 @@ export const DispatchPage: React.FC = () => {
             </thead>
             <tbody className="divide-y divide-slate-100">
               {completedDispatches.map(item => (
-                <tr key={item.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/50 dark:bg-slate-800/50/50 transition-colors">
+                <tr key={item.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/50 dark:bg-slate-800/50 transition-colors">
                   <td className="p-4">
                     <span className="text-sm font-medium text-slate-700 dark:text-slate-200">{item.dispatchDate}</span>
                   </td>

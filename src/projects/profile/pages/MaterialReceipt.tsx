@@ -216,7 +216,7 @@ export const MaterialReceipt: React.FC = () => {
 
                   <div className="space-y-1.5">
                     <label className="block text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Item Details & Received Quantities *</label>
-                    <div className="border border-slate-100 dark:border-slate-800 rounded-xl overflow-hidden bg-slate-50 dark:bg-slate-800/50/20">
+                    <div className="border border-slate-100 dark:border-slate-800 rounded-xl overflow-hidden bg-slate-50/20 dark:bg-slate-800/20">
                       <table className="w-full text-left border-collapse text-xs">
                         <thead>
                           <tr className="bg-slate-50 dark:bg-slate-800/50 border-b border-slate-100 dark:border-slate-800">
@@ -234,7 +234,7 @@ export const MaterialReceipt: React.FC = () => {
                             const curQty = itemQuantities[item.id] ?? 0;
 
                             return (
-                              <tr key={item.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/50 dark:bg-slate-800/50/50 transition-colors">
+                              <tr key={item.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/50 dark:bg-slate-800/50 transition-colors">
                                 <td className="p-3 font-medium text-slate-700 dark:text-slate-200">
                                   <div className="flex flex-col">
                                     <span className="font-bold text-slate-800 dark:text-slate-100">{item.grade}</span>

@@ -235,7 +235,7 @@ export const PurchaseReports: React.FC = () => {
                     </tr>
                     {showReceipts === po.id && (
                       <tr>
-                        <td colSpan={9} className="p-0 bg-amber-50 dark:bg-amber-900/30/30 border-b border-amber-100/50">
+                        <td colSpan={9} className="p-0 bg-amber-50/30 dark:bg-amber-900/30 border-b border-amber-100/50">
                           <div className="p-4 slide-down">
                             <h4 className="text-xs font-bold text-amber-800 dark:text-amber-200 mb-3 flex items-center gap-2 uppercase tracking-widest">
                               <ClipboardCheck className="w-3 h-3" />
@@ -264,7 +264,7 @@ export const PurchaseReports: React.FC = () => {
                                     const pendingAfterPr = Math.max(0, totalNos - totalReceivedUpToPr);
 
                                     return (
-                                      <tr key={pr.id} className="align-top hover:bg-amber-50 dark:bg-amber-900/30/20 transition-colors">
+                                      <tr key={pr.id} className="align-top hover:bg-amber-50/20 dark:bg-amber-900/20 transition-colors">
                                         <td className="p-2.5 text-xs text-slate-600 dark:text-slate-300 font-medium">{pr.date}</td>
                                         <td className="p-2.5 text-xs text-emerald-600 dark:text-emerald-400 font-bold text-right">{pr.receivedQty} Nos</td>
                                         <td className={clsx("p-2.5 text-xs font-bold text-right", pendingAfterPr > 0 ? "text-blue-600 dark:text-blue-400" : "text-slate-400")}>

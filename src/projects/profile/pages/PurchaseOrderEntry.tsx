@@ -303,7 +303,7 @@ export const PurchaseOrderEntry: React.FC = () => {
 
           {/* Items Table */}
           <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-800 overflow-hidden">
-            <div className="p-4 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between bg-slate-50 dark:bg-slate-800/50/50">
+            <div className="p-4 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between bg-slate-50/50 dark:bg-slate-800/50">
               <h2 className="text-base font-semibold text-slate-800 dark:text-slate-100">PO Items</h2>
               <button onClick={handleAddItem} className="flex items-center gap-1.5 bg-blue-600 text-white px-3 py-1.5 rounded-lg text-xs font-bold hover:bg-blue-700 transition-all">
                 <Plus className="w-3.5 h-3.5" /> Add Item
@@ -369,7 +369,7 @@ export const PurchaseOrderEntry: React.FC = () => {
                     </tr>
                   ))}
                 </tbody>
-                <tfoot className="bg-slate-50 dark:bg-slate-800/50/50">
+                <tfoot className="bg-slate-50/50 dark:bg-slate-800/50">
                   <tr className="font-bold text-slate-800 dark:text-slate-100">
                     <td colSpan={5} className="p-4 text-right text-xs uppercase text-slate-500 dark:text-slate-400">Grand Total</td>
                     <td className="p-4 text-blue-600 dark:text-blue-400">{totalKg.toFixed(3)}</td>

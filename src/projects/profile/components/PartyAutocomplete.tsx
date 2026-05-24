@@ -234,7 +234,7 @@ export const PartyAutocomplete: React.FC<PartyAutocompleteProps> = ({
                       "w-full text-left px-3.5 py-3 rounded-lg text-xs font-bold flex items-center justify-between transition-all outline-none",
                       isHighlighted 
                         ? "bg-emerald-600 text-white shadow-md shadow-emerald-100 dark:shadow-none" 
-                        : "text-emerald-600 dark:text-emerald-450 bg-emerald-50 dark:bg-emerald-900/30/50 dark:bg-emerald-950/10 hover:bg-emerald-50 dark:bg-emerald-900/30 dark:hover:bg-emerald-950/20"
+                        : "text-emerald-600 dark:text-emerald-450 bg-emerald-50/50 dark:bg-emerald-900/50 dark:bg-emerald-950/10 hover:bg-emerald-50 dark:bg-emerald-900/30 dark:hover:bg-emerald-950/20"
                     )}
                   >
                     <span className="flex items-center gap-2">

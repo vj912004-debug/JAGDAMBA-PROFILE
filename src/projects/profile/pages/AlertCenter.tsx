@@ -112,7 +112,7 @@ export const AlertCenter: React.FC = () => {
                   </td>
                 </tr>
               ) : filteredLogs.map(log => (
-                <tr key={log.id} className={clsx("hover:bg-slate-50 dark:hover:bg-slate-800/50 dark:bg-slate-800/50 transition-colors", log.type === 'alert' && "bg-red-50 dark:bg-red-900/30/30")}>
+                <tr key={log.id} className={clsx("hover:bg-slate-50 dark:hover:bg-slate-800/50 dark:bg-slate-800/50 transition-colors", log.type === 'alert' && "bg-red-50/30 dark:bg-red-900/30")}>
                   <td className="p-4 text-center">
                     <div className="flex justify-center">
                       {log.type === 'alert' && <ShieldAlert className="w-5 h-5 text-red-600 dark:text-red-400 animate-pulse" />}

@@ -121,7 +121,7 @@ export const Reports: React.FC = () => {
             ))}
           </div>
           <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-800 overflow-hidden">
-            <div className="p-4 border-b border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50/50 flex justify-between items-center">
+            <div className="p-4 border-b border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/50 flex justify-between items-center">
               <h3 className="text-sm font-semibold text-slate-800 dark:text-slate-100">All Orders ({filtered.length})</h3>
               <button onClick={() => exportCSV(
                 ['Order No','Date','Party','Stage','Items','Urgent'],
@@ -136,7 +136,7 @@ export const Reports: React.FC = () => {
                 </tr></thead>
                 <tbody className="divide-y divide-slate-100">
                   {filtered.map(o => (
-                    <tr key={o.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/50 dark:bg-slate-800/50/50">
+                    <tr key={o.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/50 dark:bg-slate-800/50">
                       <td className="p-3 text-sm font-bold text-slate-700 dark:text-slate-200 font-mono">{o.orderNo}</td>
                       <td className="p-3 text-sm text-slate-600 dark:text-slate-300">{o.orderDate}</td>
                       <td className="p-3 text-sm font-medium text-slate-800 dark:text-slate-100">{o.partyName}</td>
@@ -166,7 +166,7 @@ export const Reports: React.FC = () => {
           {selectedParty && (
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
               <div className="lg:col-span-2 bg-white dark:bg-slate-900 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-800 overflow-hidden">
-                <div className="p-4 border-b border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50/50 flex justify-between">
+                <div className="p-4 border-b border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/50 flex justify-between">
                   <h3 className="text-sm font-semibold text-slate-800 dark:text-slate-100">Orders - {selectedParty} ({partyOrders.length})</h3>
                   <button onClick={() => exportCSV(
                     ['Order','Date','Stage','Qty','Amount'],
@@ -181,7 +181,7 @@ export const Reports: React.FC = () => {
                     </tr></thead>
                     <tbody className="divide-y divide-slate-100">
                       {partyOrders.map(o => (
-                        <tr key={o.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/50 dark:bg-slate-800/50/50">
+                        <tr key={o.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/50 dark:bg-slate-800/50">
                           <td className="p-3 text-sm font-bold font-mono text-slate-700 dark:text-slate-200">{o.orderNo}</td>
                           <td className="p-3 text-sm text-slate-600 dark:text-slate-300">{o.orderDate}</td>
                           <td className="p-3 text-sm text-slate-600 dark:text-slate-300">{o.items[0]?.cuttingType}</td>
@@ -195,7 +195,7 @@ export const Reports: React.FC = () => {
                 </div>
               </div>
               <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-800 overflow-hidden">
-                <div className="p-4 border-b border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50/50">
+                <div className="p-4 border-b border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/50">
                   <h3 className="text-sm font-semibold text-slate-800 dark:text-slate-100">Challan Summary</h3>
                 </div>
                 <div className="p-5">
@@ -264,7 +264,7 @@ export const Reports: React.FC = () => {
           </div>
           {/* Thickness-wise */}
           <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-800 overflow-hidden">
-            <div className="p-4 border-b border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50/50">
+            <div className="p-4 border-b border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/50">
               <h3 className="text-sm font-semibold text-slate-800 dark:text-slate-100">Thickness Wise Breakdown</h3>
             </div>
             <div className="overflow-x-auto">
@@ -278,7 +278,7 @@ export const Reports: React.FC = () => {
                     const totalQty = matchOrders.flatMap(o => o.items.filter(i => i.thickness === th)).reduce((s,i) => s+i.quantity, 0);
                     const types = Array.from(new Set(matchOrders.flatMap(o => o.items.filter(i => i.thickness === th).map(i => i.cuttingType))));
                     return (
-                      <tr key={th} className="hover:bg-slate-50 dark:hover:bg-slate-800/50 dark:bg-slate-800/50/50">
+                      <tr key={th} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/50 dark:bg-slate-800/50">
                         <td className="p-3 text-sm font-bold text-slate-800 dark:text-slate-100">{th}</td>
                         <td className="p-3 text-sm text-slate-600 dark:text-slate-300">{matchOrders.length}</td>
                         <td className="p-3 text-sm text-slate-600 dark:text-slate-300">{totalQty}</td>
@@ -310,7 +310,7 @@ export const Reports: React.FC = () => {
             ))}
           </div>
           <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-800 overflow-hidden">
-            <div className="p-4 border-b border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50/50 flex justify-between">
+            <div className="p-4 border-b border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/50 flex justify-between">
               <h3 className="text-sm font-semibold text-slate-800 dark:text-slate-100">Stage-wise Order List</h3>
               <button onClick={() => exportCSV(
                 ['Order','Party','Stage','Qty','Due Date'],
@@ -325,7 +325,7 @@ export const Reports: React.FC = () => {
                 </tr></thead>
                 <tbody className="divide-y divide-slate-100">
                   {filtered.sort((a,b) => ALL_STAGES.indexOf(a.stage) - ALL_STAGES.indexOf(b.stage)).map(o => (
-                    <tr key={o.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/50 dark:bg-slate-800/50/50">
+                    <tr key={o.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/50 dark:bg-slate-800/50">
                       <td className="p-3 text-sm font-bold font-mono text-slate-700 dark:text-slate-200">{o.orderNo}</td>
                       <td className="p-3 text-sm font-medium text-slate-800 dark:text-slate-100">{o.partyName}</td>
                       <td className="p-3 text-sm text-slate-600 dark:text-slate-300">{o.items[0]?.cuttingType}</td>
@@ -359,7 +359,7 @@ export const Reports: React.FC = () => {
             ))}
           </div>
           <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-800 overflow-hidden">
-            <div className="p-4 border-b border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50/50 flex justify-between">
+            <div className="p-4 border-b border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/50 flex justify-between">
               <h3 className="text-sm font-semibold text-slate-800 dark:text-slate-100">Plate Consumption</h3>
               <button onClick={() => exportCSV(
                 ['Plate ID','Source','Order','Used Kg','Scrap Kg','Scrap Owner'],
@@ -376,7 +376,7 @@ export const Reports: React.FC = () => {
                   {usages.map((u, i) => {
                     const plate = plates.find(p => p.id === u.plateId);
                     return (
-                      <tr key={i} className="hover:bg-slate-50 dark:hover:bg-slate-800/50 dark:bg-slate-800/50/50">
+                      <tr key={i} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/50 dark:bg-slate-800/50">
                         <td className="p-3 text-sm font-bold text-slate-800 dark:text-slate-100 font-mono">{u.plateId}</td>
                         <td className="p-3"><span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${plate?.source === 'Customer' ? 'bg-purple-100 text-purple-700' : 'bg-blue-100 dark:bg-blue-900/50 text-blue-700 dark:text-blue-300'}`}>{plate?.source || '-'}</span></td>
                         <td className="p-3 text-sm font-mono text-slate-700 dark:text-slate-200">{u.orderNo}</td>
@@ -406,7 +406,7 @@ export const Reports: React.FC = () => {
                       const pu = usages.filter(u => u.plateId === p.id);
                       const bal = p.initialWeight - pu.reduce((s,u) => s+u.usedWeight+u.scrapQuantity, 0);
                       return (
-                        <tr key={p.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/50 dark:bg-slate-800/50/50">
+                        <tr key={p.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/50 dark:bg-slate-800/50">
                           <td className="p-3 text-sm font-bold font-mono text-slate-800 dark:text-slate-100">{p.id}</td>
                           <td className="p-3 text-sm text-slate-600 dark:text-slate-300">{p.grade}</td>
                           <td className="p-3 text-sm text-slate-600 dark:text-slate-300">{p.thickness}</td>

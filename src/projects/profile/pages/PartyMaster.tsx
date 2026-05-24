@@ -227,7 +227,7 @@ export const PartyMasterPage: React.FC = () => {
                   const stats = partyStats[p.partyName.trim().toUpperCase()] || { count: 0, totalVal: 0 };
                   
                   return (
-                    <tr key={p.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/50 dark:bg-slate-800/50/55 dark:hover:bg-slate-900/30 transition-all">
+                    <tr key={p.id} className="hover:bg-slate-50/55 dark:hover:bg-slate-800/50 dark:bg-slate-800/55 dark:hover:bg-slate-900/30 transition-all">
                       {/* Name & Branch */}
                       <td className="px-6 py-5">
                         <div className="space-y-1">

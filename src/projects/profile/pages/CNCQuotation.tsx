@@ -371,7 +371,7 @@ export const CNCQuotation: React.FC = () => {
         {/* Main Table */}
         <div className="lg:col-span-4">
           <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-800 overflow-x-auto print:border-none">
-            <div className="p-4 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between bg-slate-50 dark:bg-slate-800/50/50 print:hidden">
+            <div className="p-4 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between bg-slate-50/50 dark:bg-slate-800/50 print:hidden">
               <h2 className="text-sm font-bold text-slate-800 dark:text-slate-100 uppercase flex items-center gap-2">
                 <Ruler className="w-4 h-4 text-blue-600 dark:text-blue-400" />
                 Material & Cutting Parameters
@@ -544,7 +544,7 @@ export const CNCQuotation: React.FC = () => {
                         </div>
                       )}
                     </td>
-                    <td className="p-3 border-r bg-emerald-50 dark:bg-emerald-900/30/30">
+                    <td className="p-3 border-r bg-emerald-50/30 dark:bg-emerald-900/30">
                       <span className="text-sm font-black text-emerald-700 dark:text-emerald-400">₹{item.finalRate.toLocaleString()}</span>
                       <p className="text-[10px] text-slate-400 uppercase font-bold">Per Part</p>
                     </td>

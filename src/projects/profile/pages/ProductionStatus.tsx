@@ -217,7 +217,7 @@ export const ProductionStatus: React.FC = () => {
                   const colors = STAGE_COLORS[order.stage];
                   return (
                     <React.Fragment key={order.id}>
-                      <tr className="hover:bg-slate-50 dark:hover:bg-slate-800/50 dark:bg-slate-800/50/50 transition-colors cursor-pointer" onClick={() => setExpandedOrder(expandedOrder === order.id ? null : order.id)}>
+                      <tr className="hover:bg-slate-50/50 dark:hover:bg-slate-800/50 dark:bg-slate-800/50 transition-colors cursor-pointer" onClick={() => setExpandedOrder(expandedOrder === order.id ? null : order.id)}>
                         <td className="p-3 text-sm font-bold text-slate-700 dark:text-slate-200 font-mono">
                           <div className="flex items-center gap-2">
                             {order.urgent && <span className="w-1.5 h-1.5 rounded-full bg-red-500 pulse-dot"></span>}

@@ -220,7 +220,7 @@ export const PlateTracking: React.FC = () => {
 
       {/* Plates Table */}
       <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-800 overflow-hidden">
-        <div className="p-4 border-b border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50/50">
+        <div className="p-4 border-b border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/50">
           <h2 className="text-sm font-semibold text-slate-800 dark:text-slate-100">Plate Inventory & Usage</h2>
         </div>
         <div className="overflow-x-auto">
@@ -244,7 +244,7 @@ export const PlateTracking: React.FC = () => {
                 const stats = getPlateStats(plate);
                 const balancePct = plate.initialWeight > 0 ? (stats.balance / plate.initialWeight) * 100 : 0;
                 return (
-                  <tr key={plate.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/50 dark:bg-slate-800/50/50 transition-colors">
+                  <tr key={plate.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/50 dark:bg-slate-800/50 transition-colors">
                     <td className="p-3 font-bold text-slate-800 dark:text-slate-100 font-mono text-sm">{plate.id}</td>
                     <td className="p-3 text-sm text-slate-600 dark:text-slate-300">{plate.grade} • {plate.thickness}</td>
                     <td className="p-3 text-sm text-slate-600 dark:text-slate-300">{plate.size || '-'}</td>

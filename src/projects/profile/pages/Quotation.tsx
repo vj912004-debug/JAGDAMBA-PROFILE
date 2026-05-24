@@ -374,7 +374,7 @@ export const Quotation: React.FC = () => {
               </div>
             </div>
 
-            <div className="p-4 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between bg-slate-50 dark:bg-slate-800/50/50 print:hidden">
+            <div className="p-4 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between bg-slate-50/50 dark:bg-slate-800/50 print:hidden">
               <h2 className="text-sm font-bold text-slate-800 dark:text-slate-100 uppercase tracking-wider flex items-center gap-2">
                 <span className="w-1.5 h-5 bg-blue-600 rounded-full"></span>
                 Items & Shapes
@@ -471,7 +471,7 @@ export const Quotation: React.FC = () => {
                                 type="number" 
                                 value={item.idRate ?? ''} 
                                 onChange={(e) => updateItem(item.id, 'idRate', e.target.value)} 
-                                className="w-full bg-amber-50 dark:bg-amber-900/30/50 border border-amber-100 rounded px-2 py-0.5 text-xs font-bold text-amber-700 outline-none focus:bg-white dark:bg-slate-900 focus:ring-1 focus:ring-amber-500" 
+                                className="w-full bg-amber-50/50 dark:bg-amber-900/50 border border-amber-100 rounded px-2 py-0.5 text-xs font-bold text-amber-700 outline-none focus:bg-white dark:bg-slate-900 focus:ring-1 focus:ring-amber-500" 
                                 placeholder="ID Rate" 
                               />
                             </div>
@@ -494,7 +494,7 @@ export const Quotation: React.FC = () => {
                     </tr>
                   ))}
                 </tbody>
-                <tfoot className="bg-slate-50 dark:bg-slate-800/50/50 print:bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-100">
+                <tfoot className="bg-slate-50/50 dark:bg-slate-800/50 print:bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-100">
                   <tr className="border-t border-slate-200 dark:border-slate-700">
                     <td colSpan={8} className="p-3 text-right text-[10px] font-bold uppercase text-slate-400">Sub Total</td>
                     <td className="p-3 text-right font-bold">₹ {totalAmount.toLocaleString()}</td>

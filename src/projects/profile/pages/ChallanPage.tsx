@@ -167,7 +167,7 @@ export const ChallanPage: React.FC = () => {
             </thead>
             <tbody className="divide-y divide-slate-100">
               {[...challans].sort((a,b) => b.challanDate.localeCompare(a.challanDate) || b.challanNo.localeCompare(a.challanNo)).map(item => (
-                <tr key={item.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/50 dark:bg-slate-800/50/50 transition-colors">
+                <tr key={item.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/50 dark:bg-slate-800/50 transition-colors">
                   <td className="p-3 text-sm font-bold text-slate-700 dark:text-slate-200 font-mono">{item.challanNo}</td>
                   <td className="p-3 text-sm text-slate-600 dark:text-slate-300">{item.challanDate}</td>
                   <td className="p-3 text-sm text-slate-600 dark:text-slate-300 font-mono">{item.orderNo}</td>
