@@ -6,7 +6,7 @@ export const Header: React.FC = () => {
   const { user, logout, language, setLanguage, branch, setBranch, theme, setTheme } = useAppContext();
 
   return (
-    <header className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border-b border-slate-200 dark:border-slate-800 h-14 flex items-center justify-between px-4 sm:px-6 sticky top-0 z-10 shadow-sm transition-colors duration-300">
+    <header className="bg-white dark:bg-slate-900/80 dark:bg-slate-900/80 backdrop-blur-md border-b border-slate-200 dark:border-slate-800 h-14 flex items-center justify-between px-4 sm:px-6 sticky top-0 z-10 shadow-sm transition-colors duration-300">
       <div className="flex items-center gap-3">
         {/* Mobile Title */}
         <h1 className="text-lg font-extrabold bg-gradient-to-r from-blue-700 to-sky-500 bg-clip-text text-transparent md:hidden">
@@ -34,13 +34,13 @@ export const Header: React.FC = () => {
           <div className="flex bg-white dark:bg-slate-900 rounded-full p-0.5 shadow-sm transition-colors">
             <button
               onClick={() => setLanguage('English')}
-              className={`px-2.5 py-1 text-[11px] font-semibold rounded-full transition-all ${language === 'English' ? 'bg-blue-600 text-white shadow-sm' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800'}`}
+              className={`px-2.5 py-1 text-[11px] font-semibold rounded-full transition-all ${language === 'English' ? 'bg-blue-600 text-white shadow-sm' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:bg-slate-800/50 dark:hover:bg-slate-800'}`}
             >
               EN
             </button>
             <button
               onClick={() => setLanguage('Gujarati')}
-              className={`px-2.5 py-1 text-[11px] font-semibold rounded-full transition-all ${language === 'Gujarati' ? 'bg-blue-600 text-white shadow-sm' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800'}`}
+              className={`px-2.5 py-1 text-[11px] font-semibold rounded-full transition-all ${language === 'Gujarati' ? 'bg-blue-600 text-white shadow-sm' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:bg-slate-800/50 dark:hover:bg-slate-800'}`}
             >
               ગુજ
             </button>

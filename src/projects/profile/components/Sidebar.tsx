@@ -126,7 +126,7 @@ export const Sidebar: React.FC = () => {
                         "flex items-center justify-between px-3 py-2 rounded-xl text-sm font-semibold transition-all duration-300 group",
                         isActive
                           ? "bg-blue-600 text-white shadow-md shadow-blue-100 dark:shadow-none border border-blue-600"
-                          : "text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/50 hover:text-blue-600 dark:hover:text-blue-400"
+                          : "text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:bg-slate-800/50 dark:hover:bg-slate-800/50 hover:text-blue-600 dark:hover:text-blue-400"
                       )}
                     >
                       <div className="flex items-center gap-3">
@@ -144,7 +144,7 @@ export const Sidebar: React.FC = () => {
       </nav>
 
       {/* Footer */}
-      <div className="p-4 border-t border-slate-50 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/50 transition-colors duration-300">
+      <div className="p-4 border-t border-slate-50 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50/50 dark:bg-slate-900/50 transition-colors duration-300">
         <div className="flex items-center gap-3 px-2">
           <div className="w-8 h-8 rounded-full bg-slate-200 dark:bg-slate-800 flex items-center justify-center">
             <Settings2 className="w-4 h-4 text-slate-500 dark:text-slate-400" />

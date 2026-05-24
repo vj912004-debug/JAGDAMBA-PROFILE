@@ -29,15 +29,15 @@ export const MobileNav: React.FC = () => {
 
       {/* Slide Panel */}
       <div className={cn(
-        "md:hidden fixed inset-y-0 right-0 w-72 bg-white shadow-2xl z-50 transform transition-transform duration-300 ease-in-out flex flex-col",
+        "md:hidden fixed inset-y-0 right-0 w-72 bg-white dark:bg-slate-900 shadow-2xl z-50 transform transition-transform duration-300 ease-in-out flex flex-col",
         isOpen ? "translate-x-0" : "translate-x-full"
       )}>
-        <div className="p-5 border-b border-slate-100 flex items-center justify-between">
+        <div className="p-5 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between">
           <div>
-            <h2 className="text-lg font-bold text-slate-800">Menu</h2>
+            <h2 className="text-lg font-bold text-slate-800 dark:text-slate-100">Menu</h2>
             <p className="text-[10px] text-slate-400 font-medium">Jagdamba Profile ERP</p>
           </div>
-          <button onClick={() => setIsOpen(false)} className="text-slate-400 hover:text-slate-700 p-2 rounded-lg hover:bg-slate-100 transition-colors">
+          <button onClick={() => setIsOpen(false)} className="text-slate-400 hover:text-slate-700 dark:text-slate-200 p-2 rounded-lg hover:bg-slate-100 dark:bg-slate-800 transition-colors">
             <X className="w-5 h-5" />
           </button>
         </div>
@@ -63,7 +63,7 @@ export const MobileNav: React.FC = () => {
                           "flex items-center gap-4 px-4 py-3 rounded-xl text-base font-semibold transition-all duration-300",
                           isActive
                             ? "bg-blue-600 text-white shadow-lg shadow-blue-100"
-                            : "text-slate-500 hover:bg-slate-50 hover:text-blue-600"
+                            : "text-slate-500 hover:bg-slate-50 dark:bg-slate-800/50 hover:text-blue-600"
                         )}
                       >
                         <item.icon className={cn("w-5 h-5", isActive ? "text-white" : "text-slate-400")} />

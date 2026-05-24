@@ -72,7 +72,7 @@ export const ChallanPage: React.FC = () => {
             <ScrollText className="w-5 h-5 text-teal-600" />
           </div>
           <div>
-            <h1 className="text-2xl font-bold text-slate-800">{t('challan')}</h1>
+            <h1 className="text-2xl font-bold text-slate-800 dark:text-slate-100">{t('challan')}</h1>
             <p className="text-sm text-slate-500">{challans.length} challans • ₹{totalPending.toLocaleString()} pending</p>
           </div>
         </div>
@@ -91,10 +91,10 @@ export const ChallanPage: React.FC = () => {
 
       {/* Create Challan Form */}
       {showCreate && (
-        <div className="bg-white rounded-2xl p-5 shadow-sm border border-teal-100 slide-up">
+        <div className="bg-white dark:bg-slate-900 rounded-2xl p-5 shadow-sm border border-teal-100 slide-up">
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-base font-semibold text-slate-800">New Challan</h2>
-            <button onClick={() => setShowCreate(false)} className="p-1.5 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-lg transition-colors"><X className="w-4 h-4" /></button>
+            <h2 className="text-base font-semibold text-slate-800 dark:text-slate-100">New Challan</h2>
+            <button onClick={() => setShowCreate(false)} className="p-1.5 text-slate-400 hover:text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:bg-slate-800 rounded-lg transition-colors"><X className="w-4 h-4" /></button>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
             <div>
@@ -111,7 +111,7 @@ export const ChallanPage: React.FC = () => {
                   const ratio = dispatchQty / totalItemsQty;
                   setTaxableAmount(Math.round(totalItemsAmount * ratio));
                 }
-              }} className="w-full bg-white border border-slate-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-teal-500 outline-none">
+              }} className="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-teal-500 outline-none">
                 <option value="">Select Dispatch</option>
                 {dispatches.filter(d => d.dispatchQty > 0 && !challans.some(c => c.orderNo === d.orderNo && c.totalAmount > 0)).map(d => (
                   <option key={d.id} value={d.id}>{d.orderNo} | {d.partyName} | Qty: {d.dispatchQty}</option>
@@ -120,13 +120,13 @@ export const ChallanPage: React.FC = () => {
             </div>
             <div>
               <label className="block text-xs font-semibold text-slate-500 mb-1">Taxable Amount (₹)</label>
-              <div className="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-sm font-bold text-slate-700">
+              <div className="w-full bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-lg px-3 py-2 text-sm font-bold text-slate-700 dark:text-slate-200">
                 ₹{taxableAmount.toLocaleString()}
               </div>
             </div>
             <div>
               <label className="block text-xs font-semibold text-slate-500 mb-1">GST %</label>
-              <select value={gstRate} onChange={(e) => setGstRate(Number(e.target.value))} className="w-full bg-white border border-slate-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-teal-500 outline-none">
+              <select value={gstRate} onChange={(e) => setGstRate(Number(e.target.value))} className="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-teal-500 outline-none">
                 <option value={5}>5%</option>
                 <option value={12}>12%</option>
                 <option value={18}>18%</option>
@@ -135,10 +135,10 @@ export const ChallanPage: React.FC = () => {
             </div>
             <div>
               <label className="block text-xs font-semibold text-slate-500 mb-1">Due Date</label>
-              <input type="date" value={dueDate} onChange={(e) => setDueDate(e.target.value)} className="w-full bg-white border border-slate-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-teal-500 outline-none" />
+              <input type="date" value={dueDate} onChange={(e) => setDueDate(e.target.value)} className="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-teal-500 outline-none" />
             </div>
             <div className="flex flex-col justify-end gap-1">
-              <p className="text-xs text-slate-500">Total: <strong className="text-slate-800">₹{Math.round(totalAmount).toLocaleString()}</strong></p>
+              <p className="text-xs text-slate-500">Total: <strong className="text-slate-800 dark:text-slate-100">₹{Math.round(totalAmount).toLocaleString()}</strong></p>
               <button onClick={handleCreate} className="w-full bg-teal-600 hover:bg-teal-700 text-white py-2 rounded-lg text-sm font-semibold transition-colors">Create</button>
             </div>
           </div>
@@ -146,11 +146,11 @@ export const ChallanPage: React.FC = () => {
       )}
 
       {/* Challans Table */}
-      <div className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
+      <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-800 overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse whitespace-nowrap">
             <thead>
-              <tr className="bg-slate-50 border-b border-slate-100">
+              <tr className="bg-slate-50 dark:bg-slate-800/50 border-b border-slate-100 dark:border-slate-800">
                 <th className="p-3 text-[10px] font-bold tracking-wider text-slate-500 uppercase">Challan No</th>
                 <th className="p-3 text-[10px] font-bold tracking-wider text-slate-500 uppercase">Date</th>
                 <th className="p-3 text-[10px] font-bold tracking-wider text-slate-500 uppercase">Order</th>
@@ -167,21 +167,21 @@ export const ChallanPage: React.FC = () => {
             </thead>
             <tbody className="divide-y divide-slate-100">
               {[...challans].sort((a,b) => b.challanDate.localeCompare(a.challanDate) || b.challanNo.localeCompare(a.challanNo)).map(item => (
-                <tr key={item.id} className="hover:bg-slate-50/50 transition-colors">
-                  <td className="p-3 text-sm font-bold text-slate-700 font-mono">{item.challanNo}</td>
-                  <td className="p-3 text-sm text-slate-600">{item.challanDate}</td>
-                  <td className="p-3 text-sm text-slate-600 font-mono">{item.orderNo}</td>
-                  <td className="p-3 text-sm font-medium text-slate-800">{item.partyName}</td>
-                  <td className="p-3 text-sm text-slate-600">₹{item.taxableAmount.toLocaleString()}</td>
-                  <td className="p-3 text-sm text-slate-600">₹{(item.gstAmount || 0).toLocaleString()}</td>
-                  <td className="p-3 text-sm font-bold text-slate-800">₹{(item.totalAmount || 0).toLocaleString()}</td>
-                  <td className="p-3 text-sm font-medium text-slate-600">
+                <tr key={item.id} className="hover:bg-slate-50 dark:bg-slate-800/50/50 transition-colors">
+                  <td className="p-3 text-sm font-bold text-slate-700 dark:text-slate-200 font-mono">{item.challanNo}</td>
+                  <td className="p-3 text-sm text-slate-600 dark:text-slate-300">{item.challanDate}</td>
+                  <td className="p-3 text-sm text-slate-600 dark:text-slate-300 font-mono">{item.orderNo}</td>
+                  <td className="p-3 text-sm font-medium text-slate-800 dark:text-slate-100">{item.partyName}</td>
+                  <td className="p-3 text-sm text-slate-600 dark:text-slate-300">₹{item.taxableAmount.toLocaleString()}</td>
+                  <td className="p-3 text-sm text-slate-600 dark:text-slate-300">₹{(item.gstAmount || 0).toLocaleString()}</td>
+                  <td className="p-3 text-sm font-bold text-slate-800 dark:text-slate-100">₹{(item.totalAmount || 0).toLocaleString()}</td>
+                  <td className="p-3 text-sm font-medium text-slate-600 dark:text-slate-300">
                     ₹{(item.amountPaid ?? 0).toLocaleString()}
                   </td>
                   <td className={`p-3 text-sm font-bold ${item.balanceAmount > 0 ? 'text-red-600' : 'text-emerald-600'}`}>
                     ₹{(item.balanceAmount ?? (item.totalAmount - (item.amountPaid || 0))).toLocaleString()}
                   </td>
-                  <td className="p-3 text-sm text-slate-600">{item.dueDate || '-'}</td>
+                  <td className="p-3 text-sm text-slate-600 dark:text-slate-300">{item.dueDate || '-'}</td>
                   <td className="p-3 text-center">
                     <button
                       onClick={() => toggleStatus(item.id)}
@@ -234,7 +234,7 @@ export const ChallanPage: React.FC = () => {
       </div>
 
       {challans.length === 0 && (
-        <div className="bg-white rounded-2xl p-12 text-center border border-slate-100 shadow-sm">
+        <div className="bg-white dark:bg-slate-900 rounded-2xl p-12 text-center border border-slate-100 dark:border-slate-800 shadow-sm">
           <ScrollText className="w-10 h-10 text-slate-300 mx-auto mb-3" />
           <p className="text-slate-400 font-medium">No challans created yet.</p>
         </div>
@@ -243,9 +243,9 @@ export const ChallanPage: React.FC = () => {
       {/* Preview Modal */}
       {previewChallan && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 overflow-y-auto">
-          <div className="bg-slate-100 rounded-3xl w-full max-w-5xl shadow-2xl flex flex-col max-h-[95vh]">
-            <div className="p-4 border-b border-slate-200 flex items-center justify-between bg-white rounded-t-3xl">
-              <h3 className="font-bold text-slate-800 flex items-center gap-2">
+          <div className="bg-slate-100 dark:bg-slate-800 rounded-3xl w-full max-w-5xl shadow-2xl flex flex-col max-h-[95vh]">
+            <div className="p-4 border-b border-slate-200 dark:border-slate-700 flex items-center justify-between bg-white dark:bg-slate-900 rounded-t-3xl">
+              <h3 className="font-bold text-slate-800 dark:text-slate-100 flex items-center gap-2">
                 <ScrollText className="w-5 h-5 text-teal-600" />
                 Challan Preview - {previewChallan.challan.challanNo}
               </h3>
@@ -264,7 +264,7 @@ export const ChallanPage: React.FC = () => {
                 </button>
                 <button 
                   onClick={() => setPreviewChallan(null)} 
-                  className="p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-xl transition-all"
+                  className="p-2 text-slate-400 hover:text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:bg-slate-800 rounded-xl transition-all"
                 >
                   <X className="w-6 h-6" />
                 </button>

@@ -185,7 +185,7 @@ export const Quotation: React.FC = () => {
       <div className="max-w-[1200px] mx-auto space-y-6 fade-in pb-20">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-2xl font-bold text-slate-800">Saved Quotations</h1>
+            <h1 className="text-2xl font-bold text-slate-800 dark:text-slate-100">Saved Quotations</h1>
             <p className="text-sm text-slate-500">{quotations.length} records found</p>
           </div>
           <button onClick={() => setViewMode('create')} className="bg-blue-600 text-white px-5 py-2 rounded-xl text-sm font-semibold hover:bg-blue-700 transition-all shadow-md">
@@ -200,14 +200,14 @@ export const Quotation: React.FC = () => {
             placeholder="Search by Quote No, Party, Mobile..." 
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full sm:w-96 bg-white border border-slate-200 rounded-xl pl-10 pr-4 py-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none shadow-sm"
+            className="w-full sm:w-96 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl pl-10 pr-4 py-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none shadow-sm"
           />
         </div>
 
-        <div className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
+        <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-800 overflow-hidden">
           <table className="w-full text-left border-collapse whitespace-nowrap">
             <thead>
-              <tr className="bg-slate-50 text-[10px] uppercase font-black text-slate-500">
+              <tr className="bg-slate-50 dark:bg-slate-800/50 text-[10px] uppercase font-black text-slate-500">
                 <th className="p-4">Quote No</th>
                 <th className="p-4">Party Name</th>
                 <th className="p-4">Date</th>
@@ -218,15 +218,15 @@ export const Quotation: React.FC = () => {
             </thead>
             <tbody className="divide-y divide-slate-50">
               {filteredQuotations.map((q: QuotationRecord) => (
-                <tr key={q.id} className="hover:bg-slate-50 transition-all">
+                <tr key={q.id} className="hover:bg-slate-50 dark:bg-slate-800/50 transition-all">
                   <td className="p-4 font-mono font-bold text-blue-600">{q.quoteNo}</td>
                   <td className="p-4">
-                    <p className="font-bold text-slate-800">{q.partyName}</p>
+                    <p className="font-bold text-slate-800 dark:text-slate-100">{q.partyName}</p>
                     <p className="text-[10px] text-slate-400">{q.mobileNo}</p>
                   </td>
-                  <td className="p-4 text-sm text-slate-600">{q.date}</td>
-                  <td className="p-4 text-sm text-slate-600">{q.items.length} Nos</td>
-                  <td className="p-4 font-bold text-slate-800">₹{q.grandTotal.toLocaleString()}</td>
+                  <td className="p-4 text-sm text-slate-600 dark:text-slate-300">{q.date}</td>
+                  <td className="p-4 text-sm text-slate-600 dark:text-slate-300">{q.items.length} Nos</td>
+                  <td className="p-4 font-bold text-slate-800 dark:text-slate-100">₹{q.grandTotal.toLocaleString()}</td>
                   <td className="p-4 text-right space-x-2">
                     <button onClick={() => loadQuotation(q)} className="text-blue-600 hover:bg-blue-50 px-2 py-1 rounded text-xs font-bold transition-all">Edit</button>
                     <button onClick={() => deleteQuotation(q.id)} className="text-red-500 hover:bg-red-50 px-2 py-1 rounded text-xs font-bold transition-all">Delete</button>
@@ -250,17 +250,17 @@ export const Quotation: React.FC = () => {
       {/* Header */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 print:hidden">
         <div>
-          <h1 className="text-2xl font-bold text-slate-800 flex items-center gap-2">
+          <h1 className="text-2xl font-bold text-slate-800 dark:text-slate-100 flex items-center gap-2">
             <Calculator className="w-7 h-7 text-blue-600" />
             {t('quotation')} Module
           </h1>
           <p className="text-sm text-slate-500 mt-0.5">Quick weight & cost estimation for customers</p>
         </div>
         <div className="flex gap-2 w-full sm:w-auto">
-          <button onClick={() => setViewMode('list')} className="flex-1 sm:flex-none flex items-center justify-center gap-2 bg-slate-100 text-slate-600 px-4 py-2 rounded-xl text-sm font-semibold hover:bg-slate-200 transition-all">
+          <button onClick={() => setViewMode('list')} className="flex-1 sm:flex-none flex items-center justify-center gap-2 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 px-4 py-2 rounded-xl text-sm font-semibold hover:bg-slate-200 transition-all">
             <List className="w-4 h-4" /> Saved Quotes
           </button>
-          <button onClick={handleReset} className="flex-1 sm:flex-none flex items-center justify-center gap-2 bg-white border border-slate-200 text-slate-600 px-4 py-2 rounded-xl text-sm font-semibold hover:bg-slate-50 transition-all">
+          <button onClick={handleReset} className="flex-1 sm:flex-none flex items-center justify-center gap-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 px-4 py-2 rounded-xl text-sm font-semibold hover:bg-slate-50 dark:bg-slate-800/50 transition-all">
             <RotateCcw className="w-4 h-4" /> Reset
           </button>
           <button onClick={handleSave} className="flex-1 sm:flex-none flex items-center justify-center gap-2 bg-emerald-600 text-white px-5 py-2 rounded-xl text-sm font-semibold hover:bg-emerald-700 transition-all shadow-md">
@@ -276,7 +276,7 @@ export const Quotation: React.FC = () => {
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
         {/* Left Side: Party Details */}
         <div className="lg:col-span-1 space-y-6 print:hidden">
-          <div className="bg-white rounded-2xl p-6 shadow-sm border border-slate-100">
+          <div className="bg-white dark:bg-slate-900 rounded-2xl p-6 shadow-sm border border-slate-100 dark:border-slate-800">
             <h2 className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-6 flex items-center gap-2">
               <User className="w-4 h-4 text-blue-600" />
               Quote Details
@@ -286,37 +286,37 @@ export const Quotation: React.FC = () => {
                 <label className="block text-[10px] font-bold text-slate-400 uppercase mb-1">Quote Number</label>
                 <div className="relative">
                   <Hash className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400" />
-                  <input type="text" value={quoteNo} onChange={(e) => setQuoteNo(e.target.value)} className="w-full bg-slate-50 border border-slate-200 rounded-lg pl-9 pr-3 py-2 text-sm font-mono focus:bg-white focus:ring-2 focus:ring-blue-500 transition" />
+                  <input type="text" value={quoteNo} onChange={(e) => setQuoteNo(e.target.value)} className="w-full bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-lg pl-9 pr-3 py-2 text-sm font-mono focus:bg-white dark:bg-slate-900 focus:ring-2 focus:ring-blue-500 transition" />
                 </div>
               </div>
               <div>
                 <label className="block text-[10px] font-bold text-slate-400 uppercase mb-1">Date</label>
                 <div className="relative">
                   <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400" />
-                  <input type="date" value={date} onChange={(e) => setDate(e.target.value)} className="w-full bg-slate-50 border border-slate-200 rounded-lg pl-9 pr-3 py-2 text-sm focus:bg-white focus:ring-2 focus:ring-blue-500 transition" />
+                  <input type="date" value={date} onChange={(e) => setDate(e.target.value)} className="w-full bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-lg pl-9 pr-3 py-2 text-sm focus:bg-white dark:bg-slate-900 focus:ring-2 focus:ring-blue-500 transition" />
                 </div>
               </div>
               <div>
                 <label className="block text-[10px] font-bold text-slate-400 uppercase mb-1">Customer Name</label>
-                <input type="text" value={partyName} onChange={(e) => setPartyName(e.target.value)} className="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-sm focus:bg-white focus:ring-2 focus:ring-blue-500 transition" placeholder="Durgesh" />
+                <input type="text" value={partyName} onChange={(e) => setPartyName(e.target.value)} className="w-full bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-lg px-3 py-2 text-sm focus:bg-white dark:bg-slate-900 focus:ring-2 focus:ring-blue-500 transition" placeholder="Durgesh" />
               </div>
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className="block text-[10px] font-bold text-slate-400 uppercase mb-1">Contact Person</label>
-                  <input type="text" value={contactPerson} onChange={(e) => setContactPerson(e.target.value)} className="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-sm focus:bg-white focus:ring-2 focus:ring-blue-500 transition" placeholder="Vraj Patel" />
+                  <input type="text" value={contactPerson} onChange={(e) => setContactPerson(e.target.value)} className="w-full bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-lg px-3 py-2 text-sm focus:bg-white dark:bg-slate-900 focus:ring-2 focus:ring-blue-500 transition" placeholder="Vraj Patel" />
                 </div>
                 <div>
                   <label className="block text-[10px] font-bold text-slate-400 uppercase mb-1">Mobile No</label>
-                  <input type="text" value={mobileNo} onChange={(e) => setMobileNo(e.target.value)} className="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-sm focus:bg-white focus:ring-2 focus:ring-blue-500 transition" placeholder="7359604778" />
+                  <input type="text" value={mobileNo} onChange={(e) => setMobileNo(e.target.value)} className="w-full bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-lg px-3 py-2 text-sm focus:bg-white dark:bg-slate-900 focus:ring-2 focus:ring-blue-500 transition" placeholder="7359604778" />
                 </div>
               </div>
               <div>
                 <label className="block text-[10px] font-bold text-slate-400 uppercase mb-1">Address</label>
-                <textarea rows={2} value={address} onChange={(e) => setAddress(e.target.value)} className="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-sm focus:bg-white focus:ring-2 focus:ring-blue-500 transition" placeholder="Vadodara, Gujarat" />
+                <textarea rows={2} value={address} onChange={(e) => setAddress(e.target.value)} className="w-full bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-lg px-3 py-2 text-sm focus:bg-white dark:bg-slate-900 focus:ring-2 focus:ring-blue-500 transition" placeholder="Vadodara, Gujarat" />
               </div>
               <div>
                 <label className="block text-[10px] font-bold text-slate-400 uppercase mb-1">Valid Until</label>
-                <input type="date" value={validUntil} onChange={(e) => setValidUntil(e.target.value)} className="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-sm focus:bg-white focus:ring-2 focus:ring-blue-500 transition" />
+                <input type="date" value={validUntil} onChange={(e) => setValidUntil(e.target.value)} className="w-full bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-lg px-3 py-2 text-sm focus:bg-white dark:bg-slate-900 focus:ring-2 focus:ring-blue-500 transition" />
               </div>
             </div>
           </div>
@@ -324,7 +324,7 @@ export const Quotation: React.FC = () => {
 
           <div className="bg-gradient-to-br from-blue-600 to-blue-700 rounded-2xl p-6 text-white shadow-lg shadow-blue-100">
             <div className="flex items-center gap-3 mb-4">
-              <div className="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center">
+              <div className="w-10 h-10 bg-white dark:bg-slate-900/20 rounded-xl flex items-center justify-center">
                 <FileText className="w-6 h-6" />
               </div>
               <div>
@@ -355,27 +355,27 @@ export const Quotation: React.FC = () => {
 
         {/* Right Side: Calculation Table */}
         <div className="lg:col-span-3">
-          <div className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden print:border-none print:shadow-none">
+          <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-800 overflow-hidden print:border-none print:shadow-none">
             {/* Print Header */}
-            <div className="hidden print:block p-8 border-b-2 border-slate-200 mb-6">
+            <div className="hidden print:block p-8 border-b-2 border-slate-200 dark:border-slate-700 mb-6">
               <div className="flex justify-between items-start">
                 <div>
                   <h1 className="text-3xl font-black text-blue-600">JAGDAMBA PROFILE</h1>
                   <p className="text-sm font-bold text-slate-500 mt-1 uppercase tracking-widest">Quotation / Proforma Invoice</p>
                 </div>
                 <div className="text-right">
-                  <p className="text-sm font-bold text-slate-800">Quote #: {quoteNo}</p>
+                  <p className="text-sm font-bold text-slate-800 dark:text-slate-100">Quote #: {quoteNo}</p>
                   <p className="text-sm font-medium text-slate-500">Date: {date}</p>
                 </div>
               </div>
               <div className="mt-8">
                 <p className="text-[10px] font-bold text-slate-400 uppercase mb-1">To:</p>
-                <p className="text-lg font-bold text-slate-800 whitespace-pre-wrap">{partyName || 'Valued Customer'}</p>
+                <p className="text-lg font-bold text-slate-800 dark:text-slate-100 whitespace-pre-wrap">{partyName || 'Valued Customer'}</p>
               </div>
             </div>
 
-            <div className="p-4 border-b border-slate-100 flex items-center justify-between bg-slate-50/50 print:hidden">
-              <h2 className="text-sm font-bold text-slate-800 uppercase tracking-wider flex items-center gap-2">
+            <div className="p-4 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between bg-slate-50 dark:bg-slate-800/50/50 print:hidden">
+              <h2 className="text-sm font-bold text-slate-800 dark:text-slate-100 uppercase tracking-wider flex items-center gap-2">
                 <span className="w-1.5 h-5 bg-blue-600 rounded-full"></span>
                 Items & Shapes
               </h2>
@@ -387,7 +387,7 @@ export const Quotation: React.FC = () => {
             <div className="overflow-x-auto">
               <table className="w-full text-left border-collapse min-w-[1050px]">
                 <thead>
-                  <tr className="bg-slate-50 text-[10px] uppercase font-black text-slate-500 print:bg-white print:border-b-2 print:border-slate-300">
+                  <tr className="bg-slate-50 dark:bg-slate-800/50 text-[10px] uppercase font-black text-slate-500 print:bg-white dark:bg-slate-900 print:border-b-2 print:border-slate-300">
                     <th className="p-4">Shape</th>
                     <th className="p-4">Grade</th>
                     <th className="p-4">Thk</th>
@@ -407,7 +407,7 @@ export const Quotation: React.FC = () => {
                         <select 
                           value={item.shape} 
                           onChange={(e) => updateItem(item.id, 'shape', e.target.value)} 
-                          className="bg-transparent border-transparent focus:ring-0 text-sm font-bold text-slate-700 outline-none print:appearance-none"
+                          className="bg-transparent border-transparent focus:ring-0 text-sm font-bold text-slate-700 dark:text-slate-200 outline-none print:appearance-none"
                         >
                           <option value="Square">Square / Rect</option>
                           <option value="Ring">Ring / Circle</option>
@@ -419,7 +419,7 @@ export const Quotation: React.FC = () => {
                           onChange={(v) => updateItem(item.id, 'grade', v)}
                           options={MATERIAL_GRADES}
                           placeholder="Select Grade"
-                          className="w-full bg-white border border-slate-200 rounded px-2 py-1 text-sm focus:ring-2 focus:ring-blue-500 outline-none"
+                          className="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded px-2 py-1 text-sm focus:ring-2 focus:ring-blue-500 outline-none"
                         />
                       </td>
                       <td className="p-3 w-24">
@@ -430,19 +430,19 @@ export const Quotation: React.FC = () => {
                           <div className="flex items-center gap-2">
                             <div className="flex flex-col">
                               <span className="text-[8px] font-bold text-slate-400 uppercase">OD</span>
-                              <input type="number" value={item.od ?? ''} onChange={(e) => updateItem(item.id, 'od', e.target.value)} className="w-24 bg-slate-50 rounded px-2 py-1 text-xs focus:ring-1 focus:ring-blue-500 outline-none print:bg-transparent print:font-bold" placeholder="OD" />
+                              <input type="number" value={item.od ?? ''} onChange={(e) => updateItem(item.id, 'od', e.target.value)} className="w-24 bg-slate-50 dark:bg-slate-800/50 rounded px-2 py-1 text-xs focus:ring-1 focus:ring-blue-500 outline-none print:bg-transparent print:font-bold" placeholder="OD" />
                             </div>
                             <span className="text-slate-300 mt-3">x</span>
                             <div className="flex flex-col">
                               <span className="text-[8px] font-bold text-slate-400 uppercase">ID</span>
-                              <input type="number" value={item.id_dim ?? ''} onChange={(e) => updateItem(item.id, 'id_dim', e.target.value)} className="w-24 bg-slate-50 rounded px-2 py-1 text-xs focus:ring-1 focus:ring-blue-500 outline-none print:bg-transparent print:font-bold" placeholder="ID" />
+                              <input type="number" value={item.id_dim ?? ''} onChange={(e) => updateItem(item.id, 'id_dim', e.target.value)} className="w-24 bg-slate-50 dark:bg-slate-800/50 rounded px-2 py-1 text-xs focus:ring-1 focus:ring-blue-500 outline-none print:bg-transparent print:font-bold" placeholder="ID" />
                             </div>
                           </div>
                         ) : (
                           <div className="flex items-center gap-2">
-                            <input type="number" value={item.length ?? ''} onChange={(e) => updateItem(item.id, 'length', e.target.value)} className="w-24 bg-slate-50 rounded px-2 py-1 text-xs focus:ring-1 focus:ring-blue-500 outline-none print:bg-transparent print:font-bold" placeholder="L" />
+                            <input type="number" value={item.length ?? ''} onChange={(e) => updateItem(item.id, 'length', e.target.value)} className="w-24 bg-slate-50 dark:bg-slate-800/50 rounded px-2 py-1 text-xs focus:ring-1 focus:ring-blue-500 outline-none print:bg-transparent print:font-bold" placeholder="L" />
                             <span className="text-slate-300">x</span>
-                            <input type="number" value={item.width ?? ''} onChange={(e) => updateItem(item.id, 'width', e.target.value)} className="w-24 bg-slate-50 rounded px-2 py-1 text-xs focus:ring-1 focus:ring-blue-500 outline-none print:bg-transparent print:font-bold" placeholder="W" />
+                            <input type="number" value={item.width ?? ''} onChange={(e) => updateItem(item.id, 'width', e.target.value)} className="w-24 bg-slate-50 dark:bg-slate-800/50 rounded px-2 py-1 text-xs focus:ring-1 focus:ring-blue-500 outline-none print:bg-transparent print:font-bold" placeholder="W" />
                           </div>
                         )}
                       </td>
@@ -450,7 +450,7 @@ export const Quotation: React.FC = () => {
                         <input type="number" value={item.nos ?? ''} onChange={(e) => updateItem(item.id, 'nos', e.target.value)} className="w-full bg-transparent border-transparent focus:ring-0 text-sm font-medium" placeholder="1" />
                       </td>
                       <td className="p-3">
-                        <span className="text-sm font-semibold text-slate-700">{item.weight} Kg</span>
+                        <span className="text-sm font-semibold text-slate-700 dark:text-slate-200">{item.weight} Kg</span>
                       </td>
                       <td className="p-3 w-44 min-w-[160px]">
                         {item.shape === 'Ring' ? (
@@ -461,7 +461,7 @@ export const Quotation: React.FC = () => {
                                 type="number" 
                                 value={item.odRate ?? ''} 
                                 onChange={(e) => updateItem(item.id, 'odRate', e.target.value)} 
-                                className="w-full bg-blue-50/50 border border-blue-100 rounded px-2 py-0.5 text-xs font-bold text-blue-700 outline-none focus:bg-white focus:ring-1 focus:ring-blue-500" 
+                                className="w-full bg-blue-50/50 border border-blue-100 rounded px-2 py-0.5 text-xs font-bold text-blue-700 outline-none focus:bg-white dark:bg-slate-900 focus:ring-1 focus:ring-blue-500" 
                                 placeholder="OD Rate" 
                               />
                             </div>
@@ -471,7 +471,7 @@ export const Quotation: React.FC = () => {
                                 type="number" 
                                 value={item.idRate ?? ''} 
                                 onChange={(e) => updateItem(item.id, 'idRate', e.target.value)} 
-                                className="w-full bg-amber-50/50 border border-amber-100 rounded px-2 py-0.5 text-xs font-bold text-amber-700 outline-none focus:bg-white focus:ring-1 focus:ring-amber-500" 
+                                className="w-full bg-amber-50/50 border border-amber-100 rounded px-2 py-0.5 text-xs font-bold text-amber-700 outline-none focus:bg-white dark:bg-slate-900 focus:ring-1 focus:ring-amber-500" 
                                 placeholder="ID Rate" 
                               />
                             </div>
@@ -484,7 +484,7 @@ export const Quotation: React.FC = () => {
                         <span className="text-sm font-bold text-blue-700">₹{(item.amount / (item.nos || 1)).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
                       </td>
                       <td className="p-3 text-right">
-                        <span className="text-sm font-bold text-slate-800">₹{item.amount.toLocaleString()}</span>
+                        <span className="text-sm font-bold text-slate-800 dark:text-slate-100">₹{item.amount.toLocaleString()}</span>
                       </td>
                       <td className="p-3 text-center print:hidden">
                         <button onClick={() => removeItem(item.id)} className="p-1.5 text-slate-300 hover:text-red-500 hover:bg-red-50 rounded-lg transition-all opacity-0 group-hover:opacity-100">
@@ -494,8 +494,8 @@ export const Quotation: React.FC = () => {
                     </tr>
                   ))}
                 </tbody>
-                <tfoot className="bg-slate-50/50 print:bg-white text-slate-800">
-                  <tr className="border-t border-slate-200">
+                <tfoot className="bg-slate-50 dark:bg-slate-800/50/50 print:bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-100">
+                  <tr className="border-t border-slate-200 dark:border-slate-700">
                     <td colSpan={8} className="p-3 text-right text-[10px] font-bold uppercase text-slate-400">Sub Total</td>
                     <td className="p-3 text-right font-bold">₹ {totalAmount.toLocaleString()}</td>
                     <td className="print:hidden"></td>
@@ -507,7 +507,7 @@ export const Quotation: React.FC = () => {
                         type="number" 
                         value={loadingCharges || ''} 
                         onChange={(e) => setLoadingCharges(parseFloat(e.target.value) || 0)} 
-                        className="w-24 bg-white border border-slate-200 rounded px-2 py-1 text-right text-sm font-bold focus:ring-2 focus:ring-blue-500 outline-none print:border-none print:p-0 print:w-auto" 
+                        className="w-24 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded px-2 py-1 text-right text-sm font-bold focus:ring-2 focus:ring-blue-500 outline-none print:border-none print:p-0 print:w-auto" 
                         placeholder="0"
                       />
                     </td>
@@ -520,7 +520,7 @@ export const Quotation: React.FC = () => {
                         type="number" 
                         value={transportCharges || ''} 
                         onChange={(e) => setTransportCharges(parseFloat(e.target.value) || 0)} 
-                        className="w-24 bg-white border border-slate-200 rounded px-2 py-1 text-right text-sm font-bold focus:ring-2 focus:ring-blue-500 outline-none print:border-none print:p-0 print:w-auto" 
+                        className="w-24 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded px-2 py-1 text-right text-sm font-bold focus:ring-2 focus:ring-blue-500 outline-none print:border-none print:p-0 print:w-auto" 
                         placeholder="0"
                       />
                     </td>
@@ -541,12 +541,12 @@ export const Quotation: React.FC = () => {
                         <option value={28}>28%</option>
                       </select>
                     </td>
-                    <td className="p-2 text-right font-bold text-slate-600">₹ {Math.ceil((totalAmount + loadingCharges + transportCharges) * gstRate / 100).toLocaleString()}</td>
+                    <td className="p-2 text-right font-bold text-slate-600 dark:text-slate-300">₹ {Math.ceil((totalAmount + loadingCharges + transportCharges) * gstRate / 100).toLocaleString()}</td>
                     <td className="print:hidden"></td>
                   </tr>
-                  <tr className="bg-blue-50/50 print:bg-white">
+                  <tr className="bg-blue-50/50 print:bg-white dark:bg-slate-900">
                     <td colSpan={8} className="p-4 text-right text-xs font-black uppercase text-blue-600 tracking-wider">Grand Total Amount</td>
-                    <td className="p-4 text-right text-xl font-black text-slate-900 border-t-2 border-blue-600">
+                    <td className="p-4 text-right text-xl font-black text-slate-900 dark:text-slate-50 border-t-2 border-blue-600">
                       ₹ {Math.ceil((totalAmount + loadingCharges + transportCharges) * (1 + gstRate / 100)).toLocaleString()}
                     </td>
                     <td className="print:hidden"></td>
@@ -558,7 +558,7 @@ export const Quotation: React.FC = () => {
         </div>
       </div>
 
-      <div id="quotation-print-area" className="hidden print:block fixed inset-0 bg-white p-0 m-0 z-[9999] overflow-visible">
+      <div id="quotation-print-area" className="hidden print:block fixed inset-0 bg-white dark:bg-slate-900 p-0 m-0 z-[9999] overflow-visible">
         <style dangerouslySetInnerHTML={{ __html: `
           @page { size: A4; margin: 15mm 15mm; }
           body { font-family: Arial, sans-serif; color: #000; background: #fff; font-size: 10pt; line-height: 1.4; }

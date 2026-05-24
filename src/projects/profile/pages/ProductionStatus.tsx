@@ -5,7 +5,7 @@ import { generateOrderEntryPDF } from '../utils/pdfGenerator';
 import toast from 'react-hot-toast';
 
 const STAGE_COLORS: Record<Stage, { border: string; bg: string; text: string; dot: string }> = {
-  'Order Received': { border: 'border-slate-400', bg: 'bg-slate-50', text: 'text-slate-700', dot: 'bg-slate-400' },
+  'Order Received': { border: 'border-slate-400', bg: 'bg-slate-50 dark:bg-slate-800/50', text: 'text-slate-700 dark:text-slate-200', dot: 'bg-slate-400' },
   'Drawing Received': { border: 'border-indigo-400', bg: 'bg-indigo-50', text: 'text-indigo-700', dot: 'bg-indigo-400' },
   'Nesting Pending': { border: 'border-violet-400', bg: 'bg-violet-50', text: 'text-violet-700', dot: 'bg-violet-400' },
   'Nesting Done': { border: 'border-purple-400', bg: 'bg-purple-50', text: 'text-purple-700', dot: 'bg-purple-400' },
@@ -78,7 +78,7 @@ export const ProductionStatus: React.FC = () => {
       {/* Header & Search */}
       <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-bold text-slate-800">{t('productionStatus')}</h1>
+          <h1 className="text-2xl font-bold text-slate-800 dark:text-slate-100">{t('productionStatus')}</h1>
           <p className="text-sm text-slate-500">{filteredOrders.length} orders • Live tracking</p>
         </div>
         <div className="flex flex-wrap gap-2 w-full lg:w-auto items-center">
@@ -94,20 +94,20 @@ export const ProductionStatus: React.FC = () => {
               placeholder="Search order, party, drawing, part..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="w-full lg:w-72 bg-white border border-slate-200 text-slate-800 rounded-xl pl-9 pr-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-sm"
+              className="w-full lg:w-72 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-100 rounded-xl pl-9 pr-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-sm"
             />
           </div>
           <select
             value={filterStage}
             onChange={(e) => setFilterStage(e.target.value)}
-            className="bg-white border border-slate-200 text-slate-700 rounded-xl px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none"
+            className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 rounded-xl px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none"
           >
             <option value="All">All Stages</option>
             {ALL_STAGES.map(s => <option key={s} value={s}>{s}</option>)}
           </select>
-          <div className="flex bg-white border border-slate-200 rounded-xl overflow-hidden">
-            <button onClick={() => setViewMode('kanban')} className={`px-3 py-2 text-xs font-semibold transition-colors ${viewMode === 'kanban' ? 'bg-blue-50 text-blue-700' : 'text-slate-500 hover:bg-slate-50'}`}>Kanban</button>
-            <button onClick={() => setViewMode('list')} className={`px-3 py-2 text-xs font-semibold transition-colors ${viewMode === 'list' ? 'bg-blue-50 text-blue-700' : 'text-slate-500 hover:bg-slate-50'}`}>List</button>
+          <div className="flex bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl overflow-hidden">
+            <button onClick={() => setViewMode('kanban')} className={`px-3 py-2 text-xs font-semibold transition-colors ${viewMode === 'kanban' ? 'bg-blue-50 text-blue-700' : 'text-slate-500 hover:bg-slate-50 dark:bg-slate-800/50'}`}>Kanban</button>
+            <button onClick={() => setViewMode('list')} className={`px-3 py-2 text-xs font-semibold transition-colors ${viewMode === 'list' ? 'bg-blue-50 text-blue-700' : 'text-slate-500 hover:bg-slate-50 dark:bg-slate-800/50'}`}>List</button>
           </div>
         </div>
       </div>
@@ -119,21 +119,21 @@ export const ProductionStatus: React.FC = () => {
             const stageOrders = filteredOrders.filter(o => o.stage === stage);
             const colors = STAGE_COLORS[stage];
             return (
-              <div key={stage} className="flex-none w-72 bg-slate-100/60 rounded-2xl p-3 border border-slate-200/60">
-                <h2 className="font-semibold text-sm text-slate-700 mb-3 flex items-center justify-between px-1">
+              <div key={stage} className="flex-none w-72 bg-slate-100 dark:bg-slate-800/60 rounded-2xl p-3 border border-slate-200 dark:border-slate-700/60">
+                <h2 className="font-semibold text-sm text-slate-700 dark:text-slate-200 mb-3 flex items-center justify-between px-1">
                   <span className="flex items-center gap-2">
                     <span className={`w-2 h-2 rounded-full ${colors.dot}`}></span>
                     {stage}
                   </span>
-                  <span className="bg-white text-slate-500 text-[10px] py-0.5 px-2 rounded-full shadow-sm font-bold">
+                  <span className="bg-white dark:bg-slate-900 text-slate-500 text-[10px] py-0.5 px-2 rounded-full shadow-sm font-bold">
                     {stageOrders.length}
                   </span>
                 </h2>
                 <div className="space-y-2.5">
                   {stageOrders.map(order => (
-                    <div key={order.id} className={`p-3 rounded-xl border-l-[3px] shadow-sm bg-white hover:shadow-md transition-all ${order.urgent && stage !== 'Ready' && stage !== 'Dispatch Done' ? 'border-red-500' : colors.border}`}>
+                    <div key={order.id} className={`p-3 rounded-xl border-l-[3px] shadow-sm bg-white dark:bg-slate-900 hover:shadow-md transition-all ${order.urgent && stage !== 'Ready' && stage !== 'Dispatch Done' ? 'border-red-500' : colors.border}`}>
                       <div className="flex justify-between items-start mb-1.5">
-                        <span className="text-[10px] font-bold text-slate-500 bg-slate-100 px-1.5 py-0.5 rounded font-mono">{order.orderNo}</span>
+                        <span className="text-[10px] font-bold text-slate-500 bg-slate-100 dark:bg-slate-800 px-1.5 py-0.5 rounded font-mono">{order.orderNo}</span>
                         <div className="flex gap-1">
                           {order.urgent && stage !== 'Ready' && stage !== 'Dispatch Done' && (
                             <span className="flex items-center text-[10px] font-bold text-red-600 gap-0.5 bg-red-100 px-1.5 py-0.5 rounded-full">
@@ -147,36 +147,36 @@ export const ProductionStatus: React.FC = () => {
                           )}
                         </div>
                       </div>
-                      <h3 className="font-bold text-slate-800 text-sm mb-1">{order.partyName}</h3>
-                      <div className="text-[11px] text-slate-600 space-y-0.5 mb-2">
+                      <h3 className="font-bold text-slate-800 dark:text-slate-100 text-sm mb-1">{order.partyName}</h3>
+                      <div className="text-[11px] text-slate-600 dark:text-slate-300 space-y-0.5 mb-2">
                         {order.items.length > 0 && (
                           <>
-                            <p>Type: <span className="font-medium text-slate-800">{order.items[0].cuttingType}</span></p>
-                            <p>Material: <span className="font-medium text-slate-800">{order.items[0].materialGrade || order.items[0].materialType} {order.items[0].thickness}</span></p>
+                            <p>Type: <span className="font-medium text-slate-800 dark:text-slate-100">{order.items[0].cuttingType}</span></p>
+                            <p>Material: <span className="font-medium text-slate-800 dark:text-slate-100">{order.items[0].materialGrade || order.items[0].materialType} {order.items[0].thickness}</span></p>
                           </>
                         )}
-                        <p>Qty: <span className="font-medium text-slate-800">{totalQty(order)} {order.items[0]?.unitType}</span>
+                        <p>Qty: <span className="font-medium text-slate-800 dark:text-slate-100">{totalQty(order)} {order.items[0]?.unitType}</span>
                           {order.items.length > 1 && <span className="text-blue-600 ml-1">({order.items.length} items)</span>}
                         </p>
                         {order.deliveryDate && (
-                          <p>Due: <span className="font-medium text-slate-800">{new Date(order.deliveryDate).toLocaleDateString('en-IN', { day: '2-digit', month: 'short' })}</span></p>
+                          <p>Due: <span className="font-medium text-slate-800 dark:text-slate-100">{new Date(order.deliveryDate).toLocaleDateString('en-IN', { day: '2-digit', month: 'short' })}</span></p>
                         )}
                         <p>By: <span className="font-medium text-blue-600 italic">{order.handledBy || 'System'}</span></p>
                       </div>
 
                       {canEditStatus && (
-                        <div className="pt-2 border-t border-slate-100 flex items-center gap-1.5">
+                        <div className="pt-2 border-t border-slate-100 dark:border-slate-800 flex items-center gap-1.5">
                           <select
                             value={order.stage}
                             onChange={(e) => moveOrder(order.id, e.target.value as Stage)}
-                            className="flex-1 text-[10px] bg-white border border-slate-200 rounded-lg p-1.5 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                            className="flex-1 text-[10px] bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg p-1.5 focus:outline-none focus:ring-1 focus:ring-blue-500"
                           >
                             {ALL_STAGES.map(s => <option key={s} value={s}>{s}</option>)}
                           </select>
                           <button onClick={() => advanceStage(order)} title="Advance Stage" className="p-1.5 text-blue-600 bg-blue-50 hover:bg-blue-100 rounded-lg border border-blue-100 transition-colors">
                             <FastForward className="w-3.5 h-3.5" />
                           </button>
-                          <button onClick={() => generateOrderEntryPDF(order)} title="Print Order" className="p-1.5 text-slate-600 bg-slate-50 hover:bg-slate-100 rounded-lg border border-slate-100 transition-colors">
+                          <button onClick={() => generateOrderEntryPDF(order)} title="Print Order" className="p-1.5 text-slate-600 dark:text-slate-300 bg-slate-50 dark:bg-slate-800/50 hover:bg-slate-100 dark:bg-slate-800 rounded-lg border border-slate-100 dark:border-slate-800 transition-colors">
                             <Printer className="w-3.5 h-3.5" />
                           </button>
                         </div>
@@ -184,7 +184,7 @@ export const ProductionStatus: React.FC = () => {
                     </div>
                   ))}
                   {stageOrders.length === 0 && (
-                    <div className="text-center p-4 border-2 border-dashed border-slate-200 rounded-xl text-slate-400 text-xs font-medium">
+                    <div className="text-center p-4 border-2 border-dashed border-slate-200 dark:border-slate-700 rounded-xl text-slate-400 text-xs font-medium">
                       No orders
                     </div>
                   )}
@@ -197,11 +197,11 @@ export const ProductionStatus: React.FC = () => {
 
       {/* List View */}
       {viewMode === 'list' && (
-        <div className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
+        <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-800 overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full text-left border-collapse whitespace-nowrap">
               <thead>
-                <tr className="bg-slate-50 border-b border-slate-100">
+                <tr className="bg-slate-50 dark:bg-slate-800/50 border-b border-slate-100 dark:border-slate-800">
                   <th className="p-3 text-[10px] font-bold tracking-wider text-slate-500 uppercase">Order No</th>
                   <th className="p-3 text-[10px] font-bold tracking-wider text-slate-500 uppercase">Party</th>
                   <th className="p-3 text-[10px] font-bold tracking-wider text-slate-500 uppercase">Items</th>
@@ -217,18 +217,18 @@ export const ProductionStatus: React.FC = () => {
                   const colors = STAGE_COLORS[order.stage];
                   return (
                     <React.Fragment key={order.id}>
-                      <tr className="hover:bg-slate-50/50 transition-colors cursor-pointer" onClick={() => setExpandedOrder(expandedOrder === order.id ? null : order.id)}>
-                        <td className="p-3 text-sm font-bold text-slate-700 font-mono">
+                      <tr className="hover:bg-slate-50 dark:bg-slate-800/50/50 transition-colors cursor-pointer" onClick={() => setExpandedOrder(expandedOrder === order.id ? null : order.id)}>
+                        <td className="p-3 text-sm font-bold text-slate-700 dark:text-slate-200 font-mono">
                           <div className="flex items-center gap-2">
                             {order.urgent && <span className="w-1.5 h-1.5 rounded-full bg-red-500 pulse-dot"></span>}
                             {order.orderNo}
                           </div>
                         </td>
-                        <td className="p-3 text-sm font-medium text-slate-800">{order.partyName}</td>
-                        <td className="p-3 text-sm text-slate-600">{order.items.length}</td>
-                        <td className="p-3 text-sm text-slate-600">{order.items[0]?.materialGrade || order.items[0]?.materialType} {order.items[0]?.thickness}</td>
-                        <td className="p-3 text-sm text-slate-600">{totalQty(order)}</td>
-                        <td className="p-3 text-sm text-slate-600">{order.deliveryDate ? new Date(order.deliveryDate).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: '2-digit' }) : '-'}</td>
+                        <td className="p-3 text-sm font-medium text-slate-800 dark:text-slate-100">{order.partyName}</td>
+                        <td className="p-3 text-sm text-slate-600 dark:text-slate-300">{order.items.length}</td>
+                        <td className="p-3 text-sm text-slate-600 dark:text-slate-300">{order.items[0]?.materialGrade || order.items[0]?.materialType} {order.items[0]?.thickness}</td>
+                        <td className="p-3 text-sm text-slate-600 dark:text-slate-300">{totalQty(order)}</td>
+                        <td className="p-3 text-sm text-slate-600 dark:text-slate-300">{order.deliveryDate ? new Date(order.deliveryDate).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: '2-digit' }) : '-'}</td>
                         <td className="p-3">
                           <span className={`inline-flex items-center gap-1.5 px-2 py-1 rounded-full text-[10px] font-bold ${colors.bg} ${colors.text}`}>
                             <span className={`w-1.5 h-1.5 rounded-full ${colors.dot}`}></span>
@@ -241,7 +241,7 @@ export const ProductionStatus: React.FC = () => {
                               <button onClick={(e) => { e.stopPropagation(); advanceStage(order); }} title="Advance" className="p-1.5 text-blue-600 bg-blue-50 hover:bg-blue-100 rounded-lg border border-blue-100 transition-colors">
                                 <FastForward className="w-3.5 h-3.5" />
                               </button>
-                              <button onClick={(e) => { e.stopPropagation(); generateOrderEntryPDF(order); }} title="Print" className="p-1.5 text-slate-600 bg-slate-50 hover:bg-slate-100 rounded-lg border border-slate-100 transition-colors">
+                              <button onClick={(e) => { e.stopPropagation(); generateOrderEntryPDF(order); }} title="Print" className="p-1.5 text-slate-600 dark:text-slate-300 bg-slate-50 dark:bg-slate-800/50 hover:bg-slate-100 dark:bg-slate-800 rounded-lg border border-slate-100 dark:border-slate-800 transition-colors">
                                 <Printer className="w-3.5 h-3.5" />
                               </button>
                             </div>
@@ -260,10 +260,10 @@ export const ProductionStatus: React.FC = () => {
                                 <div><span className="text-slate-500">Handled By:</span> <strong className="text-blue-600">{order.handledBy || 'System'}</strong></div>
                                 <div><span className="text-slate-500">Address:</span> <strong>{order.deliveryAddress || '-'}</strong></div>
                               </div>
-                              {order.remark && <p className="text-xs text-slate-600 mb-3"><span className="text-slate-500">Remark:</span> <strong>{order.remark}</strong></p>}
+                              {order.remark && <p className="text-xs text-slate-600 dark:text-slate-300 mb-3"><span className="text-slate-500">Remark:</span> <strong>{order.remark}</strong></p>}
                               <table className="w-full text-left border-collapse text-xs">
                                 <thead>
-                                  <tr className="bg-white/60">
+                                  <tr className="bg-white dark:bg-slate-900/60">
                                     <th className="p-2 font-semibold text-slate-500">Type</th>
                                     <th className="p-2 font-semibold text-slate-500">Drawing</th>
                                     <th className="p-2 font-semibold text-slate-500">Part</th>
@@ -277,7 +277,7 @@ export const ProductionStatus: React.FC = () => {
                                 </thead>
                                 <tbody>
                                   {order.items.map(item => (
-                                    <tr key={item.id} className="border-t border-slate-200/50">
+                                    <tr key={item.id} className="border-t border-slate-200 dark:border-slate-700/50">
                                       <td className="p-2 font-medium">{item.cuttingType}</td>
                                       <td className="p-2">{item.drawingNumber || '-'}</td>
                                       <td className="p-2">{item.partName || '-'}</td>

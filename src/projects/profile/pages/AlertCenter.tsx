@@ -35,7 +35,7 @@ export const AlertCenter: React.FC = () => {
       {/* Header */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-slate-800 flex items-center gap-3">
+          <h1 className="text-2xl font-bold text-slate-800 dark:text-slate-100 flex items-center gap-3">
             <ShieldAlert className="w-8 h-8 text-red-600" />
             {t('alertCenter')}
           </h1>
@@ -49,13 +49,13 @@ export const AlertCenter: React.FC = () => {
               placeholder="Search logs..." 
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="w-full bg-white border border-slate-200 rounded-xl pl-10 pr-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-sm"
+              className="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl pl-10 pr-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-sm"
             />
           </div>
           <select 
             value={typeFilter}
             onChange={(e) => setTypeFilter(e.target.value as any)}
-            className="bg-white border border-slate-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-sm font-semibold text-slate-600"
+            className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-sm font-semibold text-slate-600 dark:text-slate-300"
           >
             <option value="All">All Logs</option>
             <option value="alert" className="text-red-600 font-bold">Red Alerts</option>
@@ -88,11 +88,11 @@ export const AlertCenter: React.FC = () => {
       </div>
 
       {/* Logs Table */}
-      <div className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
+      <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-800 overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse">
             <thead>
-              <tr className="bg-slate-50 border-b border-slate-100">
+              <tr className="bg-slate-50 dark:bg-slate-800/50 border-b border-slate-100 dark:border-slate-800">
                 <th className="p-4 text-[10px] font-bold text-slate-500 uppercase tracking-wider w-16 text-center">Type</th>
                 <th className="p-4 text-[10px] font-bold text-slate-500 uppercase tracking-wider">Time</th>
                 <th className="p-4 text-[10px] font-bold text-slate-500 uppercase tracking-wider">User</th>
@@ -112,7 +112,7 @@ export const AlertCenter: React.FC = () => {
                   </td>
                 </tr>
               ) : filteredLogs.map(log => (
-                <tr key={log.id} className={clsx("hover:bg-slate-50 transition-colors", log.type === 'alert' && "bg-red-50/30")}>
+                <tr key={log.id} className={clsx("hover:bg-slate-50 dark:bg-slate-800/50 transition-colors", log.type === 'alert' && "bg-red-50/30")}>
                   <td className="p-4 text-center">
                     <div className="flex justify-center">
                       {log.type === 'alert' && <ShieldAlert className="w-5 h-5 text-red-600 animate-pulse" />}
@@ -122,17 +122,17 @@ export const AlertCenter: React.FC = () => {
                   </td>
                   <td className="p-4">
                     <div className="flex flex-col">
-                      <span className="text-sm font-bold text-slate-700">{new Date(log.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                      <span className="text-sm font-bold text-slate-700 dark:text-slate-200">{new Date(log.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
                       <span className="text-[10px] text-slate-400">{new Date(log.timestamp).toLocaleDateString()}</span>
                     </div>
                   </td>
                   <td className="p-4">
                     <div className="flex items-center gap-2">
-                      <div className="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center text-slate-600 font-bold text-xs">
+                      <div className="w-8 h-8 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-slate-600 dark:text-slate-300 font-bold text-xs">
                         {log.user.charAt(0)}
                       </div>
                       <div className="flex flex-col">
-                        <span className="text-sm font-bold text-slate-800">{log.user}</span>
+                        <span className="text-sm font-bold text-slate-800 dark:text-slate-100">{log.user}</span>
                         <span className="text-[10px] text-slate-400 uppercase tracking-wider font-bold">{log.role}</span>
                       </div>
                     </div>
@@ -146,7 +146,7 @@ export const AlertCenter: React.FC = () => {
                     </span>
                   </td>
                   <td className="p-4">
-                    <p className={clsx("text-sm max-w-md", log.type === 'alert' ? "text-red-700 font-bold" : "text-slate-600")}>
+                    <p className={clsx("text-sm max-w-md", log.type === 'alert' ? "text-red-700 font-bold" : "text-slate-600 dark:text-slate-300")}>
                       {log.details}
                     </p>
                   </td>
@@ -168,7 +168,7 @@ export const AlertCenter: React.FC = () => {
 };
 
 const StatCard: React.FC<{ label: string; value: number; icon: any; color: 'blue' | 'red' | 'amber' }> = ({ label, value, icon: Icon, color }) => (
-  <div className="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm flex items-center gap-4">
+  <div className="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-100 dark:border-slate-800 shadow-sm flex items-center gap-4">
     <div className={clsx(
       "w-12 h-12 rounded-xl flex items-center justify-center shadow-sm",
       color === 'blue' ? "bg-blue-50 text-blue-600" : 
@@ -179,7 +179,7 @@ const StatCard: React.FC<{ label: string; value: number; icon: any; color: 'blue
     </div>
     <div>
       <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{label}</p>
-      <p className="text-2xl font-black text-slate-800 leading-none mt-1">{value}</p>
+      <p className="text-2xl font-black text-slate-800 dark:text-slate-100 leading-none mt-1">{value}</p>
     </div>
   </div>
 );

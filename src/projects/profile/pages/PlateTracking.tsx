@@ -74,7 +74,7 @@ export const PlateTracking: React.FC = () => {
       {/* Header */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-bold text-slate-800">{t('plateTracking')}</h1>
+          <h1 className="text-2xl font-bold text-slate-800 dark:text-slate-100">{t('plateTracking')}</h1>
           <p className="text-sm text-slate-500">{plates.length} plates registered</p>
         </div>
         <div className="flex gap-2">
@@ -89,19 +89,19 @@ export const PlateTracking: React.FC = () => {
 
       {/* Summary Cards */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-        <div className="bg-white p-4 rounded-xl shadow-sm border border-slate-100 text-center">
+        <div className="bg-white dark:bg-slate-900 p-4 rounded-xl shadow-sm border border-slate-100 dark:border-slate-800 text-center">
           <p className="text-xs font-semibold text-slate-500 mb-1">Total Initial</p>
-          <h3 className="text-xl font-bold text-slate-800">{totalInitial.toLocaleString()} Kg</h3>
+          <h3 className="text-xl font-bold text-slate-800 dark:text-slate-100">{totalInitial.toLocaleString()} Kg</h3>
         </div>
-        <div className="bg-white p-4 rounded-xl shadow-sm border border-slate-100 text-center">
+        <div className="bg-white dark:bg-slate-900 p-4 rounded-xl shadow-sm border border-slate-100 dark:border-slate-800 text-center">
           <p className="text-xs font-semibold text-slate-500 mb-1">Total Used</p>
           <h3 className="text-xl font-bold text-blue-600">{totalUsedAll.toLocaleString()} Kg</h3>
         </div>
-        <div className="bg-white p-4 rounded-xl shadow-sm border border-slate-100 text-center">
+        <div className="bg-white dark:bg-slate-900 p-4 rounded-xl shadow-sm border border-slate-100 dark:border-slate-800 text-center">
           <p className="text-xs font-semibold text-slate-500 mb-1">Total Scrap</p>
           <h3 className="text-xl font-bold text-red-600">{totalScrapAll.toLocaleString()} Kg</h3>
         </div>
-        <div className="bg-white p-4 rounded-xl shadow-sm border border-slate-100 text-center">
+        <div className="bg-white dark:bg-slate-900 p-4 rounded-xl shadow-sm border border-slate-100 dark:border-slate-800 text-center">
           <p className="text-xs font-semibold text-slate-500 mb-1">Balance</p>
           <h3 className="text-xl font-bold text-emerald-600">{totalBalance.toLocaleString()} Kg</h3>
         </div>
@@ -109,17 +109,17 @@ export const PlateTracking: React.FC = () => {
 
       {/* Register Plate Modal */}
       {showRegister && (
-        <div className="bg-white rounded-2xl p-5 shadow-sm border border-blue-100 slide-up">
+        <div className="bg-white dark:bg-slate-900 rounded-2xl p-5 shadow-sm border border-blue-100 slide-up">
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-base font-semibold text-slate-800 flex items-center gap-2">
+            <h2 className="text-base font-semibold text-slate-800 dark:text-slate-100 flex items-center gap-2">
               <Database className="w-4 h-4 text-blue-600" /> Register New Plate
             </h2>
-            <button onClick={() => setShowRegister(false)} className="p-1.5 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-lg transition-colors"><X className="w-4 h-4" /></button>
+            <button onClick={() => setShowRegister(false)} className="p-1.5 text-slate-400 hover:text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:bg-slate-800 rounded-lg transition-colors"><X className="w-4 h-4" /></button>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
             <div>
               <label className="block text-xs font-semibold text-slate-500 mb-1">Plate ID *</label>
-              <input type="text" value={newPlate.id} onChange={e => setNewPlate({ ...newPlate, id: e.target.value })} className="w-full bg-white border border-slate-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none" placeholder="PLT-1005" />
+              <input type="text" value={newPlate.id} onChange={e => setNewPlate({ ...newPlate, id: e.target.value })} className="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none" placeholder="PLT-1005" />
             </div>
             <div>
               <label className="block text-xs font-semibold text-slate-500 mb-1">Material Grade</label>
@@ -128,20 +128,20 @@ export const PlateTracking: React.FC = () => {
                 onChange={v => setNewPlate({ ...newPlate, grade: v })} 
                 options={MATERIAL_GRADES}
                 placeholder="Select Grade"
-                className="w-full bg-white border border-slate-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none"
+                className="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none"
               />
             </div>
             <div>
               <label className="block text-xs font-semibold text-slate-500 mb-1">Thickness *</label>
-              <input type="text" value={newPlate.thickness} onChange={e => setNewPlate({ ...newPlate, thickness: e.target.value })} className="w-full bg-white border border-slate-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none" placeholder="10mm" />
+              <input type="text" value={newPlate.thickness} onChange={e => setNewPlate({ ...newPlate, thickness: e.target.value })} className="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none" placeholder="10mm" />
             </div>
             <div>
               <label className="block text-xs font-semibold text-slate-500 mb-1">Size (W x L)</label>
-              <input type="text" value={newPlate.size} onChange={e => setNewPlate({ ...newPlate, size: e.target.value })} className="w-full bg-white border border-slate-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none" placeholder="1250 x 2500" />
+              <input type="text" value={newPlate.size} onChange={e => setNewPlate({ ...newPlate, size: e.target.value })} className="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none" placeholder="1250 x 2500" />
             </div>
             <div>
               <label className="block text-xs font-semibold text-slate-500 mb-1">Heat/TC Number</label>
-              <input type="text" value={newPlate.heatNumber} onChange={e => setNewPlate({ ...newPlate, heatNumber: e.target.value })} className="w-full bg-white border border-slate-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none" placeholder="TC-89238" />
+              <input type="text" value={newPlate.heatNumber} onChange={e => setNewPlate({ ...newPlate, heatNumber: e.target.value })} className="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none" placeholder="TC-89238" />
             </div>
             <div>
               <label className="block text-xs font-semibold text-slate-500 mb-1">Source</label>
@@ -150,12 +150,12 @@ export const PlateTracking: React.FC = () => {
                 onChange={v => setNewPlate({ ...newPlate, source: v as PlateSource })} 
                 options={['Stock', 'Customer', 'Other']}
                 displayTransform={(o) => o === 'Stock' ? 'Our Stock' : o === 'Customer' ? 'Customer Material' : o}
-                className="w-full bg-white border border-slate-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none"
+                className="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none"
               />
             </div>
             <div>
               <label className="block text-xs font-semibold text-slate-500 mb-1">Initial Weight (Kg) *</label>
-              <input type="number" min="0" value={newPlate.initialWeight || ''} onChange={e => setNewPlate({ ...newPlate, initialWeight: Number(e.target.value) })} className="w-full bg-white border border-slate-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none" />
+              <input type="number" min="0" value={newPlate.initialWeight || ''} onChange={e => setNewPlate({ ...newPlate, initialWeight: Number(e.target.value) })} className="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none" />
             </div>
             <div className="flex items-end">
               <button onClick={registerPlate} className="w-full bg-blue-600 hover:bg-blue-700 text-white py-2 rounded-lg text-sm font-semibold transition-colors">Register</button>
@@ -166,35 +166,35 @@ export const PlateTracking: React.FC = () => {
 
       {/* Link Usage Modal */}
       {showUsage && (
-        <div className="bg-white rounded-2xl p-5 shadow-sm border border-emerald-100 slide-up">
+        <div className="bg-white dark:bg-slate-900 rounded-2xl p-5 shadow-sm border border-emerald-100 slide-up">
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-base font-semibold text-slate-800 flex items-center gap-2">
+            <h2 className="text-base font-semibold text-slate-800 dark:text-slate-100 flex items-center gap-2">
               <Link2 className="w-4 h-4 text-emerald-600" /> Link Usage to Order
             </h2>
-            <button onClick={() => setShowUsage(false)} className="p-1.5 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-lg transition-colors"><X className="w-4 h-4" /></button>
+            <button onClick={() => setShowUsage(false)} className="p-1.5 text-slate-400 hover:text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:bg-slate-800 rounded-lg transition-colors"><X className="w-4 h-4" /></button>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-3">
             <div>
               <label className="block text-xs font-semibold text-slate-500 mb-1">Select Plate *</label>
-              <select value={newUsage.plateId} onChange={e => setNewUsage({ ...newUsage, plateId: e.target.value })} className="w-full bg-white border border-slate-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none">
+              <select value={newUsage.plateId} onChange={e => setNewUsage({ ...newUsage, plateId: e.target.value })} className="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none">
                 <option value="">Choose Plate</option>
                 {plates.map(p => <option key={p.id} value={p.id}>{p.id} • {p.grade} {p.thickness}</option>)}
               </select>
             </div>
             <div>
               <label className="block text-xs font-semibold text-slate-500 mb-1">Order No *</label>
-              <select value={newUsage.orderNo} onChange={e => setNewUsage({ ...newUsage, orderNo: e.target.value })} className="w-full bg-white border border-slate-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none">
+              <select value={newUsage.orderNo} onChange={e => setNewUsage({ ...newUsage, orderNo: e.target.value })} className="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none">
                 <option value="">Choose Order</option>
                 {orders.map(o => <option key={o.id} value={o.orderNo}>{o.orderNo} • {o.partyName}</option>)}
               </select>
             </div>
             <div>
               <label className="block text-xs font-semibold text-slate-500 mb-1">Used Wt (Kg) *</label>
-              <input type="number" min="0" value={newUsage.usedWeight || ''} onChange={e => setNewUsage({ ...newUsage, usedWeight: Number(e.target.value) })} className="w-full bg-white border border-slate-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none" />
+              <input type="number" min="0" value={newUsage.usedWeight || ''} onChange={e => setNewUsage({ ...newUsage, usedWeight: Number(e.target.value) })} className="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none" />
             </div>
             <div>
               <label className="block text-xs font-semibold text-slate-500 mb-1">Scrap Qty (Kg)</label>
-              <input type="number" min="0" value={newUsage.scrapQuantity || ''} onChange={e => setNewUsage({ ...newUsage, scrapQuantity: Number(e.target.value) })} className="w-full bg-white border border-slate-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none" />
+              <input type="number" min="0" value={newUsage.scrapQuantity || ''} onChange={e => setNewUsage({ ...newUsage, scrapQuantity: Number(e.target.value) })} className="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none" />
             </div>
             <div>
               <label className="block text-xs font-semibold text-slate-500 mb-1">Scrap Owner</label>
@@ -202,7 +202,7 @@ export const PlateTracking: React.FC = () => {
                 value={newUsage.scrapOwner} 
                 onChange={v => setNewUsage({ ...newUsage, scrapOwner: v as any })} 
                 options={['Our Company', 'Customer']}
-                className="w-full bg-white border border-slate-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none"
+                className="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none"
               />
             </div>
             <div className="flex items-end">
@@ -215,18 +215,18 @@ export const PlateTracking: React.FC = () => {
       {/* Search */}
       <div className="relative">
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-        <input type="text" value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search by plate ID, grade, thickness, heat no..." className="w-full sm:w-80 bg-white border border-slate-200 text-slate-800 rounded-xl pl-9 pr-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-sm" />
+        <input type="text" value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search by plate ID, grade, thickness, heat no..." className="w-full sm:w-80 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-100 rounded-xl pl-9 pr-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-sm" />
       </div>
 
       {/* Plates Table */}
-      <div className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
-        <div className="p-4 border-b border-slate-100 bg-slate-50/50">
-          <h2 className="text-sm font-semibold text-slate-800">Plate Inventory & Usage</h2>
+      <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-800 overflow-hidden">
+        <div className="p-4 border-b border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50/50">
+          <h2 className="text-sm font-semibold text-slate-800 dark:text-slate-100">Plate Inventory & Usage</h2>
         </div>
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse whitespace-nowrap">
             <thead>
-              <tr className="bg-slate-50 border-b border-slate-100">
+              <tr className="bg-slate-50 dark:bg-slate-800/50 border-b border-slate-100 dark:border-slate-800">
                 <th className="p-3 text-[10px] font-bold tracking-wider text-slate-500 uppercase">Plate ID</th>
                 <th className="p-3 text-[10px] font-bold tracking-wider text-slate-500 uppercase">Grade / Thickness</th>
                 <th className="p-3 text-[10px] font-bold tracking-wider text-slate-500 uppercase">Size</th>
@@ -244,18 +244,18 @@ export const PlateTracking: React.FC = () => {
                 const stats = getPlateStats(plate);
                 const balancePct = plate.initialWeight > 0 ? (stats.balance / plate.initialWeight) * 100 : 0;
                 return (
-                  <tr key={plate.id} className="hover:bg-slate-50/50 transition-colors">
-                    <td className="p-3 font-bold text-slate-800 font-mono text-sm">{plate.id}</td>
-                    <td className="p-3 text-sm text-slate-600">{plate.grade} • {plate.thickness}</td>
-                    <td className="p-3 text-sm text-slate-600">{plate.size || '-'}</td>
-                    <td className="p-3 text-sm text-slate-600 font-mono">{plate.heatNumber || '-'}</td>
+                  <tr key={plate.id} className="hover:bg-slate-50 dark:bg-slate-800/50/50 transition-colors">
+                    <td className="p-3 font-bold text-slate-800 dark:text-slate-100 font-mono text-sm">{plate.id}</td>
+                    <td className="p-3 text-sm text-slate-600 dark:text-slate-300">{plate.grade} • {plate.thickness}</td>
+                    <td className="p-3 text-sm text-slate-600 dark:text-slate-300">{plate.size || '-'}</td>
+                    <td className="p-3 text-sm text-slate-600 dark:text-slate-300 font-mono">{plate.heatNumber || '-'}</td>
                     <td className="p-3">
                       <span className={`px-2 py-0.5 text-[10px] font-bold rounded-full ${plate.source === 'Customer' ? 'bg-purple-100 text-purple-700' : 'bg-blue-100 text-blue-700'}`}>
                         {plate.source}
                       </span>
                     </td>
-                    <td className="p-3 font-medium text-slate-700 text-sm">{plate.initialWeight.toLocaleString()}</td>
-                    <td className="p-3 text-sm text-slate-700">{stats.totalUsed.toLocaleString()}</td>
+                    <td className="p-3 font-medium text-slate-700 dark:text-slate-200 text-sm">{plate.initialWeight.toLocaleString()}</td>
+                    <td className="p-3 text-sm text-slate-700 dark:text-slate-200">{stats.totalUsed.toLocaleString()}</td>
                     <td className="p-3 text-sm text-red-600 font-medium">{stats.totalScrap.toLocaleString()}</td>
                     <td className="p-3">
                       <div className="flex items-center gap-2">
@@ -265,9 +265,9 @@ export const PlateTracking: React.FC = () => {
                         </div>
                       </div>
                     </td>
-                    <td className="p-3 text-sm text-slate-600">
+                    <td className="p-3 text-sm text-slate-600 dark:text-slate-300">
                       {stats.usageRecords.map(u => (
-                        <span key={u.id} className="inline-block bg-slate-100 text-slate-700 text-[10px] font-bold px-1.5 py-0.5 rounded mr-1">{u.orderNo}</span>
+                        <span key={u.id} className="inline-block bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 text-[10px] font-bold px-1.5 py-0.5 rounded mr-1">{u.orderNo}</span>
                       ))}
                       {stats.usageCount === 0 && <span className="text-slate-400 text-xs">Unused</span>}
                     </td>

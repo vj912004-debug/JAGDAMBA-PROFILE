@@ -11,7 +11,7 @@ export const PurchaseOrderPrint: React.FC<PurchaseOrderPrintProps> = ({ po }) =>
   const emptyRows = Array.from({ length: emptyRowsCount });
 
   return (
-    <div className="bg-white p-0 mx-auto text-black font-sans shadow-lg print:shadow-none w-[210mm] min-h-[297mm]" id="po-print-area">
+    <div className="bg-white dark:bg-slate-900 p-0 mx-auto text-black font-sans shadow-lg print:shadow-none w-[210mm] min-h-[297mm]" id="po-print-area">
       <style>{`
         @page {
           size: A4;

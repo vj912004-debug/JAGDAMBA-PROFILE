@@ -200,7 +200,7 @@ export const PartyAutocomplete: React.FC<PartyAutocompleteProps> = ({
                       "w-full text-left px-3.5 py-2.5 rounded-lg text-xs font-semibold flex flex-col gap-0.5 transition-all outline-none",
                       isHighlighted 
                         ? "bg-blue-600 text-white shadow-md shadow-blue-100 dark:shadow-none" 
-                        : "text-slate-700 dark:text-slate-350 hover:bg-slate-50 dark:hover:bg-slate-900"
+                        : "text-slate-700 dark:text-slate-350 hover:bg-slate-50 dark:bg-slate-800/50 dark:hover:bg-slate-900"
                     )}
                   >
                     <span className="font-bold flex items-center justify-between">

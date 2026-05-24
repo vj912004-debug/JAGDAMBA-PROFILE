@@ -356,7 +356,7 @@ export const TCManagement: React.FC = () => {
                 ? "bg-amber-50 dark:bg-amber-950/20 border-amber-200 dark:border-amber-900/30 text-amber-700 dark:text-amber-400 hover:bg-amber-100 dark:hover:bg-amber-900/30 animate-pulse"
                 : waStatus === 'INITIALIZING'
                 ? "bg-blue-50 dark:bg-blue-950/20 border-blue-200 dark:border-blue-900/30 text-blue-700 dark:text-blue-400 hover:bg-blue-100 dark:hover:bg-blue-900/30 animate-pulse"
-                : "bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-350 hover:bg-slate-100 dark:hover:bg-slate-700/50"
+                : "bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-350 hover:bg-slate-100 dark:bg-slate-800 dark:hover:bg-slate-700/50"
             )}
           >
             <MessageSquare className="w-4 h-4" />
@@ -381,7 +381,7 @@ export const TCManagement: React.FC = () => {
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
         {/* Left Column: Search & List */}
         <div className="lg:col-span-4 space-y-4">
-          <div className="bg-white p-4 rounded-3xl shadow-sm border border-slate-100 space-y-4">
+          <div className="bg-white dark:bg-slate-900 p-4 rounded-3xl shadow-sm border border-slate-100 dark:border-slate-800 space-y-4">
             <div className="relative">
               <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
               <input 
@@ -389,7 +389,7 @@ export const TCManagement: React.FC = () => {
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="Search Heat / Plate / TC..."
-                className="w-full bg-slate-50 border-none rounded-2xl pl-12 pr-4 py-3 text-sm focus:ring-2 focus:ring-blue-500 outline-none font-medium"
+                className="w-full bg-slate-50 dark:bg-slate-800/50 border-none rounded-2xl pl-12 pr-4 py-3 text-sm focus:ring-2 focus:ring-blue-500 outline-none font-medium"
               />
             </div>
             
@@ -397,7 +397,7 @@ export const TCManagement: React.FC = () => {
               onClick={() => setShowAdvancedSearch(!showAdvancedSearch)}
               className={cn(
                 "w-full flex items-center justify-center gap-2 py-2 rounded-xl text-xs font-bold transition-all",
-                showAdvancedSearch ? "bg-blue-50 text-blue-600" : "bg-slate-50 text-slate-500 hover:bg-slate-100"
+                showAdvancedSearch ? "bg-blue-50 text-blue-600" : "bg-slate-50 dark:bg-slate-800/50 text-slate-500 hover:bg-slate-100 dark:bg-slate-800"
               )}
             >
               <Filter className="w-4 h-4" />
@@ -413,7 +413,7 @@ export const TCManagement: React.FC = () => {
                       <select 
                         value={(filters as any)[key]}
                         onChange={(e) => setFilters({...filters, [key]: e.target.value})}
-                        className="w-full bg-slate-50 border-none rounded-lg px-3 py-2 text-xs focus:ring-1 focus:ring-blue-500 outline-none font-bold"
+                        className="w-full bg-slate-50 dark:bg-slate-800/50 border-none rounded-lg px-3 py-2 text-xs focus:ring-1 focus:ring-blue-500 outline-none font-bold"
                       >
                         <option value="">All Grades</option>
                         {MATERIAL_GRADES.map(g => <option key={g} value={g}>{g}</option>)}
@@ -422,7 +422,7 @@ export const TCManagement: React.FC = () => {
                       <select 
                         value={(filters as any)[key]}
                         onChange={(e) => setFilters({...filters, [key]: e.target.value})}
-                        className="w-full bg-slate-50 border-none rounded-lg px-3 py-2 text-xs focus:ring-1 focus:ring-blue-500 outline-none font-bold"
+                        className="w-full bg-slate-50 dark:bg-slate-800/50 border-none rounded-lg px-3 py-2 text-xs focus:ring-1 focus:ring-blue-500 outline-none font-bold"
                       >
                         <option value="">All Makes</option>
                         <option value="AM/NS INDIA">AM/NS INDIA</option>
@@ -438,7 +438,7 @@ export const TCManagement: React.FC = () => {
                         type="text" 
                         value={(filters as any)[key]}
                         onChange={(e) => setFilters({...filters, [key]: e.target.value})}
-                        className="w-full bg-slate-50 border-none rounded-lg px-3 py-2 text-xs focus:ring-1 focus:ring-blue-500 outline-none font-bold"
+                        className="w-full bg-slate-50 dark:bg-slate-800/50 border-none rounded-lg px-3 py-2 text-xs focus:ring-1 focus:ring-blue-500 outline-none font-bold"
                       />
                     )}
                   </div>
@@ -453,9 +453,9 @@ export const TCManagement: React.FC = () => {
             )}
           </div>
 
-          <div className="bg-white rounded-3xl shadow-sm border border-slate-100 overflow-hidden min-h-[500px]">
-            <div className="p-4 border-b border-slate-50 bg-slate-50/50 flex items-center justify-between">
-              <h3 className="text-sm font-bold text-slate-800">Results ({filteredRecords.length})</h3>
+          <div className="bg-white dark:bg-slate-900 rounded-3xl shadow-sm border border-slate-100 dark:border-slate-800 overflow-hidden min-h-[500px]">
+            <div className="p-4 border-b border-slate-50 bg-slate-50 dark:bg-slate-800/50/50 flex items-center justify-between">
+              <h3 className="text-sm font-bold text-slate-800 dark:text-slate-100">Results ({filteredRecords.length})</h3>
             </div>
             <div className="divide-y divide-slate-50 max-h-[600px] overflow-y-auto">
               {filteredRecords.map(record => (
@@ -468,8 +468,8 @@ export const TCManagement: React.FC = () => {
                   )}
                 >
                   <div className="flex items-center justify-between mb-1">
-                    <span className="text-sm font-black text-slate-800 group-hover:text-blue-600 transition-colors">{record.heatNumber}</span>
-                    <span className="text-[10px] font-bold bg-slate-100 text-slate-500 px-2 py-0.5 rounded-full uppercase">{record.grade}</span>
+                    <span className="text-sm font-black text-slate-800 dark:text-slate-100 group-hover:text-blue-600 transition-colors">{record.heatNumber}</span>
+                    <span className="text-[10px] font-bold bg-slate-100 dark:bg-slate-800 text-slate-500 px-2 py-0.5 rounded-full uppercase">{record.grade}</span>
                   </div>
                   <div className="flex items-center gap-3 text-xs text-slate-500 font-medium">
                     <span className="flex items-center gap-1"><Hash className="w-3 h-3" /> {record.plateNumber}</span>
@@ -490,7 +490,7 @@ export const TCManagement: React.FC = () => {
         {/* Right Column: Form or History */}
         <div className="lg:col-span-8 space-y-6">
           {isAdding ? (
-            <div className="bg-white rounded-3xl shadow-xl border border-blue-100 overflow-hidden slide-up">
+            <div className="bg-white dark:bg-slate-900 rounded-3xl shadow-xl border border-blue-100 overflow-hidden slide-up">
               <div className="bg-blue-600 p-6 text-white flex items-center justify-between">
                 <div>
                   <h2 className="text-xl font-bold flex items-center gap-2">
@@ -499,7 +499,7 @@ export const TCManagement: React.FC = () => {
                   </h2>
                   <p className="text-blue-100 text-xs mt-1">All fields marked with * are essential for tracking</p>
                 </div>
-                <button onClick={() => setIsAdding(false)} className="p-2 hover:bg-white/10 rounded-xl transition-colors">
+                <button onClick={() => setIsAdding(false)} className="p-2 hover:bg-white dark:bg-slate-900/10 rounded-xl transition-colors">
                   <X className="w-6 h-6" />
                 </button>
               </div>
@@ -515,19 +515,19 @@ export const TCManagement: React.FC = () => {
                     <div className="space-y-3">
                       <div>
                         <label className="block text-[10px] font-bold text-slate-400 uppercase mb-1">Heat Number *</label>
-                        <input type="text" required value={formData.heatNumber} onChange={e => setFormData({...formData, heatNumber: e.target.value})} className="w-full bg-slate-50 border-none rounded-xl px-4 py-2.5 text-sm font-bold focus:ring-2 focus:ring-blue-500 outline-none" placeholder="e.g. H12345" />
+                        <input type="text" required value={formData.heatNumber} onChange={e => setFormData({...formData, heatNumber: e.target.value})} className="w-full bg-slate-50 dark:bg-slate-800/50 border-none rounded-xl px-4 py-2.5 text-sm font-bold focus:ring-2 focus:ring-blue-500 outline-none" placeholder="e.g. H12345" />
                       </div>
                       <div>
                         <label className="block text-[10px] font-bold text-slate-400 uppercase mb-1">Plate Number *</label>
-                        <input type="text" required value={formData.plateNumber} onChange={e => setFormData({...formData, plateNumber: e.target.value})} className="w-full bg-slate-50 border-none rounded-xl px-4 py-2.5 text-sm font-bold focus:ring-2 focus:ring-blue-500 outline-none" placeholder="e.g. P9876" />
+                        <input type="text" required value={formData.plateNumber} onChange={e => setFormData({...formData, plateNumber: e.target.value})} className="w-full bg-slate-50 dark:bg-slate-800/50 border-none rounded-xl px-4 py-2.5 text-sm font-bold focus:ring-2 focus:ring-blue-500 outline-none" placeholder="e.g. P9876" />
                       </div>
                       <div>
                         <label className="block text-[10px] font-bold text-slate-400 uppercase mb-1">TC Number *</label>
-                        <input type="text" required value={formData.tcNumber} onChange={e => setFormData({...formData, tcNumber: e.target.value})} className="w-full bg-slate-50 border-none rounded-xl px-4 py-2.5 text-sm font-bold focus:ring-2 focus:ring-blue-500 outline-none" placeholder="e.g. TC-2026-001" />
+                        <input type="text" required value={formData.tcNumber} onChange={e => setFormData({...formData, tcNumber: e.target.value})} className="w-full bg-slate-50 dark:bg-slate-800/50 border-none rounded-xl px-4 py-2.5 text-sm font-bold focus:ring-2 focus:ring-blue-500 outline-none" placeholder="e.g. TC-2026-001" />
                       </div>
                       <div>
                         <label className="block text-[10px] font-bold text-slate-400 uppercase mb-1">TC Date</label>
-                        <input type="date" value={formData.tcDate} onChange={e => setFormData({...formData, tcDate: e.target.value})} className="w-full bg-slate-50 border-none rounded-xl px-4 py-2.5 text-sm font-bold focus:ring-2 focus:ring-blue-500 outline-none" />
+                        <input type="date" value={formData.tcDate} onChange={e => setFormData({...formData, tcDate: e.target.value})} className="w-full bg-slate-50 dark:bg-slate-800/50 border-none rounded-xl px-4 py-2.5 text-sm font-bold focus:ring-2 focus:ring-blue-500 outline-none" />
                       </div>
                     </div>
                   </div>
@@ -541,36 +541,36 @@ export const TCManagement: React.FC = () => {
                       <div className="grid grid-cols-2 gap-2">
                         <div>
                           <label className="block text-[10px] font-bold text-slate-400 uppercase mb-1">Sales Order No</label>
-                          <input type="text" value={formData.salesOrderNumber} onChange={e => setFormData({...formData, salesOrderNumber: e.target.value})} className="w-full bg-slate-50 border-none rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-blue-500 outline-none" />
+                          <input type="text" value={formData.salesOrderNumber} onChange={e => setFormData({...formData, salesOrderNumber: e.target.value})} className="w-full bg-slate-50 dark:bg-slate-800/50 border-none rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-blue-500 outline-none" />
                         </div>
                         <div>
                           <label className="block text-[10px] font-bold text-slate-400 uppercase mb-1">SO Date</label>
-                          <input type="date" value={formData.salesOrderDate} onChange={e => setFormData({...formData, salesOrderDate: e.target.value})} className="w-full bg-slate-50 border-none rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-blue-500 outline-none" />
+                          <input type="date" value={formData.salesOrderDate} onChange={e => setFormData({...formData, salesOrderDate: e.target.value})} className="w-full bg-slate-50 dark:bg-slate-800/50 border-none rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-blue-500 outline-none" />
                         </div>
                       </div>
                       <div className="grid grid-cols-2 gap-2">
                         <div>
                           <label className="block text-[10px] font-bold text-slate-400 uppercase mb-1">Purchase Order No</label>
-                          <input type="text" value={formData.purchaseOrderNumber} onChange={e => setFormData({...formData, purchaseOrderNumber: e.target.value})} className="w-full bg-slate-50 border-none rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-blue-500 outline-none" />
+                          <input type="text" value={formData.purchaseOrderNumber} onChange={e => setFormData({...formData, purchaseOrderNumber: e.target.value})} className="w-full bg-slate-50 dark:bg-slate-800/50 border-none rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-blue-500 outline-none" />
                         </div>
                         <div>
                           <label className="block text-[10px] font-bold text-slate-400 uppercase mb-1">PO Date</label>
-                          <input type="date" value={formData.purchaseOrderDate} onChange={e => setFormData({...formData, purchaseOrderDate: e.target.value})} className="w-full bg-slate-50 border-none rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-blue-500 outline-none" />
+                          <input type="date" value={formData.purchaseOrderDate} onChange={e => setFormData({...formData, purchaseOrderDate: e.target.value})} className="w-full bg-slate-50 dark:bg-slate-800/50 border-none rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-blue-500 outline-none" />
                         </div>
                       </div>
                       <div className="grid grid-cols-2 gap-2">
                         <div>
                           <label className="block text-[10px] font-bold text-slate-400 uppercase mb-1">Supplier Inv No</label>
-                          <input type="text" value={formData.supplierInvoiceNumber} onChange={e => setFormData({...formData, supplierInvoiceNumber: e.target.value})} className="w-full bg-slate-50 border-none rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-blue-500 outline-none" />
+                          <input type="text" value={formData.supplierInvoiceNumber} onChange={e => setFormData({...formData, supplierInvoiceNumber: e.target.value})} className="w-full bg-slate-50 dark:bg-slate-800/50 border-none rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-blue-500 outline-none" />
                         </div>
                         <div>
                           <label className="block text-[10px] font-bold text-slate-400 uppercase mb-1">Inv Date</label>
-                          <input type="date" value={formData.supplierInvoiceDate} onChange={e => setFormData({...formData, supplierInvoiceDate: e.target.value})} className="w-full bg-slate-50 border-none rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-blue-500 outline-none" />
+                          <input type="date" value={formData.supplierInvoiceDate} onChange={e => setFormData({...formData, supplierInvoiceDate: e.target.value})} className="w-full bg-slate-50 dark:bg-slate-800/50 border-none rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-blue-500 outline-none" />
                         </div>
                       </div>
                       <div>
                         <label className="block text-[10px] font-bold text-slate-400 uppercase mb-1">GRN Number</label>
-                        <input type="text" value={formData.grnNumber} onChange={e => setFormData({...formData, grnNumber: e.target.value})} className="w-full bg-slate-50 border-none rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-blue-500 outline-none" />
+                        <input type="text" value={formData.grnNumber} onChange={e => setFormData({...formData, grnNumber: e.target.value})} className="w-full bg-slate-50 dark:bg-slate-800/50 border-none rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-blue-500 outline-none" />
                       </div>
                     </div>
                   </div>
@@ -587,7 +587,7 @@ export const TCManagement: React.FC = () => {
                           <select 
                             value={formData.grade} 
                             onChange={e => setFormData({...formData, grade: e.target.value})} 
-                            className="w-full bg-slate-50 border-none rounded-xl px-4 py-2.5 text-sm font-bold focus:ring-2 focus:ring-blue-500 outline-none"
+                            className="w-full bg-slate-50 dark:bg-slate-800/50 border-none rounded-xl px-4 py-2.5 text-sm font-bold focus:ring-2 focus:ring-blue-500 outline-none"
                           >
                             <option value="">Select Grade</option>
                             {MATERIAL_GRADES.map(grade => (
@@ -597,30 +597,30 @@ export const TCManagement: React.FC = () => {
                         </div>
                         <div>
                           <label className="block text-[10px] font-bold text-slate-400 uppercase mb-1">Thickness</label>
-                          <input type="text" value={formData.thickness} onChange={e => setFormData({...formData, thickness: e.target.value})} className="w-full bg-slate-50 border-none rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-blue-500 outline-none" placeholder="e.g. 10mm" />
+                          <input type="text" value={formData.thickness} onChange={e => setFormData({...formData, thickness: e.target.value})} className="w-full bg-slate-50 dark:bg-slate-800/50 border-none rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-blue-500 outline-none" placeholder="e.g. 10mm" />
                         </div>
                       </div>
                       <div className="grid grid-cols-2 gap-2">
                         <div>
                           <label className="block text-[10px] font-bold text-slate-400 uppercase mb-1">Width (mm)</label>
-                          <input type="text" value={formData.width} onChange={e => setFormData({...formData, width: e.target.value})} className="w-full bg-slate-50 border-none rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-blue-500 outline-none" />
+                          <input type="text" value={formData.width} onChange={e => setFormData({...formData, width: e.target.value})} className="w-full bg-slate-50 dark:bg-slate-800/50 border-none rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-blue-500 outline-none" />
                         </div>
                         <div>
                           <label className="block text-[10px] font-bold text-slate-400 uppercase mb-1">Length (mm)</label>
-                          <input type="text" value={formData.length} onChange={e => setFormData({...formData, length: e.target.value})} className="w-full bg-slate-50 border-none rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-blue-500 outline-none" />
+                          <input type="text" value={formData.length} onChange={e => setFormData({...formData, length: e.target.value})} className="w-full bg-slate-50 dark:bg-slate-800/50 border-none rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-blue-500 outline-none" />
                         </div>
                       </div>
                       <div className="grid grid-cols-2 gap-2">
                         <div>
                           <label className="block text-[10px] font-bold text-slate-400 uppercase mb-1">Plate Wt (Kg)</label>
-                          <input type="text" value={formData.plateWeight} onChange={e => setFormData({...formData, plateWeight: e.target.value})} className="w-full bg-slate-50 border-none rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-blue-500 outline-none" />
+                          <input type="text" value={formData.plateWeight} onChange={e => setFormData({...formData, plateWeight: e.target.value})} className="w-full bg-slate-50 dark:bg-slate-800/50 border-none rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-blue-500 outline-none" />
                         </div>
                         <div>
                           <label className="block text-[10px] font-bold text-slate-400 uppercase mb-1">Make / Company</label>
                           <select 
                             value={formData.make} 
                             onChange={e => setFormData({...formData, make: e.target.value})} 
-                            className="w-full bg-slate-50 border-none rounded-xl px-4 py-2.5 text-sm font-bold focus:ring-2 focus:ring-blue-500 outline-none"
+                            className="w-full bg-slate-50 dark:bg-slate-800/50 border-none rounded-xl px-4 py-2.5 text-sm font-bold focus:ring-2 focus:ring-blue-500 outline-none"
                           >
                             <option value="">Select Make</option>
                             <option value="AM/NS INDIA">AM/NS INDIA</option>
@@ -637,7 +637,7 @@ export const TCManagement: React.FC = () => {
                       </div>
                       <div>
                         <label className="block text-[10px] font-bold text-slate-400 uppercase mb-1">Standard / Specification</label>
-                        <input type="text" value={formData.standard} onChange={e => setFormData({...formData, standard: e.target.value})} className="w-full bg-slate-50 border-none rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-blue-500 outline-none" placeholder="e.g. ASTM A36" />
+                        <input type="text" value={formData.standard} onChange={e => setFormData({...formData, standard: e.target.value})} className="w-full bg-slate-50 dark:bg-slate-800/50 border-none rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-blue-500 outline-none" placeholder="e.g. ASTM A36" />
                       </div>
                     </div>
                   </div>
@@ -649,9 +649,9 @@ export const TCManagement: React.FC = () => {
                     <Printer className="w-4 h-4" /> Attachments
                   </h3>
                   <div className="flex items-center gap-4">
-                    <label className="flex-1 flex flex-col items-center justify-center border-2 border-dashed border-slate-200 rounded-2xl p-6 hover:border-blue-400 hover:bg-blue-50 transition-all cursor-pointer group">
+                    <label className="flex-1 flex flex-col items-center justify-center border-2 border-dashed border-slate-200 dark:border-slate-700 rounded-2xl p-6 hover:border-blue-400 hover:bg-blue-50 transition-all cursor-pointer group">
                       <Download className="w-8 h-8 text-slate-300 group-hover:text-blue-500 mb-2" />
-                      <span className="text-sm font-bold text-slate-600">
+                      <span className="text-sm font-bold text-slate-600 dark:text-slate-300">
                         {formData.pdfName ? formData.pdfName : 'Upload TC PDF or Photo'}
                       </span>
                       <span className="text-xs text-slate-400 mt-1">Accepts PDF, JPG, PNG</span>
@@ -680,7 +680,7 @@ export const TCManagement: React.FC = () => {
                     {formData.pdfData && (
                       <div className="flex flex-col gap-2">
                         {formData.pdfData.startsWith('data:image/') ? (
-                          <img src={formData.pdfData} alt="Preview" className="w-32 h-32 object-cover rounded-xl border border-slate-200 shadow-sm" />
+                          <img src={formData.pdfData} alt="Preview" className="w-32 h-32 object-cover rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm" />
                         ) : (
                           <button 
                             type="button"
@@ -699,7 +699,7 @@ export const TCManagement: React.FC = () => {
                 </div>
 
                 <div className="flex items-center justify-end gap-3 pt-4">
-                  <button type="button" onClick={() => setIsAdding(false)} className="px-8 py-3 rounded-2xl text-sm font-bold text-slate-500 hover:bg-slate-50 transition-colors">Cancel</button>
+                  <button type="button" onClick={() => setIsAdding(false)} className="px-8 py-3 rounded-2xl text-sm font-bold text-slate-500 hover:bg-slate-50 dark:bg-slate-800/50 transition-colors">Cancel</button>
                   <button type="submit" className="px-10 py-3 rounded-2xl text-sm font-bold bg-blue-600 hover:bg-blue-700 text-white shadow-lg shadow-blue-200 transition-all active:scale-95 flex items-center gap-2">
                     {selectedTC ? <CheckCircle2 className="w-4 h-4" /> : <Plus className="w-4 h-4" />}
                     {selectedTC ? 'Update Record' : 'Save TC Master'}
@@ -710,14 +710,14 @@ export const TCManagement: React.FC = () => {
           ) : selectedTC ? (
             <div className="space-y-6 slide-up">
               {/* Detailed View */}
-              <div className="bg-white rounded-3xl shadow-sm border border-slate-100 overflow-hidden">
-                <div className="p-6 border-b border-slate-50 flex items-center justify-between bg-slate-50/50">
+              <div className="bg-white dark:bg-slate-900 rounded-3xl shadow-sm border border-slate-100 dark:border-slate-800 overflow-hidden">
+                <div className="p-6 border-b border-slate-50 flex items-center justify-between bg-slate-50 dark:bg-slate-800/50/50">
                   <div className="flex items-center gap-4">
                     <div className="w-12 h-12 bg-blue-600 rounded-2xl flex items-center justify-center text-white shadow-lg shadow-blue-100">
                       <FileSearch className="w-6 h-6" />
                     </div>
                     <div>
-                      <h2 className="text-xl font-black text-slate-800">TC Record: {selectedTC.tcNumber}</h2>
+                      <h2 className="text-xl font-black text-slate-800 dark:text-slate-100">TC Record: {selectedTC.tcNumber}</h2>
                       <p className="text-xs text-slate-500 font-medium flex items-center gap-2">
                         <History className="w-3 h-3 text-blue-600" />
                         Heat: {selectedTC.heatNumber} • Plate: {selectedTC.plateNumber}
@@ -753,7 +753,7 @@ export const TCManagement: React.FC = () => {
                     </button>
                     <button onClick={() => handleEdit(selectedTC)} className="p-2 text-blue-600 hover:bg-blue-50 rounded-xl transition-colors" title="Edit Record"><Edit3 className="w-5 h-5" /></button>
                     <button onClick={() => handleDelete(selectedTC.id)} className="p-2 text-red-500 hover:bg-red-50 rounded-xl transition-colors" title="Delete Record"><Trash2 className="w-5 h-5" /></button>
-                    <button className="p-2 text-slate-400 hover:bg-slate-100 rounded-xl transition-colors" title="Print TC"><Printer className="w-5 h-5" /></button>
+                    <button className="p-2 text-slate-400 hover:bg-slate-100 dark:bg-slate-800 rounded-xl transition-colors" title="Print TC"><Printer className="w-5 h-5" /></button>
                   </div>
                 </div>
 
@@ -770,9 +770,9 @@ export const TCManagement: React.FC = () => {
               </div>
 
               {/* History Section */}
-              <div className="bg-white rounded-3xl shadow-sm border border-slate-100 overflow-hidden">
+              <div className="bg-white dark:bg-slate-900 rounded-3xl shadow-sm border border-slate-100 dark:border-slate-800 overflow-hidden">
                 <div className="p-6 border-b border-slate-50 flex items-center justify-between">
-                  <h3 className="text-lg font-bold text-slate-800 flex items-center gap-2">
+                  <h3 className="text-lg font-bold text-slate-800 dark:text-slate-100 flex items-center gap-2">
                     <History className="w-5 h-5 text-blue-600" />
                     Dispatch History & Tracking
                   </h3>
@@ -788,7 +788,7 @@ export const TCManagement: React.FC = () => {
                 <div className="overflow-x-auto">
                   <table className="w-full text-left">
                     <thead>
-                      <tr className="bg-slate-50/50 text-[10px] font-black text-slate-400 uppercase tracking-widest border-b border-slate-50">
+                      <tr className="bg-slate-50 dark:bg-slate-800/50/50 text-[10px] font-black text-slate-400 uppercase tracking-widest border-b border-slate-50">
                         <th className="px-6 py-4">Party Name</th>
                         <th className="px-6 py-4">Date of Dispatch</th>
                         <th className="px-6 py-4">SO Number</th>
@@ -799,10 +799,10 @@ export const TCManagement: React.FC = () => {
                     </thead>
                     <tbody className="divide-y divide-slate-50">
                       {selectedTC.dispatchHistory.map((history, idx) => (
-                        <tr key={idx} className="hover:bg-slate-50/30 transition-colors">
-                          <td className="px-6 py-4 font-bold text-slate-800 text-sm">{history.partyName}</td>
+                        <tr key={idx} className="hover:bg-slate-50 dark:bg-slate-800/50/30 transition-colors">
+                          <td className="px-6 py-4 font-bold text-slate-800 dark:text-slate-100 text-sm">{history.partyName}</td>
                           <td className="px-6 py-4 text-xs font-medium text-slate-500">{history.dispatchDate}</td>
-                          <td className="px-6 py-4 text-xs font-bold text-slate-700">{history.salesOrderNumber}</td>
+                          <td className="px-6 py-4 text-xs font-bold text-slate-700 dark:text-slate-200">{history.salesOrderNumber}</td>
                           <td className="px-6 py-4 text-xs font-mono text-slate-500">{history.tcNumber}</td>
                           <td className="px-6 py-4">
                             <span className={cn(
@@ -833,11 +833,11 @@ export const TCManagement: React.FC = () => {
               </div>
             </div>
           ) : (
-            <div className="h-full flex flex-col items-center justify-center p-12 bg-white rounded-3xl shadow-sm border border-slate-100 text-center border-dashed border-2 border-slate-200">
-              <div className="w-20 h-20 bg-slate-50 rounded-full flex items-center justify-center mb-4">
+            <div className="h-full flex flex-col items-center justify-center p-12 bg-white dark:bg-slate-900 rounded-3xl shadow-sm border border-slate-100 dark:border-slate-800 text-center border-dashed border-2 border-slate-200 dark:border-slate-700">
+              <div className="w-20 h-20 bg-slate-50 dark:bg-slate-800/50 rounded-full flex items-center justify-center mb-4">
                 <FileSearch className="w-10 h-10 text-slate-300" />
               </div>
-              <h3 className="text-xl font-bold text-slate-800">Select a Certificate</h3>
+              <h3 className="text-xl font-bold text-slate-800 dark:text-slate-100">Select a Certificate</h3>
               <p className="text-slate-500 max-w-xs mt-2">Choose a TC from the left sidebar to view its complete specifications and history.</p>
               <button 
                 onClick={() => setIsAdding(true)}
@@ -854,14 +854,14 @@ export const TCManagement: React.FC = () => {
     {/* Email Modal */}
     {showMailModal && (
       <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in">
-        <div className="bg-white w-full max-w-lg rounded-[2.5rem] shadow-2xl overflow-hidden slide-up">
+        <div className="bg-white dark:bg-slate-900 w-full max-w-lg rounded-[2.5rem] shadow-2xl overflow-hidden slide-up">
           <div className="bg-emerald-600 p-8 text-white">
             <div className="flex justify-between items-center mb-2">
               <h3 className="text-2xl font-black flex items-center gap-3">
                 <Send className="w-8 h-8" />
                 Mail Certificate
               </h3>
-              <button onClick={() => setShowMailModal(false)} className="p-2 hover:bg-white/10 rounded-full transition-colors">
+              <button onClick={() => setShowMailModal(false)} className="p-2 hover:bg-white dark:bg-slate-900/10 rounded-full transition-colors">
                 <X className="w-6 h-6" />
               </button>
             </div>
@@ -879,7 +879,7 @@ export const TCManagement: React.FC = () => {
                     value={mailData.to}
                     onChange={e => setMailData({...mailData, to: e.target.value})}
                     placeholder="client@example.com"
-                    className="w-full bg-slate-50 border-none rounded-2xl pl-4 pr-4 py-3 text-sm font-bold focus:ring-2 focus:ring-emerald-500 outline-none"
+                    className="w-full bg-slate-50 dark:bg-slate-800/50 border-none rounded-2xl pl-4 pr-4 py-3 text-sm font-bold focus:ring-2 focus:ring-emerald-500 outline-none"
                   />
                 </div>
               </div>
@@ -890,7 +890,7 @@ export const TCManagement: React.FC = () => {
                   type="text" 
                   value={mailData.subject}
                   onChange={e => setMailData({...mailData, subject: e.target.value})}
-                  className="w-full bg-slate-50 border-none rounded-2xl px-4 py-3 text-sm font-bold focus:ring-2 focus:ring-emerald-500 outline-none"
+                  className="w-full bg-slate-50 dark:bg-slate-800/50 border-none rounded-2xl px-4 py-3 text-sm font-bold focus:ring-2 focus:ring-emerald-500 outline-none"
                 />
               </div>
               
@@ -900,7 +900,7 @@ export const TCManagement: React.FC = () => {
                   rows={4}
                   value={mailData.message}
                   onChange={e => setMailData({...mailData, message: e.target.value})}
-                  className="w-full bg-slate-50 border-none rounded-2xl px-4 py-3 text-sm font-medium focus:ring-2 focus:ring-emerald-500 outline-none resize-none"
+                  className="w-full bg-slate-50 dark:bg-slate-800/50 border-none rounded-2xl px-4 py-3 text-sm font-medium focus:ring-2 focus:ring-emerald-500 outline-none resize-none"
                 />
               </div>
 
@@ -918,7 +918,7 @@ export const TCManagement: React.FC = () => {
             <div className="flex gap-3">
               <button 
                 onClick={() => setShowMailModal(false)}
-                className="flex-1 py-4 rounded-2xl text-sm font-black text-slate-500 hover:bg-slate-50 transition-colors"
+                className="flex-1 py-4 rounded-2xl text-sm font-black text-slate-500 hover:bg-slate-50 dark:bg-slate-800/50 transition-colors"
               >
                 Cancel
               </button>
@@ -938,7 +938,7 @@ export const TCManagement: React.FC = () => {
     {/* WhatsApp Modal */}
     {showWhatsAppModal && (
       <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in">
-        <div className="bg-white w-full max-w-lg rounded-[2.5rem] shadow-2xl overflow-hidden slide-up">
+        <div className="bg-white dark:bg-slate-900 w-full max-w-lg rounded-[2.5rem] shadow-2xl overflow-hidden slide-up">
           <div className="bg-green-600 p-8 text-white">
             <div className="flex justify-between items-center mb-2">
               <h3 className="text-2xl font-black flex items-center gap-3">
@@ -955,7 +955,7 @@ export const TCManagement: React.FC = () => {
                     {isWaLoading ? 'Disconnecting...' : 'Disconnect'}
                   </button>
                 )}
-                <button onClick={() => setShowWhatsAppModal(false)} className="p-2 hover:bg-white/10 rounded-full transition-colors">
+                <button onClick={() => setShowWhatsAppModal(false)} className="p-2 hover:bg-white dark:bg-slate-900/10 rounded-full transition-colors">
                   <X className="w-6 h-6" />
                 </button>
               </div>
@@ -975,7 +975,7 @@ export const TCManagement: React.FC = () => {
                       value={whatsAppData.number}
                       onChange={e => setWhatsAppData({...whatsAppData, number: e.target.value})}
                       placeholder="e.g. 98XXXXXXXX"
-                      className="w-full bg-slate-50 border-none rounded-2xl px-4 py-3 text-sm font-bold focus:ring-2 focus:ring-green-500 outline-none"
+                      className="w-full bg-slate-50 dark:bg-slate-800/50 border-none rounded-2xl px-4 py-3 text-sm font-bold focus:ring-2 focus:ring-green-500 outline-none"
                     />
                   </div>
                   
@@ -985,7 +985,7 @@ export const TCManagement: React.FC = () => {
                       rows={5}
                       value={whatsAppData.message}
                       onChange={e => setWhatsAppData({...whatsAppData, message: e.target.value})}
-                      className="w-full bg-slate-50 border-none rounded-2xl px-4 py-3 text-sm font-medium focus:ring-2 focus:ring-green-500 outline-none resize-none"
+                      className="w-full bg-slate-50 dark:bg-slate-800/50 border-none rounded-2xl px-4 py-3 text-sm font-medium focus:ring-2 focus:ring-green-500 outline-none resize-none"
                     />
                   </div>
 
@@ -1003,7 +1003,7 @@ export const TCManagement: React.FC = () => {
                 <div className="flex gap-3">
                   <button 
                     onClick={() => setShowWhatsAppModal(false)}
-                    className="flex-1 py-4 rounded-2xl text-sm font-black text-slate-500 hover:bg-slate-50 transition-colors"
+                    className="flex-1 py-4 rounded-2xl text-sm font-black text-slate-500 hover:bg-slate-50 dark:bg-slate-800/50 transition-colors"
                   >
                     Cancel
                   </button>
@@ -1018,17 +1018,17 @@ export const TCManagement: React.FC = () => {
               </>
             ) : waStatus === 'QR_READY' && waQr ? (
               <div className="text-center py-8">
-                <p className="text-sm font-bold text-slate-600 mb-4">Scan this QR code with your WhatsApp to connect</p>
-                <div className="inline-block p-4 bg-white border border-slate-200 rounded-2xl shadow-sm">
+                <p className="text-sm font-bold text-slate-600 dark:text-slate-300 mb-4">Scan this QR code with your WhatsApp to connect</p>
+                <div className="inline-block p-4 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-2xl shadow-sm">
                   <img src={waQr} alt="WhatsApp QR" className="w-48 h-48" />
                 </div>
               </div>
             ) : (
               <div className="text-center py-12">
-                <div className="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <div className="w-16 h-16 bg-slate-100 dark:bg-slate-800 rounded-full flex items-center justify-center mx-auto mb-4">
                   <MessageSquare className="w-8 h-8 text-slate-400" />
                 </div>
-                <h4 className="text-lg font-bold text-slate-800 mb-2">WhatsApp Disconnected</h4>
+                <h4 className="text-lg font-bold text-slate-800 dark:text-slate-100 mb-2">WhatsApp Disconnected</h4>
                 <p className="text-sm text-slate-500 mb-6">You need to connect your WhatsApp account before sending certificates.</p>
                 <button 
                   onClick={handleWaInit} 
@@ -1054,7 +1054,7 @@ export const TCManagement: React.FC = () => {
                 <MessageSquare className="w-8 h-8" />
                 WhatsApp Web
               </h3>
-              <button onClick={() => setShowGlobalWAModal(false)} className="p-2 hover:bg-white/10 rounded-full transition-colors">
+              <button onClick={() => setShowGlobalWAModal(false)} className="p-2 hover:bg-white dark:bg-slate-900/10 rounded-full transition-colors">
                 <X className="w-6 h-6" />
               </button>
             </div>
@@ -1102,14 +1102,14 @@ export const TCManagement: React.FC = () => {
             ) : waStatus === 'QR_READY' && waQr ? (
               <div className="text-center space-y-4">
                 <p className="text-sm font-bold text-slate-600 dark:text-slate-400">Scan this QR code with WhatsApp Web on your phone:</p>
-                <div className="inline-block p-4 bg-white rounded-2xl border border-slate-200 shadow-sm mx-auto">
+                <div className="inline-block p-4 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm mx-auto">
                   <img src={waQr} alt="WhatsApp QR" className="w-48 h-48" />
                 </div>
                 <div className="flex gap-3">
                   <button 
                     onClick={handleWaDisconnect} 
                     disabled={isWaLoading}
-                    className="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-700 dark:bg-slate-800 dark:text-slate-350 py-3 rounded-xl text-xs font-bold transition-all"
+                    className="flex-1 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 text-slate-700 dark:text-slate-200 dark:bg-slate-800 dark:text-slate-350 py-3 rounded-xl text-xs font-bold transition-all"
                   >
                     Reset/Disconnect
                   </button>
@@ -1165,7 +1165,7 @@ const DetailCard: React.FC<{ icon: any, label: string, value: string, variant?: 
     </div>
     <p className={cn(
       "text-sm font-black",
-      variant === 'success' ? "text-emerald-600" : variant === 'warning' ? "text-amber-600" : "text-slate-800"
+      variant === 'success' ? "text-emerald-600" : variant === 'warning' ? "text-amber-600" : "text-slate-800 dark:text-slate-100"
     )}>
       {value || '-'}
     </p>

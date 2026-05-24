@@ -228,11 +228,11 @@ export const PurchaseOrderEntry: React.FC = () => {
       {/* Header */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-bold text-slate-800">{editId ? 'Edit Purchase Order' : t('purchaseOrder')}</h1>
+          <h1 className="text-2xl font-bold text-slate-800 dark:text-slate-100">{editId ? 'Edit Purchase Order' : t('purchaseOrder')}</h1>
           <p className="text-sm text-slate-500 mt-0.5">{editId ? 'Modify existing purchase order' : 'Create new purchase order'} • <span className="font-semibold text-blue-600">{poNumber}</span></p>
         </div>
         <div className="flex gap-2">
-          <button onClick={handleReset} className="flex items-center gap-2 text-slate-600 hover:text-slate-800 bg-white border border-slate-200 px-4 py-2 rounded-xl text-sm font-medium transition-colors hover:bg-slate-50">
+          <button onClick={handleReset} className="flex items-center gap-2 text-slate-600 dark:text-slate-300 hover:text-slate-800 dark:text-slate-100 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 px-4 py-2 rounded-xl text-sm font-medium transition-colors hover:bg-slate-50 dark:bg-slate-800/50">
             <RotateCcw className="w-4 h-4" /> Reset
           </button>
           <button
@@ -266,8 +266,8 @@ export const PurchaseOrderEntry: React.FC = () => {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2 space-y-6">
           {/* Supplier Details */}
-          <div className="bg-white rounded-2xl p-6 shadow-sm border border-slate-100">
-            <h2 className="text-base font-semibold text-slate-800 mb-6 pb-2 border-b border-slate-100 flex items-center gap-2">
+          <div className="bg-white dark:bg-slate-900 rounded-2xl p-6 shadow-sm border border-slate-100 dark:border-slate-800">
+            <h2 className="text-base font-semibold text-slate-800 dark:text-slate-100 mb-6 pb-2 border-b border-slate-100 dark:border-slate-800 flex items-center gap-2">
               <ShoppingBag className="w-5 h-5 text-blue-600" />
               Supplier / Party Details
             </h2>
@@ -288,23 +288,23 @@ export const PurchaseOrderEntry: React.FC = () => {
               </div>
               <div className="sm:col-span-2">
                 <label className="block text-[10px] font-bold text-slate-400 mb-1 uppercase tracking-wider">Address</label>
-                <textarea rows={2} value={supplierAddress} onChange={(e) => setSupplierAddress(e.target.value)} className="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-sm focus:bg-white focus:ring-2 focus:ring-blue-500 transition" placeholder="Supplier full address" />
+                <textarea rows={2} value={supplierAddress} onChange={(e) => setSupplierAddress(e.target.value)} className="w-full bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-lg px-3 py-2 text-sm focus:bg-white dark:bg-slate-900 focus:ring-2 focus:ring-blue-500 transition" placeholder="Supplier full address" />
               </div>
               <div>
                 <label className="block text-[10px] font-bold text-slate-400 mb-1 uppercase tracking-wider">GST Number</label>
-                <input type="text" value={supplierGST} onChange={(e) => setSupplierGST(e.target.value)} className="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-sm focus:bg-white focus:ring-2 focus:ring-blue-500 transition" placeholder="24XXXXX..." />
+                <input type="text" value={supplierGST} onChange={(e) => setSupplierGST(e.target.value)} className="w-full bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-lg px-3 py-2 text-sm focus:bg-white dark:bg-slate-900 focus:ring-2 focus:ring-blue-500 transition" placeholder="24XXXXX..." />
               </div>
               <div>
                 <label className="block text-[10px] font-bold text-slate-400 mb-1 uppercase tracking-wider">E-mail ID</label>
-                <input type="email" value={supplierEmail} onChange={(e) => setSupplierEmail(e.target.value)} className="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-sm focus:bg-white focus:ring-2 focus:ring-blue-500 transition" placeholder="supplier@example.com" />
+                <input type="email" value={supplierEmail} onChange={(e) => setSupplierEmail(e.target.value)} className="w-full bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-lg px-3 py-2 text-sm focus:bg-white dark:bg-slate-900 focus:ring-2 focus:ring-blue-500 transition" placeholder="supplier@example.com" />
               </div>
             </div>
           </div>
 
           {/* Items Table */}
-          <div className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
-            <div className="p-4 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
-              <h2 className="text-base font-semibold text-slate-800">PO Items</h2>
+          <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-800 overflow-hidden">
+            <div className="p-4 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between bg-slate-50 dark:bg-slate-800/50/50">
+              <h2 className="text-base font-semibold text-slate-800 dark:text-slate-100">PO Items</h2>
               <button onClick={handleAddItem} className="flex items-center gap-1.5 bg-blue-600 text-white px-3 py-1.5 rounded-lg text-xs font-bold hover:bg-blue-700 transition-all">
                 <Plus className="w-3.5 h-3.5" /> Add Item
               </button>
@@ -312,7 +312,7 @@ export const PurchaseOrderEntry: React.FC = () => {
             <div className="overflow-x-auto">
               <table className="w-full text-left border-collapse min-w-[800px]">
                 <thead>
-                  <tr className="bg-slate-50 text-[10px] uppercase font-bold text-slate-500">
+                  <tr className="bg-slate-50 dark:bg-slate-800/50 text-[10px] uppercase font-bold text-slate-500">
                     <th className="p-3 border-b">Grade</th>
                     <th className="p-3 border-b">Thk</th>
                     <th className="p-3 border-b">Width</th>
@@ -334,31 +334,31 @@ export const PurchaseOrderEntry: React.FC = () => {
                           onChange={(v) => updateItem(item.id, 'grade', v)}
                           options={MATERIAL_GRADES}
                           placeholder="Select Grade"
-                          className="w-full bg-white border border-slate-200 rounded px-2 py-1 text-sm focus:ring-2 focus:ring-blue-500 outline-none"
+                          className="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded px-2 py-1 text-sm focus:ring-2 focus:ring-blue-500 outline-none"
                         />
                       </td>
                       <td className="p-2 w-20">
-                        <input type="text" value={item.thickness} onChange={(e) => updateItem(item.id, 'thickness', e.target.value)} className="w-full border-transparent bg-transparent group-hover:bg-white group-hover:border-slate-200 rounded px-2 py-1.5 text-sm transition-all" placeholder="10mm" />
+                        <input type="text" value={item.thickness} onChange={(e) => updateItem(item.id, 'thickness', e.target.value)} className="w-full border-transparent bg-transparent group-hover:bg-white dark:bg-slate-900 group-hover:border-slate-200 dark:border-slate-700 rounded px-2 py-1.5 text-sm transition-all" placeholder="10mm" />
                       </td>
                       <td className="p-2 w-20">
-                        <input type="text" value={item.width} onChange={(e) => updateItem(item.id, 'width', e.target.value)} className="w-full border-transparent bg-transparent group-hover:bg-white group-hover:border-slate-200 rounded px-2 py-1.5 text-sm transition-all" placeholder="1250" />
+                        <input type="text" value={item.width} onChange={(e) => updateItem(item.id, 'width', e.target.value)} className="w-full border-transparent bg-transparent group-hover:bg-white dark:bg-slate-900 group-hover:border-slate-200 dark:border-slate-700 rounded px-2 py-1.5 text-sm transition-all" placeholder="1250" />
                       </td>
                       <td className="p-2 w-20">
-                        <input type="text" value={item.length} onChange={(e) => updateItem(item.id, 'length', e.target.value)} className="w-full border-transparent bg-transparent group-hover:bg-white group-hover:border-slate-200 rounded px-2 py-1.5 text-sm transition-all" placeholder="2500" />
+                        <input type="text" value={item.length} onChange={(e) => updateItem(item.id, 'length', e.target.value)} className="w-full border-transparent bg-transparent group-hover:bg-white dark:bg-slate-900 group-hover:border-slate-200 dark:border-slate-700 rounded px-2 py-1.5 text-sm transition-all" placeholder="2500" />
                       </td>
                       <td className="p-2 w-16">
-                        <input type="number" value={item.nos || ''} onChange={(e) => updateItem(item.id, 'nos', Number(e.target.value))} className="w-full border-transparent bg-transparent group-hover:bg-white group-hover:border-slate-200 rounded px-2 py-1.5 text-sm transition-all" placeholder="0" />
+                        <input type="number" value={item.nos || ''} onChange={(e) => updateItem(item.id, 'nos', Number(e.target.value))} className="w-full border-transparent bg-transparent group-hover:bg-white dark:bg-slate-900 group-hover:border-slate-200 dark:border-slate-700 rounded px-2 py-1.5 text-sm transition-all" placeholder="0" />
                       </td>
                       <td className="p-2 w-24">
-                        <input type="number" step="0.001" value={item.kg || ''} onChange={(e) => updateItem(item.id, 'kg', Number(e.target.value))} className="w-full border-transparent bg-transparent group-hover:bg-white group-hover:border-slate-200 rounded px-2 py-1.5 text-sm transition-all font-semibold text-blue-600" placeholder="0.000" />
+                        <input type="number" step="0.001" value={item.kg || ''} onChange={(e) => updateItem(item.id, 'kg', Number(e.target.value))} className="w-full border-transparent bg-transparent group-hover:bg-white dark:bg-slate-900 group-hover:border-slate-200 dark:border-slate-700 rounded px-2 py-1.5 text-sm transition-all font-semibold text-blue-600" placeholder="0.000" />
                       </td>
                       <td className="p-2 w-24">
-                        <input type="number" step="0.001" value={item.actualWeight || ''} onChange={(e) => updateItem(item.id, 'actualWeight', Number(e.target.value))} className="w-full border-transparent bg-transparent group-hover:bg-white group-hover:border-slate-200 rounded px-2 py-1.5 text-sm transition-all font-semibold text-emerald-600" placeholder="0.000" />
+                        <input type="number" step="0.001" value={item.actualWeight || ''} onChange={(e) => updateItem(item.id, 'actualWeight', Number(e.target.value))} className="w-full border-transparent bg-transparent group-hover:bg-white dark:bg-slate-900 group-hover:border-slate-200 dark:border-slate-700 rounded px-2 py-1.5 text-sm transition-all font-semibold text-emerald-600" placeholder="0.000" />
                       </td>
                       <td className="p-2 w-24">
-                        <input type="number" value={item.rate || ''} onChange={(e) => updateItem(item.id, 'rate', Number(e.target.value))} className="w-full border-transparent bg-transparent group-hover:bg-white group-hover:border-slate-200 rounded px-2 py-1.5 text-sm transition-all" placeholder="0.00" />
+                        <input type="number" value={item.rate || ''} onChange={(e) => updateItem(item.id, 'rate', Number(e.target.value))} className="w-full border-transparent bg-transparent group-hover:bg-white dark:bg-slate-900 group-hover:border-slate-200 dark:border-slate-700 rounded px-2 py-1.5 text-sm transition-all" placeholder="0.00" />
                       </td>
-                      <td className="p-2 w-28 text-right font-bold text-slate-700">
+                      <td className="p-2 w-28 text-right font-bold text-slate-700 dark:text-slate-200">
                         {item.amount.toLocaleString()}
                       </td>
                       <td className="p-2 text-center">
@@ -369,8 +369,8 @@ export const PurchaseOrderEntry: React.FC = () => {
                     </tr>
                   ))}
                 </tbody>
-                <tfoot className="bg-slate-50/50">
-                  <tr className="font-bold text-slate-800">
+                <tfoot className="bg-slate-50 dark:bg-slate-800/50/50">
+                  <tr className="font-bold text-slate-800 dark:text-slate-100">
                     <td colSpan={5} className="p-4 text-right text-xs uppercase text-slate-500">Grand Total</td>
                     <td className="p-4 text-blue-600">{totalKg.toFixed(3)}</td>
                     <td className="p-4"></td>
@@ -385,54 +385,54 @@ export const PurchaseOrderEntry: React.FC = () => {
 
         <div className="space-y-6">
           {/* PO Basic Info */}
-          <div className="bg-white rounded-2xl p-6 shadow-sm border border-slate-100">
-            <h2 className="text-sm font-bold text-slate-800 mb-4 uppercase tracking-widest border-b border-slate-50 pb-2">PO Details</h2>
+          <div className="bg-white dark:bg-slate-900 rounded-2xl p-6 shadow-sm border border-slate-100 dark:border-slate-800">
+            <h2 className="text-sm font-bold text-slate-800 dark:text-slate-100 mb-4 uppercase tracking-widest border-b border-slate-50 pb-2">PO Details</h2>
             <div className="space-y-4">
               <div>
                 <label className="block text-[10px] font-bold text-slate-400 mb-1 uppercase tracking-wider">PO Number</label>
-                <input type="text" className="w-full bg-slate-50 border border-slate-200 text-slate-500 rounded-lg px-3 py-2 text-sm font-mono focus:outline-none" value={poNumber} readOnly />
+                <input type="text" className="w-full bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 text-slate-500 rounded-lg px-3 py-2 text-sm font-mono focus:outline-none" value={poNumber} readOnly />
               </div>
               <div>
                 <label className="block text-[10px] font-bold text-slate-400 mb-1 uppercase tracking-wider">Date</label>
-                <input type="date" value={date} onChange={(e) => setDate(e.target.value)} className="w-full bg-white border border-slate-200 text-slate-800 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 transition" />
+                <input type="date" value={date} onChange={(e) => setDate(e.target.value)} className="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-100 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 transition" />
               </div>
               <div>
                 <label className="block text-[10px] font-bold text-slate-400 mb-1 uppercase tracking-wider">Mobile Number</label>
-                <input type="text" value={supplierMobile} onChange={(e) => setSupplierMobile(e.target.value)} className="w-full bg-white border border-slate-200 text-slate-800 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 transition" placeholder="Supplier contact" />
+                <input type="text" value={supplierMobile} onChange={(e) => setSupplierMobile(e.target.value)} className="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-100 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 transition" placeholder="Supplier contact" />
               </div>
               <div>
                 <label className="block text-[10px] font-bold text-slate-400 mb-1 uppercase tracking-wider">Invoice No</label>
-                <input type="text" value={invoiceNo} onChange={(e) => setInvoiceNo(e.target.value)} className="w-full bg-white border border-slate-200 text-slate-800 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 transition" placeholder="INV-..." />
+                <input type="text" value={invoiceNo} onChange={(e) => setInvoiceNo(e.target.value)} className="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-100 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 transition" placeholder="INV-..." />
               </div>
             </div>
           </div>
 
           {/* Delivery & Transport */}
-          <div className="bg-white rounded-2xl p-6 shadow-sm border border-slate-100">
-            <h2 className="text-sm font-bold text-slate-800 mb-4 uppercase tracking-widest border-b border-slate-50 pb-2">Delivery & Transport</h2>
+          <div className="bg-white dark:bg-slate-900 rounded-2xl p-6 shadow-sm border border-slate-100 dark:border-slate-800">
+            <h2 className="text-sm font-bold text-slate-800 dark:text-slate-100 mb-4 uppercase tracking-widest border-b border-slate-50 pb-2">Delivery & Transport</h2>
             <div className="space-y-4">
               <div>
                 <label className="block text-[10px] font-bold text-slate-400 mb-1 uppercase tracking-wider">Delivery Address</label>
-                <textarea rows={2} value={deliveryAddress} onChange={(e) => setDeliveryAddress(e.target.value)} className="w-full bg-white border border-slate-200 text-slate-800 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 transition" placeholder="Ship to address" />
+                <textarea rows={2} value={deliveryAddress} onChange={(e) => setDeliveryAddress(e.target.value)} className="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-100 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 transition" placeholder="Ship to address" />
               </div>
               <div>
                 <label className="block text-[10px] font-bold text-slate-400 mb-1 uppercase tracking-wider">Transport Name</label>
-                <input type="text" value={transportName} onChange={(e) => setTransportName(e.target.value)} className="w-full bg-white border border-slate-200 text-slate-800 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 transition" />
+                <input type="text" value={transportName} onChange={(e) => setTransportName(e.target.value)} className="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-100 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 transition" />
               </div>
               <div>
                 <label className="block text-[10px] font-bold text-slate-400 mb-1 uppercase tracking-wider">Transport No / Vehicle</label>
-                <input type="text" value={transportNumber} onChange={(e) => setTransportNumber(e.target.value)} className="w-full bg-white border border-slate-200 text-slate-800 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 transition" />
+                <input type="text" value={transportNumber} onChange={(e) => setTransportNumber(e.target.value)} className="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-100 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 transition" />
               </div>
             </div>
           </div>
 
           {/* Commercial Info */}
-          <div className="bg-white rounded-2xl p-6 shadow-sm border border-slate-100">
-            <h2 className="text-sm font-bold text-slate-800 mb-4 uppercase tracking-widest border-b border-slate-50 pb-2">Commercial / Quality</h2>
+          <div className="bg-white dark:bg-slate-900 rounded-2xl p-6 shadow-sm border border-slate-100 dark:border-slate-800">
+            <h2 className="text-sm font-bold text-slate-800 dark:text-slate-100 mb-4 uppercase tracking-widest border-b border-slate-50 pb-2">Commercial / Quality</h2>
             <div className="space-y-4">
               <div>
                 <label className="block text-[10px] font-bold text-slate-400 mb-1 uppercase tracking-wider">Payment Term</label>
-                <input type="text" value={paymentTerms} onChange={(e) => setPaymentTerms(e.target.value)} className="w-full bg-white border border-slate-200 text-slate-800 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 transition" placeholder="e.g. 30 Days" />
+                <input type="text" value={paymentTerms} onChange={(e) => setPaymentTerms(e.target.value)} className="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-100 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 transition" placeholder="e.g. 30 Days" />
               </div>
               <div className="grid grid-cols-2 gap-3">
                 <div>
@@ -440,7 +440,7 @@ export const PurchaseOrderEntry: React.FC = () => {
                   <select 
                     value={make} 
                     onChange={(e) => setMake(e.target.value)} 
-                    className="w-full bg-white border border-slate-200 text-slate-800 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 transition font-bold"
+                    className="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-100 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 transition font-bold"
                   >
                     <option value="">Select Make</option>
                     <option value="AM/NS INDIA">AM/NS INDIA</option>
@@ -456,17 +456,17 @@ export const PurchaseOrderEntry: React.FC = () => {
                 </div>
                 <div>
                   <label className="block text-[10px] font-bold text-slate-400 mb-1 uppercase tracking-wider">UT Level</label>
-                  <input type="text" value={utLevel} onChange={(e) => setUtLevel(e.target.value)} className="w-full bg-white border border-slate-200 text-slate-800 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 transition" placeholder="e.g. Level 2" />
+                  <input type="text" value={utLevel} onChange={(e) => setUtLevel(e.target.value)} className="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-100 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 transition" placeholder="e.g. Level 2" />
                 </div>
               </div>
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className="block text-[10px] font-bold text-slate-400 mb-1 uppercase tracking-wider">Customer</label>
-                  <input type="text" value={customer} onChange={(e) => setCustomer(e.target.value)} className="w-full bg-white border border-slate-200 text-slate-800 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 transition" />
+                  <input type="text" value={customer} onChange={(e) => setCustomer(e.target.value)} className="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-100 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 transition" />
                 </div>
                 <div>
                   <label className="block text-[10px] font-bold text-slate-400 mb-1 uppercase tracking-wider">Location</label>
-                  <input type="text" value={location} onChange={(e) => setLocation(e.target.value)} className="w-full bg-white border border-slate-200 text-slate-800 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 transition" />
+                  <input type="text" value={location} onChange={(e) => setLocation(e.target.value)} className="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-100 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 transition" />
                 </div>
               </div>
             </div>

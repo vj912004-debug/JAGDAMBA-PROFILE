@@ -69,7 +69,7 @@ export const Reports: React.FC = () => {
 
   return (
     <div className="max-w-7xl mx-auto space-y-5 fade-in">
-      <h1 className="text-2xl font-bold text-slate-800">{t('reports')}</h1>
+      <h1 className="text-2xl font-bold text-slate-800 dark:text-slate-100">{t('reports')}</h1>
 
       <div className="flex flex-wrap items-center gap-3">
         <div className="flex-1 min-w-75">
@@ -82,15 +82,15 @@ export const Reports: React.FC = () => {
               placeholder="Search by Order, Party, Drawing or Part Name..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 bg-white border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-blue-500 outline-none transition-all shadow-sm"
+              className="w-full pl-10 pr-4 py-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-sm focus:ring-2 focus:ring-blue-500 outline-none transition-all shadow-sm"
             />
           </div>
         </div>
-        <div className="flex items-center gap-2 bg-white border border-slate-200 rounded-xl px-3 py-2 shadow-sm">
+        <div className="flex items-center gap-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 shadow-sm">
           <label className="text-xs font-semibold text-slate-500">From:</label>
           <input type="date" value={dateFrom} onChange={e => setDateFrom(e.target.value)} className="text-sm outline-none" />
         </div>
-        <div className="flex items-center gap-2 bg-white border border-slate-200 rounded-xl px-3 py-2 shadow-sm">
+        <div className="flex items-center gap-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 shadow-sm">
           <label className="text-xs font-semibold text-slate-500">To:</label>
           <input type="date" value={dateTo} onChange={e => setDateTo(e.target.value)} className="text-sm outline-none" />
         </div>
@@ -100,10 +100,10 @@ export const Reports: React.FC = () => {
       </div>
 
       {/* Tabs */}
-      <div className="flex flex-wrap bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden w-max">
+      <div className="flex flex-wrap bg-white dark:bg-slate-900 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 overflow-hidden w-max">
         {tabs.map(tab => (
           <button key={tab.key} onClick={() => setActiveTab(tab.key)}
-            className={`flex items-center gap-1.5 px-4 py-2.5 text-sm font-semibold transition-colors ${activeTab === tab.key ? `bg-${tab.color}-50 text-${tab.color}-700 border-b-2 border-${tab.color}-600` : 'text-slate-600 hover:bg-slate-50'}`}>
+            className={`flex items-center gap-1.5 px-4 py-2.5 text-sm font-semibold transition-colors ${activeTab === tab.key ? `bg-${tab.color}-50 text-${tab.color}-700 border-b-2 border-${tab.color}-600` : 'text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:bg-slate-800/50'}`}>
             <tab.icon className="w-3.5 h-3.5" /> {tab.label}
           </button>
         ))}
@@ -119,15 +119,15 @@ export const Reports: React.FC = () => {
               { label: 'Pending', value: pendingOrders.length, color: 'amber' },
               { label: 'Urgent', value: urgentOrders.length, color: 'red' },
             ].map((s, i) => (
-              <div key={i} className="bg-white p-5 rounded-2xl shadow-sm border border-slate-100 text-center">
+              <div key={i} className="bg-white dark:bg-slate-900 p-5 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-800 text-center">
                 <p className="text-xs font-semibold text-slate-500 mb-1">{s.label}</p>
                 <h3 className={`text-3xl font-bold text-${s.color}-600`}>{s.value}</h3>
               </div>
             ))}
           </div>
-          <div className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
-            <div className="p-4 border-b border-slate-100 bg-slate-50/50 flex justify-between items-center">
-              <h3 className="text-sm font-semibold text-slate-800">All Orders ({filtered.length})</h3>
+          <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-800 overflow-hidden">
+            <div className="p-4 border-b border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50/50 flex justify-between items-center">
+              <h3 className="text-sm font-semibold text-slate-800 dark:text-slate-100">All Orders ({filtered.length})</h3>
               <button onClick={() => exportCSV(
                 ['Order No','Date','Party','Stage','Items','Urgent'],
                 filtered.map(o => [o.orderNo, o.orderDate, o.partyName, o.stage, String(o.items.length), o.urgent ? 'Yes' : 'No']),
@@ -136,19 +136,19 @@ export const Reports: React.FC = () => {
             </div>
             <div className="overflow-x-auto">
               <table className="w-full text-left border-collapse whitespace-nowrap">
-                <thead><tr className="bg-slate-50 border-b border-slate-100">
+                <thead><tr className="bg-slate-50 dark:bg-slate-800/50 border-b border-slate-100 dark:border-slate-800">
                   {['Order','Date','Party','Type','Material','Qty','Stage'].map(h => <th key={h} className="p-3 text-[10px] font-bold tracking-wider text-slate-500 uppercase">{h}</th>)}
                 </tr></thead>
                 <tbody className="divide-y divide-slate-100">
                   {filtered.map(o => (
-                    <tr key={o.id} className="hover:bg-slate-50/50">
-                      <td className="p-3 text-sm font-bold text-slate-700 font-mono">{o.orderNo}</td>
-                      <td className="p-3 text-sm text-slate-600">{o.orderDate}</td>
-                      <td className="p-3 text-sm font-medium text-slate-800">{o.partyName}</td>
-                      <td className="p-3 text-sm text-slate-600">{o.items[0]?.cuttingType || '-'}</td>
-                      <td className="p-3 text-sm text-slate-600">{o.items[0]?.materialGrade || o.items[0]?.materialType} {o.items[0]?.thickness}</td>
-                      <td className="p-3 text-sm text-slate-600">{o.items.reduce((s,i) => s+i.quantity, 0)}</td>
-                      <td className="p-3"><span className="text-[10px] font-bold bg-slate-100 text-slate-700 px-2 py-1 rounded-full">{o.stage}</span></td>
+                    <tr key={o.id} className="hover:bg-slate-50 dark:bg-slate-800/50/50">
+                      <td className="p-3 text-sm font-bold text-slate-700 dark:text-slate-200 font-mono">{o.orderNo}</td>
+                      <td className="p-3 text-sm text-slate-600 dark:text-slate-300">{o.orderDate}</td>
+                      <td className="p-3 text-sm font-medium text-slate-800 dark:text-slate-100">{o.partyName}</td>
+                      <td className="p-3 text-sm text-slate-600 dark:text-slate-300">{o.items[0]?.cuttingType || '-'}</td>
+                      <td className="p-3 text-sm text-slate-600 dark:text-slate-300">{o.items[0]?.materialGrade || o.items[0]?.materialType} {o.items[0]?.thickness}</td>
+                      <td className="p-3 text-sm text-slate-600 dark:text-slate-300">{o.items.reduce((s,i) => s+i.quantity, 0)}</td>
+                      <td className="p-3"><span className="text-[10px] font-bold bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 px-2 py-1 rounded-full">{o.stage}</span></td>
                     </tr>
                   ))}
                 </tbody>
@@ -161,18 +161,18 @@ export const Reports: React.FC = () => {
       {/* ── Party Wise ── */}
       {activeTab === 'Party' && (
         <div className="space-y-5 slide-up">
-          <div className="bg-white p-4 rounded-2xl shadow-sm border border-slate-100 flex flex-wrap items-center gap-4">
-            <label className="font-semibold text-sm text-slate-700">Select Party:</label>
-            <select value={selectedParty} onChange={e => setSelectedParty(e.target.value)} className="bg-white border border-slate-200 rounded-lg px-4 py-2 text-sm focus:ring-2 focus:ring-purple-500 outline-none w-64">
+          <div className="bg-white dark:bg-slate-900 p-4 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-800 flex flex-wrap items-center gap-4">
+            <label className="font-semibold text-sm text-slate-700 dark:text-slate-200">Select Party:</label>
+            <select value={selectedParty} onChange={e => setSelectedParty(e.target.value)} className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg px-4 py-2 text-sm focus:ring-2 focus:ring-purple-500 outline-none w-64">
               <option value="">-- Choose Party --</option>
               {uniqueParties.map(p => <option key={p} value={p}>{p}</option>)}
             </select>
           </div>
           {selectedParty && (
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
-              <div className="lg:col-span-2 bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
-                <div className="p-4 border-b border-slate-100 bg-slate-50/50 flex justify-between">
-                  <h3 className="text-sm font-semibold text-slate-800">Orders - {selectedParty} ({partyOrders.length})</h3>
+              <div className="lg:col-span-2 bg-white dark:bg-slate-900 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-800 overflow-hidden">
+                <div className="p-4 border-b border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50/50 flex justify-between">
+                  <h3 className="text-sm font-semibold text-slate-800 dark:text-slate-100">Orders - {selectedParty} ({partyOrders.length})</h3>
                   <button onClick={() => exportCSV(
                     ['Order','Date','Stage','Qty','Amount'],
                     partyOrders.map(o => [o.orderNo, o.orderDate, o.stage, String(o.items.reduce((s,i)=>s+i.quantity,0)), String(o.items.reduce((s,i)=>s+i.amount,0))]),
@@ -181,33 +181,33 @@ export const Reports: React.FC = () => {
                 </div>
                 <div className="overflow-x-auto">
                   <table className="w-full text-left border-collapse">
-                    <thead><tr className="bg-slate-50 border-b border-slate-100">
+                    <thead><tr className="bg-slate-50 dark:bg-slate-800/50 border-b border-slate-100 dark:border-slate-800">
                       {['Order','Date','Cutting Type','Qty','Amount (₹)','Stage'].map(h => <th key={h} className="p-3 text-[10px] font-bold tracking-wider text-slate-500 uppercase">{h}</th>)}
                     </tr></thead>
                     <tbody className="divide-y divide-slate-100">
                       {partyOrders.map(o => (
-                        <tr key={o.id} className="hover:bg-slate-50/50">
-                          <td className="p-3 text-sm font-bold font-mono text-slate-700">{o.orderNo}</td>
-                          <td className="p-3 text-sm text-slate-600">{o.orderDate}</td>
-                          <td className="p-3 text-sm text-slate-600">{o.items[0]?.cuttingType}</td>
-                          <td className="p-3 text-sm text-slate-600">{o.items.reduce((s,i)=>s+i.quantity,0)}</td>
-                          <td className="p-3 text-sm font-bold text-slate-700">₹{o.items.reduce((s,i)=>s+i.amount,0).toLocaleString()}</td>
-                          <td className="p-3"><span className="text-[10px] font-bold bg-slate-100 text-slate-700 px-2 py-1 rounded-full">{o.stage}</span></td>
+                        <tr key={o.id} className="hover:bg-slate-50 dark:bg-slate-800/50/50">
+                          <td className="p-3 text-sm font-bold font-mono text-slate-700 dark:text-slate-200">{o.orderNo}</td>
+                          <td className="p-3 text-sm text-slate-600 dark:text-slate-300">{o.orderDate}</td>
+                          <td className="p-3 text-sm text-slate-600 dark:text-slate-300">{o.items[0]?.cuttingType}</td>
+                          <td className="p-3 text-sm text-slate-600 dark:text-slate-300">{o.items.reduce((s,i)=>s+i.quantity,0)}</td>
+                          <td className="p-3 text-sm font-bold text-slate-700 dark:text-slate-200">₹{o.items.reduce((s,i)=>s+i.amount,0).toLocaleString()}</td>
+                          <td className="p-3"><span className="text-[10px] font-bold bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 px-2 py-1 rounded-full">{o.stage}</span></td>
                         </tr>
                       ))}
                     </tbody>
                   </table>
                 </div>
               </div>
-              <div className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
-                <div className="p-4 border-b border-slate-100 bg-slate-50/50">
-                  <h3 className="text-sm font-semibold text-slate-800">Challan Summary</h3>
+              <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-800 overflow-hidden">
+                <div className="p-4 border-b border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50/50">
+                  <h3 className="text-sm font-semibold text-slate-800 dark:text-slate-100">Challan Summary</h3>
                 </div>
                 <div className="p-5">
                   <div className="grid grid-cols-3 gap-3 mb-6">
-                    <div className="bg-slate-50 p-3 rounded-xl border border-slate-100">
+                    <div className="bg-slate-50 dark:bg-slate-800/50 p-3 rounded-xl border border-slate-100 dark:border-slate-800">
                       <p className="text-[10px] text-slate-500 uppercase font-bold">Total Billed</p>
-                      <p className="text-lg font-bold text-slate-800">₹{partyChallans.reduce((s,c)=>s+c.totalAmount,0).toLocaleString()}</p>
+                      <p className="text-lg font-bold text-slate-800 dark:text-slate-100">₹{partyChallans.reduce((s,c)=>s+c.totalAmount,0).toLocaleString()}</p>
                     </div>
                     <div className="bg-emerald-50 p-3 rounded-xl border border-emerald-100">
                       <p className="text-[10px] text-emerald-600 uppercase font-bold">Total Paid</p>
@@ -221,7 +221,7 @@ export const Reports: React.FC = () => {
                   <div className="space-y-2">
                     <h4 className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Challan History</h4>
                     {partyChallans.sort((a,b) => b.challanDate.localeCompare(a.challanDate)).map(c => (
-                      <div key={c.id} className="flex items-center justify-between p-3 bg-slate-50 rounded-lg border border-slate-100 group">
+                      <div key={c.id} className="flex items-center justify-between p-3 bg-slate-50 dark:bg-slate-800/50 rounded-lg border border-slate-100 dark:border-slate-800 group">
                         <div className="flex items-center gap-3">
                           <button
                             onClick={() => {
@@ -234,12 +234,12 @@ export const Reports: React.FC = () => {
                             <Download className="w-3.5 h-3.5" />
                           </button>
                           <div>
-                            <p className="text-sm font-bold text-slate-700">{c.challanNo}</p>
+                            <p className="text-sm font-bold text-slate-700 dark:text-slate-200">{c.challanNo}</p>
                             <p className="text-[10px] text-slate-500">{c.challanDate}</p>
                           </div>
                         </div>
                         <div className="text-right">
-                          <p className="text-sm font-bold text-slate-800">₹{c.totalAmount.toLocaleString()}</p>
+                          <p className="text-sm font-bold text-slate-800 dark:text-slate-100">₹{c.totalAmount.toLocaleString()}</p>
                           <p className="text-[10px] text-red-500 font-bold">Bal: ₹{(c.balanceAmount ?? (c.totalAmount - (c.amountPaid || 0))).toLocaleString()}</p>
                         </div>
                       </div>
@@ -265,9 +265,9 @@ export const Reports: React.FC = () => {
               if (shapeOrders.length === 0) return null;
 
               return (
-                <div key={shape} className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
-                  <div className="p-4 border-b border-slate-100 bg-slate-50/50 flex justify-between items-center">
-                    <h3 className="text-sm font-bold text-slate-800 flex items-center gap-2">
+                <div key={shape} className="bg-white dark:bg-slate-900 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-800 overflow-hidden">
+                  <div className="p-4 border-b border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50/50 flex justify-between items-center">
+                    <h3 className="text-sm font-bold text-slate-800 dark:text-slate-100 flex items-center gap-2">
                       <span className="w-2 h-2 bg-indigo-500 rounded-full"></span>
                       {shape}
                     </h3>
@@ -278,7 +278,7 @@ export const Reports: React.FC = () => {
                   <div className="p-4 space-y-3">
                     <div className="flex justify-between items-center">
                       <span className="text-xs text-slate-500">Total Quantity:</span>
-                      <span className="text-sm font-bold text-slate-800">{totalQty.toLocaleString()}</span>
+                      <span className="text-sm font-bold text-slate-800 dark:text-slate-100">{totalQty.toLocaleString()}</span>
                     </div>
                     <div className="flex justify-between items-center">
                       <span className="text-xs text-slate-500">Total Value:</span>
@@ -290,7 +290,7 @@ export const Reports: React.FC = () => {
                       <div className="space-y-1.5">
                         {shapeOrders.slice(0, 3).map(o => (
                           <div key={o.id} className="flex justify-between text-[11px]">
-                            <span className="text-slate-600 font-mono">{o.orderNo}</span>
+                            <span className="text-slate-600 dark:text-slate-300 font-mono">{o.orderNo}</span>
                             <span className="text-slate-400">{o.partyName.slice(0, 15)}...</span>
                           </div>
                         ))}
@@ -302,9 +302,9 @@ export const Reports: React.FC = () => {
             })}
           </div>
           
-          <div className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
-            <div className="p-4 border-b border-slate-100 bg-slate-50/50 flex justify-between items-center">
-              <h3 className="text-sm font-semibold text-slate-800">Complete Shape Analysis</h3>
+          <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-800 overflow-hidden">
+            <div className="p-4 border-b border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50/50 flex justify-between items-center">
+              <h3 className="text-sm font-semibold text-slate-800 dark:text-slate-100">Complete Shape Analysis</h3>
               <button onClick={() => exportCSV(
                 ['Shape','Orders','Total Qty','Total Amount'],
                 CUTTING_TYPES.map(shape => {
@@ -321,7 +321,7 @@ export const Reports: React.FC = () => {
             <div className="overflow-x-auto">
               <table className="w-full text-left border-collapse whitespace-nowrap">
                 <thead>
-                  <tr className="bg-slate-50 border-b border-slate-100">
+                  <tr className="bg-slate-50 dark:bg-slate-800/50 border-b border-slate-100 dark:border-slate-800">
                     <th className="p-3 text-[10px] font-bold tracking-wider text-slate-500 uppercase">Cutting Shape</th>
                     <th className="p-3 text-[10px] font-bold tracking-wider text-slate-500 uppercase text-center">No. of Orders</th>
                     <th className="p-3 text-[10px] font-bold tracking-wider text-slate-500 uppercase text-center">Total Quantity</th>
@@ -337,10 +337,10 @@ export const Reports: React.FC = () => {
                     if (shapeOrders.length === 0) return null;
 
                     return (
-                      <tr key={shape} className="hover:bg-slate-50/50 transition-colors">
-                        <td className="p-3 text-sm font-bold text-slate-700">{shape}</td>
-                        <td className="p-3 text-sm text-slate-600 text-center">{shapeOrders.length}</td>
-                        <td className="p-3 text-sm text-slate-600 text-center font-medium">{totalQty.toLocaleString()}</td>
+                      <tr key={shape} className="hover:bg-slate-50 dark:bg-slate-800/50/50 transition-colors">
+                        <td className="p-3 text-sm font-bold text-slate-700 dark:text-slate-200">{shape}</td>
+                        <td className="p-3 text-sm text-slate-600 dark:text-slate-300 text-center">{shapeOrders.length}</td>
+                        <td className="p-3 text-sm text-slate-600 dark:text-slate-300 text-center font-medium">{totalQty.toLocaleString()}</td>
                         <td className="p-3 text-sm font-bold text-indigo-600 text-right">₹{totalAmt.toLocaleString()}</td>
                       </tr>
                     );
@@ -355,23 +355,23 @@ export const Reports: React.FC = () => {
       {activeTab === 'ChallanHistory' && (
         <div className="space-y-5 slide-up">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div className="bg-white p-5 rounded-2xl shadow-sm border border-slate-100">
+            <div className="bg-white dark:bg-slate-900 p-5 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-800">
               <p className="text-xs font-semibold text-slate-500 mb-1">Total Billed (Taxable)</p>
-              <h3 className="text-2xl font-bold text-slate-800">₹{challans.reduce((s,c) => s + c.taxableAmount, 0).toLocaleString()}</h3>
+              <h3 className="text-2xl font-bold text-slate-800 dark:text-slate-100">₹{challans.reduce((s,c) => s + c.taxableAmount, 0).toLocaleString()}</h3>
             </div>
-            <div className="bg-white p-5 rounded-2xl shadow-sm border border-slate-100">
+            <div className="bg-white dark:bg-slate-900 p-5 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-800">
               <p className="text-xs font-semibold text-slate-500 mb-1">Total GST</p>
               <h3 className="text-2xl font-bold text-blue-600">₹{challans.reduce((s,c) => s + c.gstAmount, 0).toLocaleString()}</h3>
             </div>
-            <div className="bg-white p-5 rounded-2xl shadow-sm border border-slate-100">
+            <div className="bg-white dark:bg-slate-900 p-5 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-800">
               <p className="text-xs font-semibold text-slate-500 mb-1">Total Outstanding</p>
               <h3 className="text-2xl font-bold text-red-600">₹{challans.reduce((s,c) => s + (c.balanceAmount ?? (c.totalAmount - (c.amountPaid || 0))), 0).toLocaleString()}</h3>
             </div>
           </div>
 
-          <div className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
-            <div className="p-4 border-b border-slate-100 bg-slate-50/50 flex justify-between items-center">
-              <h3 className="text-sm font-semibold text-slate-800">All Challans ({challans.length})</h3>
+          <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-800 overflow-hidden">
+            <div className="p-4 border-b border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50/50 flex justify-between items-center">
+              <h3 className="text-sm font-semibold text-slate-800 dark:text-slate-100">All Challans ({challans.length})</h3>
               <button onClick={() => exportCSV(
                 ['Challan No','Date','Party','Order No','Total Amount','Paid','Balance'],
                 challans.map(c => [c.challanNo, c.challanDate, c.partyName, c.orderNo, String(c.totalAmount), String(c.amountPaid || 0), String(c.balanceAmount ?? (c.totalAmount - (c.amountPaid || 0)))]),
@@ -383,7 +383,7 @@ export const Reports: React.FC = () => {
             <div className="overflow-x-auto">
               <table className="w-full text-left border-collapse whitespace-nowrap">
                 <thead>
-                  <tr className="bg-slate-50 border-b border-slate-100">
+                  <tr className="bg-slate-50 dark:bg-slate-800/50 border-b border-slate-100 dark:border-slate-800">
                     <th className="p-3 text-[10px] font-bold tracking-wider text-slate-500 uppercase">Challan No</th>
                     <th className="p-3 text-[10px] font-bold tracking-wider text-slate-500 uppercase">Date</th>
                     <th className="p-3 text-[10px] font-bold tracking-wider text-slate-500 uppercase">Party Name</th>
@@ -406,12 +406,12 @@ export const Reports: React.FC = () => {
                     })
                     .sort((a,b) => b.challanDate.localeCompare(a.challanDate))
                     .map(c => (
-                      <tr key={c.id} className="hover:bg-slate-50/50 transition-colors">
-                        <td className="p-3 text-sm font-bold text-slate-700 font-mono">{c.challanNo}</td>
-                        <td className="p-3 text-sm text-slate-600">{c.challanDate}</td>
-                        <td className="p-3 text-sm font-medium text-slate-800">{c.partyName}</td>
-                        <td className="p-3 text-sm text-slate-600 font-mono">{c.orderNo}</td>
-                        <td className="p-3 text-sm font-bold text-slate-800 text-right">₹{c.totalAmount.toLocaleString()}</td>
+                      <tr key={c.id} className="hover:bg-slate-50 dark:bg-slate-800/50/50 transition-colors">
+                        <td className="p-3 text-sm font-bold text-slate-700 dark:text-slate-200 font-mono">{c.challanNo}</td>
+                        <td className="p-3 text-sm text-slate-600 dark:text-slate-300">{c.challanDate}</td>
+                        <td className="p-3 text-sm font-medium text-slate-800 dark:text-slate-100">{c.partyName}</td>
+                        <td className="p-3 text-sm text-slate-600 dark:text-slate-300 font-mono">{c.orderNo}</td>
+                        <td className="p-3 text-sm font-bold text-slate-800 dark:text-slate-100 text-right">₹{c.totalAmount.toLocaleString()}</td>
                         <td className="p-3 text-sm font-bold text-red-600 text-right">₹{(c.balanceAmount ?? (c.totalAmount - (c.amountPaid || 0))).toLocaleString()}</td>
                         <td className="p-3 text-center">
                           <button 
@@ -439,21 +439,21 @@ export const Reports: React.FC = () => {
             {CUTTING_TYPES.map(ct => {
               const count = filtered.filter(o => o.items.some(i => i.cuttingType === ct)).length;
               return (
-                <div key={ct} className="bg-white p-4 rounded-xl shadow-sm border border-slate-100 text-center">
-                  <h3 className="text-2xl font-bold text-slate-800">{count}</h3>
+                <div key={ct} className="bg-white dark:bg-slate-900 p-4 rounded-xl shadow-sm border border-slate-100 dark:border-slate-800 text-center">
+                  <h3 className="text-2xl font-bold text-slate-800 dark:text-slate-100">{count}</h3>
                   <p className="text-[10px] font-semibold text-slate-500 uppercase">{ct}</p>
                 </div>
               );
             })}
           </div>
           {/* Thickness-wise */}
-          <div className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
-            <div className="p-4 border-b border-slate-100 bg-slate-50/50">
-              <h3 className="text-sm font-semibold text-slate-800">Thickness Wise Breakdown</h3>
+          <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-800 overflow-hidden">
+            <div className="p-4 border-b border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50/50">
+              <h3 className="text-sm font-semibold text-slate-800 dark:text-slate-100">Thickness Wise Breakdown</h3>
             </div>
             <div className="overflow-x-auto">
               <table className="w-full text-left border-collapse">
-                <thead><tr className="bg-slate-50 border-b border-slate-100">
+                <thead><tr className="bg-slate-50 dark:bg-slate-800/50 border-b border-slate-100 dark:border-slate-800">
                   {['Thickness','Orders','Total Qty','Cutting Types'].map(h => <th key={h} className="p-3 text-[10px] font-bold tracking-wider text-slate-500 uppercase">{h}</th>)}
                 </tr></thead>
                 <tbody className="divide-y divide-slate-100">
@@ -462,11 +462,11 @@ export const Reports: React.FC = () => {
                     const totalQty = matchOrders.flatMap(o => o.items.filter(i => i.thickness === th)).reduce((s,i) => s+i.quantity, 0);
                     const types = Array.from(new Set(matchOrders.flatMap(o => o.items.filter(i => i.thickness === th).map(i => i.cuttingType))));
                     return (
-                      <tr key={th} className="hover:bg-slate-50/50">
-                        <td className="p-3 text-sm font-bold text-slate-800">{th}</td>
-                        <td className="p-3 text-sm text-slate-600">{matchOrders.length}</td>
-                        <td className="p-3 text-sm text-slate-600">{totalQty}</td>
-                        <td className="p-3">{types.map(t => <span key={t} className="inline-block bg-slate-100 text-slate-700 text-[10px] font-bold px-1.5 py-0.5 rounded mr-1 mb-1">{t}</span>)}</td>
+                      <tr key={th} className="hover:bg-slate-50 dark:bg-slate-800/50/50">
+                        <td className="p-3 text-sm font-bold text-slate-800 dark:text-slate-100">{th}</td>
+                        <td className="p-3 text-sm text-slate-600 dark:text-slate-300">{matchOrders.length}</td>
+                        <td className="p-3 text-sm text-slate-600 dark:text-slate-300">{totalQty}</td>
+                        <td className="p-3">{types.map(t => <span key={t} className="inline-block bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 text-[10px] font-bold px-1.5 py-0.5 rounded mr-1 mb-1">{t}</span>)}</td>
                       </tr>
                     );
                   })}
@@ -480,12 +480,12 @@ export const Reports: React.FC = () => {
       {/* ── Worker Wise ── */}
       {activeTab === 'Worker' && (
         <div className="space-y-5 slide-up">
-          <div className="bg-white p-4 rounded-2xl shadow-sm border border-slate-100 flex flex-wrap items-center gap-4">
-            <label className="font-semibold text-sm text-slate-700">Select Worker:</label>
+          <div className="bg-white dark:bg-slate-900 p-4 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-800 flex flex-wrap items-center gap-4">
+            <label className="font-semibold text-sm text-slate-700 dark:text-slate-200">Select Worker:</label>
             <select 
               value={selectedWorker} 
               onChange={e => setSelectedWorker(e.target.value)} 
-              className="bg-white border border-slate-200 rounded-lg px-4 py-2 text-sm focus:ring-2 focus:ring-orange-500 outline-none w-64"
+              className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg px-4 py-2 text-sm focus:ring-2 focus:ring-orange-500 outline-none w-64"
             >
               <option value="">-- All Workers --</option>
               {Array.from(new Set(orders.flatMap(o => o.items.map(i => i.assignedWorker)).filter((w): w is string => !!w))).sort().map(w => (
@@ -503,9 +503,9 @@ export const Reports: React.FC = () => {
                 const totalQtyCompleted = completedItems.reduce((s, i) => s + i.quantity, 0);
 
                 return (
-                  <div key={worker} className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden cursor-pointer hover:shadow-md transition-shadow" onClick={() => setSelectedWorker(worker)}>
-                    <div className="p-4 border-b border-slate-100 bg-slate-50/50 flex justify-between items-center">
-                      <h3 className="text-sm font-bold text-slate-800 flex items-center gap-2">
+                  <div key={worker} className="bg-white dark:bg-slate-900 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-800 overflow-hidden cursor-pointer hover:shadow-md transition-shadow" onClick={() => setSelectedWorker(worker)}>
+                    <div className="p-4 border-b border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50/50 flex justify-between items-center">
+                      <h3 className="text-sm font-bold text-slate-800 dark:text-slate-100 flex items-center gap-2">
                         <Users className="w-4 h-4 text-orange-500" />
                         {worker}
                       </h3>
@@ -534,7 +534,7 @@ export const Reports: React.FC = () => {
                       
                       <div className="flex justify-between items-center px-1">
                         <span className="text-xs text-slate-500 font-medium">Total Completed Qty:</span>
-                        <span className="text-sm font-bold text-slate-800">{totalQtyCompleted.toLocaleString()}</span>
+                        <span className="text-sm font-bold text-slate-800 dark:text-slate-100">{totalQtyCompleted.toLocaleString()}</span>
                       </div>
                     </div>
                   </div>
@@ -552,19 +552,19 @@ export const Reports: React.FC = () => {
 
                   return (
                     <>
-                      <div className="bg-white p-5 rounded-2xl shadow-sm border border-slate-100">
+                      <div className="bg-white dark:bg-slate-900 p-5 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-800">
                         <p className="text-xs font-semibold text-slate-500 mb-1">Total Tasks</p>
-                        <h3 className="text-3xl font-bold text-slate-800">{workerItems.length}</h3>
+                        <h3 className="text-3xl font-bold text-slate-800 dark:text-slate-100">{workerItems.length}</h3>
                       </div>
-                      <div className="bg-white p-5 rounded-2xl shadow-sm border border-emerald-100">
+                      <div className="bg-white dark:bg-slate-900 p-5 rounded-2xl shadow-sm border border-emerald-100">
                         <p className="text-xs font-semibold text-emerald-600 mb-1">Completed</p>
                         <h3 className="text-3xl font-bold text-emerald-700">{completedItems.length}</h3>
                       </div>
-                      <div className="bg-white p-5 rounded-2xl shadow-sm border border-amber-100">
+                      <div className="bg-white dark:bg-slate-900 p-5 rounded-2xl shadow-sm border border-amber-100">
                         <p className="text-xs font-semibold text-amber-600 mb-1">Pending</p>
                         <h3 className="text-3xl font-bold text-amber-700">{pendingItems.length}</h3>
                       </div>
-                      <div className="bg-white p-5 rounded-2xl shadow-sm border border-orange-100">
+                      <div className="bg-white dark:bg-slate-900 p-5 rounded-2xl shadow-sm border border-orange-100">
                         <p className="text-xs font-semibold text-orange-600 mb-1">Efficiency</p>
                         <h3 className="text-3xl font-bold text-orange-700">{completionRate}%</h3>
                       </div>
@@ -573,9 +573,9 @@ export const Reports: React.FC = () => {
                 })()}
               </div>
 
-              <div className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
-                <div className="p-4 border-b border-slate-100 bg-slate-50/50 flex justify-between items-center">
-                  <h3 className="text-sm font-semibold text-slate-800">Detailed Task List - {selectedWorker}</h3>
+              <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-800 overflow-hidden">
+                <div className="p-4 border-b border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50/50 flex justify-between items-center">
+                  <h3 className="text-sm font-semibold text-slate-800 dark:text-slate-100">Detailed Task List - {selectedWorker}</h3>
                   <div className="flex gap-2">
                     <button 
                       onClick={() => {
@@ -610,7 +610,7 @@ export const Reports: React.FC = () => {
                 <div className="overflow-x-auto">
                   <table className="w-full text-left border-collapse whitespace-nowrap">
                     <thead>
-                      <tr className="bg-slate-50 border-b border-slate-100">
+                      <tr className="bg-slate-50 dark:bg-slate-800/50 border-b border-slate-100 dark:border-slate-800">
                         <th className="p-3 text-[10px] font-bold tracking-wider text-slate-500 uppercase">Order No</th>
                         <th className="p-3 text-[10px] font-bold tracking-wider text-slate-500 uppercase">Party</th>
                         <th className="p-3 text-[10px] font-bold tracking-wider text-slate-500 uppercase">Description</th>
@@ -622,12 +622,12 @@ export const Reports: React.FC = () => {
                     <tbody className="divide-y divide-slate-100">
                       {orders.flatMap(o => o.items.filter(i => i.assignedWorker === selectedWorker).map(i => ({ ...i, orderNo: o.orderNo, partyName: o.partyName })))
                         .map((item, idx) => (
-                          <tr key={idx} className="hover:bg-slate-50/50">
-                            <td className="p-3 text-sm font-bold font-mono text-slate-700">{item.orderNo}</td>
-                            <td className="p-3 text-sm text-slate-800">{item.partyName}</td>
-                            <td className="p-3 text-sm text-slate-600">{item.partName || item.cuttingType}</td>
-                            <td className="p-3 text-sm text-slate-600">{item.thickness}</td>
-                            <td className="p-3 text-sm text-slate-600 text-center">{item.quantity}</td>
+                          <tr key={idx} className="hover:bg-slate-50 dark:bg-slate-800/50/50">
+                            <td className="p-3 text-sm font-bold font-mono text-slate-700 dark:text-slate-200">{item.orderNo}</td>
+                            <td className="p-3 text-sm text-slate-800 dark:text-slate-100">{item.partyName}</td>
+                            <td className="p-3 text-sm text-slate-600 dark:text-slate-300">{item.partName || item.cuttingType}</td>
+                            <td className="p-3 text-sm text-slate-600 dark:text-slate-300">{item.thickness}</td>
+                            <td className="p-3 text-sm text-slate-600 dark:text-slate-300 text-center">{item.quantity}</td>
                             <td className="p-3 text-center">
                               <span className={`text-[10px] font-bold px-2 py-1 rounded-full uppercase ${item.itemStatus === 'Completed' ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700'}`}>
                                 {item.itemStatus || 'Pending'}
@@ -648,18 +648,18 @@ export const Reports: React.FC = () => {
       {activeTab === 'Pending' && (
         <div className="space-y-5 slide-up">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div className="bg-white p-5 rounded-2xl shadow-sm border border-red-100">
+            <div className="bg-white dark:bg-slate-900 p-5 rounded-2xl shadow-sm border border-red-100">
               <p className="text-xs font-semibold text-slate-500 mb-1">Total Pending Orders</p>
               <h3 className="text-2xl font-bold text-red-600">{filtered.filter(o => !['Dispatch Done','Challan Done','Payment Received'].includes(o.stage)).length}</h3>
             </div>
-            <div className="bg-white p-5 rounded-2xl shadow-sm border border-amber-100">
+            <div className="bg-white dark:bg-slate-900 p-5 rounded-2xl shadow-sm border border-amber-100">
               <p className="text-xs font-semibold text-slate-500 mb-1">Total Pending Items</p>
               <h3 className="text-2xl font-bold text-amber-600">
                 {filtered.filter(o => !['Dispatch Done','Challan Done','Payment Received'].includes(o.stage))
                   .reduce((sum, o) => sum + o.items.length, 0)}
               </h3>
             </div>
-            <div className="bg-white p-5 rounded-2xl shadow-sm border border-rose-100">
+            <div className="bg-white dark:bg-slate-900 p-5 rounded-2xl shadow-sm border border-rose-100">
               <p className="text-xs font-semibold text-slate-500 mb-1">Urgent Pending</p>
               <h3 className="text-2xl font-bold text-rose-600">
                 {filtered.filter(o => o.urgent && !['Dispatch Done','Challan Done','Payment Received'].includes(o.stage)).length}
@@ -667,9 +667,9 @@ export const Reports: React.FC = () => {
             </div>
           </div>
 
-          <div className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
-            <div className="p-4 border-b border-slate-100 bg-slate-50/50 flex justify-between items-center">
-              <h3 className="text-sm font-semibold text-slate-800">Pending Order List</h3>
+          <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-800 overflow-hidden">
+            <div className="p-4 border-b border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50/50 flex justify-between items-center">
+              <h3 className="text-sm font-semibold text-slate-800 dark:text-slate-100">Pending Order List</h3>
               <button onClick={() => exportCSV(
                 ['Order No','Date','Party','Stage','Urgent'],
                 filtered.filter(o => !['Dispatch Done','Challan Done','Payment Received'].includes(o.stage))
@@ -682,7 +682,7 @@ export const Reports: React.FC = () => {
             <div className="overflow-x-auto">
               <table className="w-full text-left border-collapse whitespace-nowrap">
                 <thead>
-                  <tr className="bg-slate-50 border-b border-slate-100">
+                  <tr className="bg-slate-50 dark:bg-slate-800/50 border-b border-slate-100 dark:border-slate-800">
                     <th className="p-3 text-[10px] font-bold tracking-wider text-slate-500 uppercase">Order No</th>
                     <th className="p-3 text-[10px] font-bold tracking-wider text-slate-500 uppercase">Order Date</th>
                     <th className="p-3 text-[10px] font-bold tracking-wider text-slate-500 uppercase">Party Name</th>
@@ -702,16 +702,16 @@ export const Reports: React.FC = () => {
                       const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
                       
                       return (
-                        <tr key={o.id} className="hover:bg-slate-50/50 transition-colors">
-                          <td className="p-3 text-sm font-bold text-slate-700 font-mono">{o.orderNo}</td>
-                          <td className="p-3 text-sm text-slate-600">{o.orderDate}</td>
-                          <td className="p-3 text-sm font-medium text-slate-800">{o.partyName}</td>
+                        <tr key={o.id} className="hover:bg-slate-50 dark:bg-slate-800/50/50 transition-colors">
+                          <td className="p-3 text-sm font-bold text-slate-700 dark:text-slate-200 font-mono">{o.orderNo}</td>
+                          <td className="p-3 text-sm text-slate-600 dark:text-slate-300">{o.orderDate}</td>
+                          <td className="p-3 text-sm font-medium text-slate-800 dark:text-slate-100">{o.partyName}</td>
                           <td className="p-3">
                             <span className="text-[10px] font-bold bg-blue-50 text-blue-700 px-2 py-1 rounded-full border border-blue-100">
                               {o.stage}
                             </span>
                           </td>
-                          <td className="p-3 text-center text-sm font-medium text-slate-600">
+                          <td className="p-3 text-center text-sm font-medium text-slate-600 dark:text-slate-300">
                             {diffDays} Days
                           </td>
                           <td className="p-3 text-center">
@@ -740,15 +740,15 @@ export const Reports: React.FC = () => {
               { label: 'Ready for Dispatch', stages: ['Ready'], color: 'emerald' },
               { label: 'Dispatched', stages: ['Dispatch Done'], color: 'blue' },
             ].map((s, i) => (
-              <div key={i} className="bg-white p-5 rounded-2xl shadow-sm border border-slate-100 text-center">
+              <div key={i} className="bg-white dark:bg-slate-900 p-5 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-800 text-center">
                 <p className="text-xs font-semibold text-slate-500 mb-1">{s.label}</p>
                 <h3 className={`text-3xl font-bold text-${s.color}-600`}>{filtered.filter(o => s.stages.includes(o.stage)).length}</h3>
               </div>
             ))}
           </div>
-          <div className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
-            <div className="p-4 border-b border-slate-100 bg-slate-50/50 flex justify-between">
-              <h3 className="text-sm font-semibold text-slate-800">Stage-wise Order List</h3>
+          <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-800 overflow-hidden">
+            <div className="p-4 border-b border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50/50 flex justify-between">
+              <h3 className="text-sm font-semibold text-slate-800 dark:text-slate-100">Stage-wise Order List</h3>
               <button onClick={() => exportCSV(
                 ['Order','Party','Stage','Qty','Due Date'],
                 filtered.map(o => [o.orderNo, o.partyName, o.stage, String(o.items.reduce((s,i)=>s+i.quantity,0)), o.deliveryDate]),
@@ -757,19 +757,19 @@ export const Reports: React.FC = () => {
             </div>
             <div className="overflow-x-auto">
               <table className="w-full text-left border-collapse whitespace-nowrap">
-                <thead><tr className="bg-slate-50 border-b border-slate-100">
+                <thead><tr className="bg-slate-50 dark:bg-slate-800/50 border-b border-slate-100 dark:border-slate-800">
                   {['Order','Party','Type','Thickness','Qty','Due Date','Stage'].map(h => <th key={h} className="p-3 text-[10px] font-bold tracking-wider text-slate-500 uppercase">{h}</th>)}
                 </tr></thead>
                 <tbody className="divide-y divide-slate-100">
                   {filtered.sort((a,b) => ALL_STAGES.indexOf(a.stage) - ALL_STAGES.indexOf(b.stage)).map(o => (
-                    <tr key={o.id} className="hover:bg-slate-50/50">
-                      <td className="p-3 text-sm font-bold font-mono text-slate-700">{o.orderNo}</td>
-                      <td className="p-3 text-sm font-medium text-slate-800">{o.partyName}</td>
-                      <td className="p-3 text-sm text-slate-600">{o.items[0]?.cuttingType}</td>
-                      <td className="p-3 text-sm text-slate-600">{o.items[0]?.thickness}</td>
-                      <td className="p-3 text-sm text-slate-600">{o.items.reduce((s,i)=>s+i.quantity,0)}</td>
-                      <td className="p-3 text-sm text-slate-600">{o.deliveryDate || '-'}</td>
-                      <td className="p-3"><span className="text-[10px] font-bold bg-slate-100 text-slate-700 px-2 py-1 rounded-full">{o.stage}</span></td>
+                    <tr key={o.id} className="hover:bg-slate-50 dark:bg-slate-800/50/50">
+                      <td className="p-3 text-sm font-bold font-mono text-slate-700 dark:text-slate-200">{o.orderNo}</td>
+                      <td className="p-3 text-sm font-medium text-slate-800 dark:text-slate-100">{o.partyName}</td>
+                      <td className="p-3 text-sm text-slate-600 dark:text-slate-300">{o.items[0]?.cuttingType}</td>
+                      <td className="p-3 text-sm text-slate-600 dark:text-slate-300">{o.items[0]?.thickness}</td>
+                      <td className="p-3 text-sm text-slate-600 dark:text-slate-300">{o.items.reduce((s,i)=>s+i.quantity,0)}</td>
+                      <td className="p-3 text-sm text-slate-600 dark:text-slate-300">{o.deliveryDate || '-'}</td>
+                      <td className="p-3"><span className="text-[10px] font-bold bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 px-2 py-1 rounded-full">{o.stage}</span></td>
                     </tr>
                   ))}
                 </tbody>
@@ -789,15 +789,15 @@ export const Reports: React.FC = () => {
               { label: 'Total Scrap (Kg)', value: totalScrap, color: 'red' },
               { label: 'Balance (Kg)', value: totalBalance, color: 'emerald' },
             ].map((s, i) => (
-              <div key={i} className="bg-white p-5 rounded-2xl shadow-sm border border-slate-100 text-center">
+              <div key={i} className="bg-white dark:bg-slate-900 p-5 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-800 text-center">
                 <p className="text-xs font-semibold text-slate-500 mb-1">{s.label}</p>
                 <h3 className={`text-2xl font-bold text-${s.color}-600`}>{s.value.toLocaleString()}</h3>
               </div>
             ))}
           </div>
-          <div className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
-            <div className="p-4 border-b border-slate-100 bg-slate-50/50 flex justify-between">
-              <h3 className="text-sm font-semibold text-slate-800">Plate Consumption</h3>
+          <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-800 overflow-hidden">
+            <div className="p-4 border-b border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50/50 flex justify-between">
+              <h3 className="text-sm font-semibold text-slate-800 dark:text-slate-100">Plate Consumption</h3>
               <button onClick={() => exportCSV(
                 ['Plate ID','Source','Order','Used Kg','Scrap Kg','Scrap Owner'],
                 usages.map(u => {const p=plates.find(x=>x.id===u.plateId); return [u.plateId, p?.source||'', u.orderNo, String(u.usedWeight), String(u.scrapQuantity), u.scrapOwner]}),
@@ -806,20 +806,20 @@ export const Reports: React.FC = () => {
             </div>
             <div className="overflow-x-auto">
               <table className="w-full text-left border-collapse">
-                <thead><tr className="bg-slate-50 border-b border-slate-100">
+                <thead><tr className="bg-slate-50 dark:bg-slate-800/50 border-b border-slate-100 dark:border-slate-800">
                   {['Plate ID','Source','Order','Used (Kg)','Scrap (Kg)','Scrap Owner'].map(h => <th key={h} className="p-3 text-[10px] font-bold tracking-wider text-slate-500 uppercase">{h}</th>)}
                 </tr></thead>
                 <tbody className="divide-y divide-slate-100">
                   {usages.map((u, i) => {
                     const plate = plates.find(p => p.id === u.plateId);
                     return (
-                      <tr key={i} className="hover:bg-slate-50/50">
-                        <td className="p-3 text-sm font-bold text-slate-800 font-mono">{u.plateId}</td>
+                      <tr key={i} className="hover:bg-slate-50 dark:bg-slate-800/50/50">
+                        <td className="p-3 text-sm font-bold text-slate-800 dark:text-slate-100 font-mono">{u.plateId}</td>
                         <td className="p-3"><span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${plate?.source === 'Customer' ? 'bg-purple-100 text-purple-700' : 'bg-blue-100 text-blue-700'}`}>{plate?.source || '-'}</span></td>
-                        <td className="p-3 text-sm font-mono text-slate-700">{u.orderNo}</td>
-                        <td className="p-3 text-sm text-slate-600">{u.usedWeight}</td>
+                        <td className="p-3 text-sm font-mono text-slate-700 dark:text-slate-200">{u.orderNo}</td>
+                        <td className="p-3 text-sm text-slate-600 dark:text-slate-300">{u.usedWeight}</td>
                         <td className="p-3 text-sm text-red-600 font-medium">{u.scrapQuantity}</td>
-                        <td className="p-3 text-sm text-slate-600">{u.scrapOwner}</td>
+                        <td className="p-3 text-sm text-slate-600 dark:text-slate-300">{u.scrapOwner}</td>
                       </tr>
                     );
                   })}
@@ -829,13 +829,13 @@ export const Reports: React.FC = () => {
           </div>
           {/* Customer Material Pending */}
           {customerPlates.length > 0 && (
-            <div className="bg-white rounded-2xl shadow-sm border border-purple-100 overflow-hidden">
+            <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-sm border border-purple-100 overflow-hidden">
               <div className="p-4 border-b border-purple-100 bg-purple-50/50">
                 <h3 className="text-sm font-semibold text-purple-800">Customer Material Pending</h3>
               </div>
               <div className="overflow-x-auto">
                 <table className="w-full text-left border-collapse">
-                  <thead><tr className="bg-slate-50 border-b border-slate-100">
+                  <thead><tr className="bg-slate-50 dark:bg-slate-800/50 border-b border-slate-100 dark:border-slate-800">
                     {['Plate ID','Grade','Thickness','Initial (Kg)','Balance (Kg)'].map(h => <th key={h} className="p-3 text-[10px] font-bold tracking-wider text-slate-500 uppercase">{h}</th>)}
                   </tr></thead>
                   <tbody className="divide-y divide-slate-100">
@@ -843,11 +843,11 @@ export const Reports: React.FC = () => {
                       const pu = usages.filter(u => u.plateId === p.id);
                       const bal = p.initialWeight - pu.reduce((s,u) => s+u.usedWeight+u.scrapQuantity, 0);
                       return (
-                        <tr key={p.id} className="hover:bg-slate-50/50">
-                          <td className="p-3 text-sm font-bold font-mono text-slate-800">{p.id}</td>
-                          <td className="p-3 text-sm text-slate-600">{p.grade}</td>
-                          <td className="p-3 text-sm text-slate-600">{p.thickness}</td>
-                          <td className="p-3 text-sm text-slate-600">{p.initialWeight}</td>
+                        <tr key={p.id} className="hover:bg-slate-50 dark:bg-slate-800/50/50">
+                          <td className="p-3 text-sm font-bold font-mono text-slate-800 dark:text-slate-100">{p.id}</td>
+                          <td className="p-3 text-sm text-slate-600 dark:text-slate-300">{p.grade}</td>
+                          <td className="p-3 text-sm text-slate-600 dark:text-slate-300">{p.thickness}</td>
+                          <td className="p-3 text-sm text-slate-600 dark:text-slate-300">{p.initialWeight}</td>
                           <td className="p-3 text-sm font-bold text-emerald-600">{bal}</td>
                         </tr>
                       );

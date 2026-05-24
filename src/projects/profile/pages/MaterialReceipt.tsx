@@ -128,7 +128,7 @@ export const MaterialReceipt: React.FC = () => {
     <div className="max-w-[1000px] mx-auto space-y-6 fade-in">
       {/* Header */}
       <div>
-        <h1 className="text-2xl font-bold text-slate-800">{t('materialReceipt')}</h1>
+        <h1 className="text-2xl font-bold text-slate-800 dark:text-slate-100">{t('materialReceipt')}</h1>
         <p className="text-sm text-slate-500 mt-0.5">Record goods received against purchase orders (GRN)</p>
       </div>
 
@@ -141,8 +141,8 @@ export const MaterialReceipt: React.FC = () => {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Selection & Form */}
         <div className="lg:col-span-2 space-y-6">
-          <div className="bg-white rounded-2xl p-6 shadow-sm border border-slate-100">
-            <h2 className="text-base font-semibold text-slate-800 mb-6 flex items-center gap-2">
+          <div className="bg-white dark:bg-slate-900 rounded-2xl p-6 shadow-sm border border-slate-100 dark:border-slate-800">
+            <h2 className="text-base font-semibold text-slate-800 dark:text-slate-100 mb-6 flex items-center gap-2">
               <Search className="w-5 h-5 text-blue-600" />
               Select Purchase Order
             </h2>
@@ -153,7 +153,7 @@ export const MaterialReceipt: React.FC = () => {
                 <select 
                   value={selectedPOId} 
                   onChange={(e) => setSelectedPOId(e.target.value)}
-                  className="w-full bg-white border border-slate-200 text-slate-800 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
+                  className="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-100 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
                 >
                   <option value="">-- Select Pending PO --</option>
                   {activePOs.map(po => (
@@ -167,22 +167,22 @@ export const MaterialReceipt: React.FC = () => {
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
                       <label className="block text-xs font-semibold text-slate-500 mb-1.5 uppercase tracking-wider">Received Date</label>
-                      <input type="date" value={date} onChange={(e) => setDate(e.target.value)} className="w-full bg-white border border-slate-200 text-slate-800 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                      <input type="date" value={date} onChange={(e) => setDate(e.target.value)} className="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-100 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
                     </div>
                     <div>
                       <label className="block text-xs font-semibold text-slate-500 mb-1.5 uppercase tracking-wider">Bill No</label>
-                      <input type="text" value={billNo} onChange={(e) => setBillNo(e.target.value)} className="w-full bg-white border border-slate-200 text-slate-800 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Enter Bill No" />
+                      <input type="text" value={billNo} onChange={(e) => setBillNo(e.target.value)} className="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-100 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Enter Bill No" />
                     </div>
                   </div>
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
                       <label className="block text-xs font-semibold text-slate-500 mb-1.5 uppercase tracking-wider">Transporter Name</label>
-                      <input type="text" value={transporterName} onChange={(e) => setTransporterName(e.target.value)} className="w-full bg-white border border-slate-200 text-slate-800 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Enter Transporter Name" />
+                      <input type="text" value={transporterName} onChange={(e) => setTransporterName(e.target.value)} className="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-100 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Enter Transporter Name" />
                     </div>
                     <div>
                       <label className="block text-xs font-semibold text-slate-500 mb-1.5 uppercase tracking-wider">Vehicle No</label>
-                      <input type="text" value={vehicleNo} onChange={(e) => setVehicleNo(e.target.value)} className="w-full bg-white border border-slate-200 text-slate-800 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="GJ-06-XX-XXXX" />
+                      <input type="text" value={vehicleNo} onChange={(e) => setVehicleNo(e.target.value)} className="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-100 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="GJ-06-XX-XXXX" />
                     </div>
                   </div>
 
@@ -195,7 +195,7 @@ export const MaterialReceipt: React.FC = () => {
                         className={`flex-1 py-2.5 rounded-lg border text-sm font-bold transition-all duration-300 ${
                           tcAvailable === 'Yes'
                             ? 'bg-emerald-600 border-emerald-600 text-white shadow-md shadow-emerald-100'
-                            : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50'
+                            : 'bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:bg-slate-800/50'
                         }`}
                       >
                         Yes
@@ -206,7 +206,7 @@ export const MaterialReceipt: React.FC = () => {
                         className={`flex-1 py-2.5 rounded-lg border text-sm font-bold transition-all duration-300 ${
                           tcAvailable === 'No'
                             ? 'bg-rose-600 border-rose-600 text-white shadow-md shadow-rose-100'
-                            : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50'
+                            : 'bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:bg-slate-800/50'
                         }`}
                       >
                         No
@@ -216,10 +216,10 @@ export const MaterialReceipt: React.FC = () => {
 
                   <div className="space-y-1.5">
                     <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wider">Item Details & Received Quantities *</label>
-                    <div className="border border-slate-100 rounded-xl overflow-hidden bg-slate-50/20">
+                    <div className="border border-slate-100 dark:border-slate-800 rounded-xl overflow-hidden bg-slate-50 dark:bg-slate-800/50/20">
                       <table className="w-full text-left border-collapse text-xs">
                         <thead>
-                          <tr className="bg-slate-50 border-b border-slate-100">
+                          <tr className="bg-slate-50 dark:bg-slate-800/50 border-b border-slate-100 dark:border-slate-800">
                             <th className="p-3 font-semibold text-slate-500">Item Specifications</th>
                             <th className="p-3 font-semibold text-slate-500 text-center">Ordered</th>
                             <th className="p-3 font-semibold text-slate-500 text-center">Prev. Recd</th>
@@ -227,21 +227,21 @@ export const MaterialReceipt: React.FC = () => {
                             <th className="p-3 font-semibold text-slate-500 text-center w-28">Recd Qty (Nos)</th>
                           </tr>
                         </thead>
-                        <tbody className="divide-y divide-slate-100 bg-white">
+                        <tbody className="divide-y divide-slate-100 bg-white dark:bg-slate-900">
                           {selectedPO.items.map((item) => {
                             const prevRecd = getItemReceivedBefore(item.id);
                             const pending = Math.max(0, (item.nos || 0) - prevRecd);
                             const curQty = itemQuantities[item.id] ?? 0;
 
                             return (
-                              <tr key={item.id} className="hover:bg-slate-50/50 transition-colors">
-                                <td className="p-3 font-medium text-slate-700">
+                              <tr key={item.id} className="hover:bg-slate-50 dark:bg-slate-800/50/50 transition-colors">
+                                <td className="p-3 font-medium text-slate-700 dark:text-slate-200">
                                   <div className="flex flex-col">
-                                    <span className="font-bold text-slate-800">{item.grade}</span>
+                                    <span className="font-bold text-slate-800 dark:text-slate-100">{item.grade}</span>
                                     <span className="text-slate-400 text-[10px]">{item.thickness}mm • {item.width}x{item.length}mm</span>
                                   </div>
                                 </td>
-                                <td className="p-3 text-center font-semibold text-slate-600">{item.nos} Nos</td>
+                                <td className="p-3 text-center font-semibold text-slate-600 dark:text-slate-300">{item.nos} Nos</td>
                                 <td className="p-3 text-center text-emerald-600 font-semibold">{prevRecd} Nos</td>
                                 <td className="p-3 text-center text-blue-600 font-bold">{pending} Nos</td>
                                 <td className="p-3 text-center">
@@ -257,7 +257,7 @@ export const MaterialReceipt: React.FC = () => {
                                         [item.id]: val
                                       }));
                                     }}
-                                    className="w-20 bg-slate-50 border border-slate-200 rounded-lg px-2 py-1 text-center font-bold text-slate-700 focus:bg-white focus:ring-2 focus:ring-blue-500 outline-none"
+                                    className="w-20 bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-lg px-2 py-1 text-center font-bold text-slate-700 dark:text-slate-200 focus:bg-white dark:bg-slate-900 focus:ring-2 focus:ring-blue-500 outline-none"
                                     placeholder="0"
                                   />
                                 </td>
@@ -275,7 +275,7 @@ export const MaterialReceipt: React.FC = () => {
                       type="text" 
                       value={remark} 
                       onChange={(e) => setRemark(e.target.value)} 
-                      className="w-full bg-white border border-slate-200 text-slate-800 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      className="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-100 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                       placeholder="Heat No, Vehicle No, etc."
                     />
                   </div>
@@ -299,20 +299,20 @@ export const MaterialReceipt: React.FC = () => {
 
         {/* Status Card */}
         <div className="space-y-6">
-          <div className="bg-white rounded-2xl p-6 shadow-sm border border-slate-100 sticky top-6">
-            <h2 className="text-base font-semibold text-slate-800 mb-4 border-b border-slate-100 pb-2">PO Status Summary</h2>
+          <div className="bg-white dark:bg-slate-900 rounded-2xl p-6 shadow-sm border border-slate-100 dark:border-slate-800 sticky top-6">
+            <h2 className="text-base font-semibold text-slate-800 dark:text-slate-100 mb-4 border-b border-slate-100 dark:border-slate-800 pb-2">PO Status Summary</h2>
             
             {selectedPO ? (
               <div className="space-y-4">
                 <div className="flex justify-between text-sm">
                   <span className="text-slate-500">Ordered Qty:</span>
-                  <span className="font-bold text-slate-800">{getTotalNos(selectedPO)} Nos</span>
+                  <span className="font-bold text-slate-800 dark:text-slate-100">{getTotalNos(selectedPO)} Nos</span>
                 </div>
                 <div className="flex justify-between text-sm">
                   <span className="text-slate-500">Previously Received:</span>
                   <span className="font-bold text-emerald-600">{totalReceivedBefore} Nos</span>
                 </div>
-                <div className="flex justify-between text-sm border-t border-slate-100 pt-2">
+                <div className="flex justify-between text-sm border-t border-slate-100 dark:border-slate-800 pt-2">
                   <span className="text-slate-500">Currently Pending:</span>
                   <span className="font-bold text-blue-600">{pendingQty} Nos</span>
                 </div>
@@ -334,7 +334,7 @@ export const MaterialReceipt: React.FC = () => {
 
                 <div className="pt-2">
                   <div className="text-[10px] uppercase font-bold text-slate-400 mb-1">Details</div>
-                  <div className="text-xs text-slate-600 space-y-1">
+                  <div className="text-xs text-slate-600 dark:text-slate-300 space-y-1">
                     <p><strong>Supplier:</strong> {selectedPO.supplierName}</p>
                     <p><strong>Items:</strong> {selectedPO.items.map(i => i.grade).join(', ')}</p>
                   </div>
