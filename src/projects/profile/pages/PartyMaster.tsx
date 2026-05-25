@@ -23,6 +23,8 @@ export const PartyMasterPage: React.FC = () => {
   const [mobileNumber, setMobileNumber] = useState('');
   const [location, setLocation] = useState('');
   const [deliveryAddress, setDeliveryAddress] = useState('');
+  const [address, setAddress] = useState('');
+  const [reference, setReference] = useState('');
   const [paymentTerms, setPaymentTerms] = useState('30 DAYS');
   const [gstNumber, setGstNumber] = useState('');
   const [email, setEmail] = useState('');
@@ -64,6 +66,8 @@ export const PartyMasterPage: React.FC = () => {
     setMobileNumber('');
     setLocation(BRANCHES[0] || '');
     setDeliveryAddress('');
+    setAddress('');
+    setReference('');
     setPaymentTerms('30 DAYS');
     setGstNumber('');
     setEmail('');
@@ -77,6 +81,8 @@ export const PartyMasterPage: React.FC = () => {
     setMobileNumber(party.mobileNumber);
     setLocation(party.location);
     setDeliveryAddress(party.deliveryAddress);
+    setAddress(party.address || '');
+    setReference(party.reference || '');
     setPaymentTerms(party.paymentTerms || '30 DAYS');
     setGstNumber(party.gstNumber || '');
     setEmail(party.email || '');
@@ -103,6 +109,8 @@ export const PartyMasterPage: React.FC = () => {
           mobileNumber,
           location,
           deliveryAddress,
+          address,
+          reference,
           paymentTerms,
           gstNumber,
           email
@@ -115,6 +123,8 @@ export const PartyMasterPage: React.FC = () => {
           mobileNumber,
           location,
           deliveryAddress,
+          address,
+          reference,
           paymentTerms,
           gstNumber,
           email
@@ -433,14 +443,38 @@ export const PartyMasterPage: React.FC = () => {
                 </div>
               </div>
 
-              {/* Email Address */}
+              {/* Email Address & Reference */}
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-1.5">
+                  <label className="block text-xs font-bold text-slate-400 uppercase tracking-widest">Email Address</label>
+                  <input
+                    type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    placeholder="customer@email.com"
+                    className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-800 dark:text-slate-100 rounded-lg px-3.5 py-2.5 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500 font-semibold"
+                  />
+                </div>
+                <div className="space-y-1.5">
+                  <label className="block text-xs font-bold text-slate-400 uppercase tracking-widest">Reference</label>
+                  <input
+                    type="text"
+                    value={reference}
+                    onChange={(e) => setReference(e.target.value.toUpperCase())}
+                    placeholder="e.g. Reference Info"
+                    className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-800 dark:text-slate-100 rounded-lg px-3.5 py-2.5 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500 font-semibold"
+                  />
+                </div>
+              </div>
+
+              {/* Billing Address */}
               <div className="space-y-1.5">
-                <label className="block text-xs font-bold text-slate-400 uppercase tracking-widest">Email Address</label>
-                <input
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder="customer@email.com"
+                <label className="block text-xs font-bold text-slate-400 uppercase tracking-widest">Billing Address</label>
+                <textarea
+                  value={address}
+                  onChange={(e) => setAddress(e.target.value.toUpperCase())}
+                  placeholder="Enter full billing address"
+                  rows={3}
                   className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-800 dark:text-slate-100 rounded-lg px-3.5 py-2.5 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500 font-semibold"
                 />
               </div>

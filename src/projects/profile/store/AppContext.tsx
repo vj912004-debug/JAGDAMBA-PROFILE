@@ -363,6 +363,8 @@ export interface PartyMaster {
   paymentTerms?: string;
   gstNumber?: string;
   email?: string;
+  address?: string;
+  reference?: string;
 }
 
 // ─── Context Type ─────────────────────────────────────────────
@@ -708,7 +710,9 @@ const seedParties: PartyMaster[] = [
     deliveryAddress: "PLOT NO. 23/B, GIDC MAKARPURA, VADODARA - 390010",
     paymentTerms: "30 Days Credit",
     gstNumber: "24AAACS1234F1Z0",
-    email: "superiorsteel@gmail.com"
+    email: "superiorsteel@gmail.com",
+    address: "PLOT NO. 23/B, GIDC MAKARPURA, VADODARA - 390010",
+    reference: ""
   }
 ];
 
@@ -1148,7 +1152,9 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       deliveryAddress: party.deliveryAddress.trim().toUpperCase(),
       paymentTerms: party.paymentTerms?.trim().toUpperCase(),
       gstNumber: party.gstNumber?.trim().toUpperCase(),
-      email: party.email?.trim()
+      email: party.email?.trim(),
+      address: party.address?.trim().toUpperCase(),
+      reference: party.reference?.trim().toUpperCase()
     };
     
     // Prevent duplicates by checking name
@@ -1179,7 +1185,9 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       deliveryAddress: party.deliveryAddress.trim().toUpperCase(),
       paymentTerms: party.paymentTerms?.trim().toUpperCase(),
       gstNumber: party.gstNumber?.trim().toUpperCase(),
-      email: party.email?.trim()
+      email: party.email?.trim(),
+      address: party.address?.trim().toUpperCase(),
+      reference: party.reference?.trim().toUpperCase()
     };
     setParties(prev => prev.map(p => p.id === updated.id ? updated : p));
     addLog({
