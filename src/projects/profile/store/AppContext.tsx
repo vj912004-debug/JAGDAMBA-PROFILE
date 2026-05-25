@@ -414,6 +414,7 @@ interface AppContextType {
 
   purchaseOrders: PurchaseOrder[];
   setPurchaseOrders: React.Dispatch<React.SetStateAction<PurchaseOrder[]>>;
+  deletePurchaseOrder: (id: string) => void;
   purchaseReceipts: PurchaseReceipt[];
   setPurchaseReceipts: React.Dispatch<React.SetStateAction<PurchaseReceipt[]>>;
 
@@ -1176,6 +1177,11 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     return addedParty;
   }, [addLog]);
 
+  const deletePurchaseOrder = (id: string) => {
+    setPurchaseOrders(prev => prev.filter(po => po.id !== id));
+    toast.success('Purchase Order deleted');
+  };
+
   const updateParty = useCallback(async (party: PartyMaster) => {
     const updated: PartyMaster = {
       ...party,
@@ -1220,7 +1226,9 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       dispatches, setDispatches,
       challans, setChallans,
       logs, addLog,
-      purchaseOrders, setPurchaseOrders,
+      purchaseOrders,
+      setPurchaseOrders,
+      deletePurchaseOrder,
       purchaseReceipts, setPurchaseReceipts,
       tcRecords, setTCRecords,
       addTCRecord: (tc: TCRecord) => setTCRecords(prev => [tc, ...prev]),

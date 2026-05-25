@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { Clock, CheckCircle, Users, Box, Download, Search, Eye, X, ClipboardCheck, Edit } from 'lucide-react';
+import { Clock, CheckCircle, Users, Box, Download, Search, Eye, X, ClipboardCheck, Edit, Trash2, Mail } from 'lucide-react';
 import { useAppContext, type PurchaseOrder } from '../store/AppContext';
 import { clsx } from 'clsx';
 import { useNavigate } from 'react-router-dom';
@@ -10,7 +10,7 @@ import { downloadPDF, generatePurchaseReportPDF } from '../utils/pdfGenerator';
 type TabType = 'pending' | 'completed' | 'supplier' | 'item';
 
 export const PurchaseReports: React.FC = () => {
-  const { t, purchaseOrders, purchaseReceipts, role } = useAppContext();
+  const { t, purchaseOrders, purchaseReceipts, role, deletePurchaseOrder } = useAppContext();
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState<TabType>('pending');
   const [search, setSearch] = useState('');
@@ -220,6 +220,19 @@ export const PurchaseReports: React.FC = () => {
                               <Edit className="w-4 h-4" />
                             </button>
                           )}
+                          {(role === 'Admin' || role === 'Office Entry') && (
+                            <button 
+                              onClick={() => {
+                                if (window.confirm('Are you sure you want to delete this Purchase Order?')) {
+                                  deletePurchaseOrder(po.id);
+                                }
+                              }}
+                              className="p-1.5 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                              title="Delete Purchase Order"
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </button>
+                          )}
                           <button 
                             onClick={() => setShowReceipts(showReceipts === po.id ? null : po.id)}
                             className={clsx(
@@ -398,6 +411,18 @@ export const PurchaseReports: React.FC = () => {
                 >
                   Print PO
                 </button>
+                {previewPO.supplierEmail && (
+                  <button 
+                    onClick={() => {
+                      const subject = encodeURIComponent(`Purchase Order ${previewPO.poNumber}`);
+                      const body = encodeURIComponent(`Dear ${previewPO.supplierName},\n\nPlease find the details for Purchase Order ${previewPO.poNumber} attached.\n\nThank you.`);
+                      window.location.href = `mailto:${previewPO.supplierEmail}?subject=${subject}&body=${body}`;
+                    }}
+                    className="flex items-center gap-2 bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-xl text-sm font-bold transition-all shadow-md active:scale-95"
+                  >
+                    <Mail className="w-4 h-4" /> Email PO
+                  </button>
+                )}
                 <button 
                   onClick={() => setPreviewPO(null)} 
                   className="p-2 text-slate-400 hover:text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 dark:bg-slate-800 rounded-xl transition-all"
