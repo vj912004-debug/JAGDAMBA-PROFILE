@@ -72,7 +72,11 @@ export const PurchaseOrderEntry: React.FC = () => {
   };
 
   const handleRemoveItem = (id: string) => {
-    if (items.length === 1) return;
+    if (items.length === 1) {
+      setItems([{ id: Date.now().toString(), grade: '', thickness: '', width: '', length: '', nos: 0, kg: 0, rate: 0, amount: 0, heatNo: '', actualWeight: 0 }]);
+      toast('Item cleared', { icon: '🧹' });
+      return;
+    }
     setItems(prev => prev.filter(item => item.id !== id));
   };
 

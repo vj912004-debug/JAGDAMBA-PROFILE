@@ -115,9 +115,12 @@ export const OrderEntry: React.FC = () => {
   };
 
   const removeLine = (id: string) => {
-    if (lines.length > 1) {
-      setLines(prev => prev.filter(l => l.id !== id));
+    if (lines.length === 1) {
+      setLines([emptyLine()]);
+      toast('Item cleared', { icon: '🧹' });
+      return;
     }
+    setLines(prev => prev.filter(l => l.id !== id));
   };
 
   const updateLine = (id: string, field: keyof OrderLineItem, value: string | number) => {
