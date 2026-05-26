@@ -24,6 +24,7 @@ export const PartyMasterPage: React.FC = () => {
   const [location, setLocation] = useState('');
   const [deliveryAddress, setDeliveryAddress] = useState('');
   const [address, setAddress] = useState('');
+  const [supplierAddress, setSupplierAddress] = useState('');
   const [reference, setReference] = useState('');
   const [paymentTerms, setPaymentTerms] = useState('30 DAYS');
   const [gstNumber, setGstNumber] = useState('');
@@ -67,6 +68,7 @@ export const PartyMasterPage: React.FC = () => {
     setLocation(BRANCHES[0] || '');
     setDeliveryAddress('');
     setAddress('');
+    setSupplierAddress('');
     setReference('');
     setPaymentTerms('30 DAYS');
     setGstNumber('');
@@ -82,6 +84,7 @@ export const PartyMasterPage: React.FC = () => {
     setLocation(party.location);
     setDeliveryAddress(party.deliveryAddress);
     setAddress(party.address || '');
+    setSupplierAddress(party.supplierAddress || '');
     setReference(party.reference || '');
     setPaymentTerms(party.paymentTerms || '30 DAYS');
     setGstNumber(party.gstNumber || '');
@@ -110,6 +113,7 @@ export const PartyMasterPage: React.FC = () => {
           location,
           deliveryAddress,
           address,
+          supplierAddress,
           reference,
           paymentTerms,
           gstNumber,
@@ -124,6 +128,7 @@ export const PartyMasterPage: React.FC = () => {
           location,
           deliveryAddress,
           address,
+          supplierAddress,
           reference,
           paymentTerms,
           gstNumber,
@@ -291,9 +296,15 @@ export const PartyMasterPage: React.FC = () => {
                             </span>
                           )}
                           {p.deliveryAddress && (
-                            <span className="font-medium text-slate-400 dark:text-slate-500 dark:text-slate-400 flex gap-1.5 line-clamp-2">
+                            <span className="font-medium text-slate-400 dark:text-slate-500 dark:text-slate-400 flex gap-1.5 line-clamp-2" title="Delivery Address">
                               <MapPin className="w-3.5 h-3.5 text-slate-400 shrink-0" />
                               {p.deliveryAddress}
+                            </span>
+                          )}
+                          {p.supplierAddress && (
+                            <span className="font-medium text-slate-400 dark:text-slate-500 dark:text-slate-400 flex gap-1.5 line-clamp-2" title="Supplier Address">
+                              <MapPin className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+                              {p.supplierAddress} (Supplier)
                             </span>
                           )}
                         </div>
@@ -474,6 +485,18 @@ export const PartyMasterPage: React.FC = () => {
                   value={address}
                   onChange={(e) => setAddress(e.target.value.toUpperCase())}
                   placeholder="Enter full billing address"
+                  rows={3}
+                  className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-800 dark:text-slate-100 rounded-lg px-3.5 py-2.5 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500 font-semibold"
+                />
+              </div>
+
+              {/* Supplier Address */}
+              <div className="space-y-1.5">
+                <label className="block text-xs font-bold text-slate-400 uppercase tracking-widest">Supplier Address</label>
+                <textarea
+                  value={supplierAddress}
+                  onChange={(e) => setSupplierAddress(e.target.value.toUpperCase())}
+                  placeholder="Enter full supplier address"
                   rows={3}
                   className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-800 dark:text-slate-100 rounded-lg px-3.5 py-2.5 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500 font-semibold"
                 />

@@ -364,6 +364,7 @@ export interface PartyMaster {
   gstNumber?: string;
   email?: string;
   address?: string;
+  supplierAddress?: string;
   reference?: string;
 }
 
@@ -713,6 +714,7 @@ const seedParties: PartyMaster[] = [
     gstNumber: "24AAACS1234F1Z0",
     email: "superiorsteel@gmail.com",
     address: "PLOT NO. 23/B, GIDC MAKARPURA, VADODARA - 390010",
+    supplierAddress: "PLOT NO. 23/B, GIDC MAKARPURA, VADODARA - 390010",
     reference: ""
   }
 ];
@@ -1155,6 +1157,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       gstNumber: party.gstNumber?.trim().toUpperCase(),
       email: party.email?.trim(),
       address: party.address?.trim().toUpperCase(),
+      supplierAddress: party.supplierAddress?.trim().toUpperCase(),
       reference: party.reference?.trim().toUpperCase()
     };
     
@@ -1193,6 +1196,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       gstNumber: party.gstNumber?.trim().toUpperCase(),
       email: party.email?.trim(),
       address: party.address?.trim().toUpperCase(),
+      supplierAddress: party.supplierAddress?.trim().toUpperCase(),
       reference: party.reference?.trim().toUpperCase()
     };
     setParties(prev => prev.map(p => p.id === updated.id ? updated : p));
