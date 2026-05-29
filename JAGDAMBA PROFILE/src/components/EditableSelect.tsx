@@ -97,13 +97,13 @@ export const EditableSelect: React.FC<EditableSelectProps> = ({
       onChange={handleSelectChange}
       className={`${enhancedClassName} focus:ring-2 focus:ring-blue-500 outline-none transition-all`}
     >
-      {placeholder && <option value="">{placeholder}</option>}
+      {placeholder && <option value="" className="bg-white dark:bg-slate-800">{placeholder}</option>}
       {options.map(opt => (
-        <option key={opt} value={opt}>
+        <option key={opt} value={opt} className="bg-white dark:bg-slate-800">
           {displayTransform ? displayTransform(opt) : opt}
         </option>
       ))}
-      <option value="OTHER_MANUAL" className="font-bold text-blue-600">+ Other (Type Manually)</option>
+      <option value="OTHER_MANUAL" className="font-bold text-blue-600 dark:text-blue-400 bg-white dark:bg-slate-800">+ Other (Type Manually)</option>
     </select>
   );
 };

@@ -409,8 +409,8 @@ export const Quotation: React.FC = () => {
                           onChange={(e) => updateItem(item.id, 'shape', e.target.value)} 
                           className="bg-transparent border-transparent focus:ring-0 text-sm font-bold text-slate-700 dark:text-slate-200 outline-none print:appearance-none"
                         >
-                          <option value="Square">Square / Rect</option>
-                          <option value="Ring">Ring / Circle</option>
+                          <option value="Square" className="bg-white dark:bg-slate-800">Square / Rect</option>
+                          <option value="Ring" className="bg-white dark:bg-slate-800">Ring / Circle</option>
                         </select>
                       </td>
                       <td className="p-3 min-w-[150px]">
@@ -534,11 +534,11 @@ export const Quotation: React.FC = () => {
                         onChange={(e) => setGstRate(parseInt(e.target.value))} 
                         className="ml-2 bg-transparent border-none text-[10px] font-bold focus:ring-0 outline-none cursor-pointer print:appearance-none"
                       >
-                        <option value={0}>0%</option>
-                        <option value={5}>5%</option>
-                        <option value={12}>12%</option>
-                        <option value={18}>18%</option>
-                        <option value={28}>28%</option>
+                        <option value={0} className="bg-white dark:bg-slate-800">0%</option>
+                        <option value={5} className="bg-white dark:bg-slate-800">5%</option>
+                        <option value={12} className="bg-white dark:bg-slate-800">12%</option>
+                        <option value={18} className="bg-white dark:bg-slate-800">18%</option>
+                        <option value={28} className="bg-white dark:bg-slate-800">28%</option>
                       </select>
                     </td>
                     <td className="p-2 text-right font-bold text-slate-600 dark:text-slate-300">₹ {Math.ceil((totalAmount + loadingCharges + transportCharges) * gstRate / 100).toLocaleString()}</td>
