@@ -358,7 +358,10 @@ export const ChallanPrint: React.FC<ChallanPrintProps> = ({ challan, order }) =>
   function ChallanOriginalCopy() {
     return (
       <div className="challan-container">
-        <div className="inner-border">
+        <div className="inner-border" style={{ position: 'relative' }}>
+          <div className="copy-stamp-orig" style={{ top: '10px', right: '10px', lineHeight: '1.2', paddingBottom: '4px', boxSizing: 'content-box' }}>
+            ORIGINAL COPY
+          </div>
 
           <div className="header">
             <div className="logo-container">
@@ -513,7 +516,10 @@ export const ChallanPrint: React.FC<ChallanPrintProps> = ({ challan, order }) =>
   function ChallanDuplicateCopy() {
     return (
       <div className="challan-container">
-        <div className="inner-border">
+        <div className="inner-border" style={{ position: 'relative' }}>
+          <div className="copy-stamp-orig" style={{ top: '10px', right: '10px', lineHeight: '1.2', paddingBottom: '4px', boxSizing: 'content-box' }}>
+            DUPLICATE COPY
+          </div>
 
           <div className="header">
             <div className="logo-container">
