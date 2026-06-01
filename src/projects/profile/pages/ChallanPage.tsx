@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useAppContext, type ChallanRecord, type Order } from '../store/AppContext';
 import { ScrollText, Plus, X, CheckCircle, Clock, Download, Eye, Trash2 } from 'lucide-react';
-import { generateChallanPDF, downloadPDF } from '../utils/pdfGenerator';
+import { generateChallanPDF } from '../utils/pdfGenerator';
 import toast from 'react-hot-toast';
 import { ChallanPrint } from '../components/ChallanPrint';
 
@@ -251,7 +251,7 @@ export const ChallanPage: React.FC = () => {
               </h3>
               <div className="flex items-center gap-3">
                 <button 
-                  onClick={() => downloadPDF('challan-print-area', `Challan_${previewChallan.challan.challanNo}`)} 
+                  onClick={() => generateChallanPDF(previewChallan.challan, previewChallan.order, parties, dispatches)} 
                   className="flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-xl text-sm font-bold transition-all shadow-md active:scale-95"
                 >
                   <Download className="w-4 h-4" /> Download PDF

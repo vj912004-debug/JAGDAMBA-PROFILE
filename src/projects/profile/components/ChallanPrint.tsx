@@ -24,7 +24,7 @@ export const ChallanPrint: React.FC<ChallanPrintProps> = ({ challan, order }) =>
   const totalKg = items.reduce((sum, item) => item.unitType === 'Kg' ? sum + item.quantity : sum + (item.totalWeight || 0), 0);
 
   // State for Original vs Duplicate
-  const [printType, setPrintType] = useState<'ORIGINAL' | 'DUPLICATE'>('ORIGINAL');
+  const [printType, setPrintType] = useState<'ORIGINAL' | 'DUPLICATE'>('DUPLICATE');
 
   const handlePrint = (type: 'ORIGINAL' | 'DUPLICATE') => {
     setPrintType(type);

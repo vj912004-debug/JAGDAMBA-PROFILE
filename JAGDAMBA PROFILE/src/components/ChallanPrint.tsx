@@ -32,7 +32,7 @@ export const ChallanPrint: React.FC<ChallanPrintProps> = ({ challan, order }) =>
     : 'NO';
 
   // State for Original vs Duplicate
-  const [printType, setPrintType] = useState<'ORIGINAL' | 'DUPLICATE'>('ORIGINAL');
+  const [printType, setPrintType] = useState<'ORIGINAL' | 'DUPLICATE'>('DUPLICATE');
 
   const handlePrint = (type: 'ORIGINAL' | 'DUPLICATE') => {
     setPrintType(type);

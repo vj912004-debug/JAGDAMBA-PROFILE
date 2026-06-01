@@ -939,16 +939,20 @@ export const generateChallanPDF = async (
               <td style="width: 50%; border-left: 1px solid #000; border-bottom: 1px solid #000; padding: 6px;"><label style="font-weight:bold;margin-right:5px;">Challan No:</label> <span style="color: #1e3a8a; font-weight: bold;">${challan.challanNo}</span></td>
             </tr>
             <tr>
-              <td style="width: 50%; border-right: 1px solid #000; border-bottom: 1px solid #000; padding: 6px;"><label style="font-weight:bold;margin-right:5px;">Address:</label> ${party?.address || ''}</td>
-              <td style="width: 50%; border-left: 1px solid #000; border-bottom: 1px solid #000; padding: 6px;"><label style="font-weight:bold;margin-right:5px;">Challan Date:</label> ${new Date(challan.challanDate).toLocaleDateString('en-GB')}</td>
+              <td style="width: 50%; border-right: 1px solid #000; border-bottom: 1px solid #000; padding: 6px;"><label style="font-weight:bold;margin-right:5px;">Address:</label> ${party?.deliveryAddress || order?.deliveryAddress || ''}</td>
+              <td style="width: 50%; border-left: 1px solid #000; border-bottom: 1px solid #000; padding: 6px;"><label style="font-weight:bold;margin-right:5px;">Challan Date:</label> ${challan.challanDate}</td>
             </tr>
             <tr>
-              <td style="width: 50%; border-right: 1px solid #000; border-bottom: 1px solid #000; padding: 6px;"><label style="font-weight:bold;margin-right:5px;">GSTIN:</label> ${party?.gstin || ''}</td>
-              <td style="width: 50%; border-left: 1px solid #000; border-bottom: 1px solid #000; padding: 6px;"><label style="font-weight:bold;margin-right:5px;">Order No:</label> ${order?.orderNo || ''}</td>
+              <td style="width: 50%; border-right: 1px solid #000; border-bottom: 1px solid #000; padding: 6px;"><label style="font-weight:bold;margin-right:5px;">GST Number:</label> ${party?.gstNumber || order?.gstType || ''}</td>
+              <td style="width: 50%; border-left: 1px solid #000; border-bottom: 1px solid #000; padding: 6px;"><label style="font-weight:bold;margin-right:5px;">PO No:</label> ${order?.orderNo || ''}</td>
             </tr>
             <tr>
-              <td style="width: 50%; border-right: 1px solid #000; padding: 6px;"><label style="font-weight:bold;margin-right:5px;">State:</label> ${party?.state || ''}</td>
-              <td style="width: 50%; border-left: 1px solid #000; padding: 6px;"><label style="font-weight:bold;margin-right:5px;">Vehicle No:</label> ${vehicleNo}</td>
+              <td style="width: 50%; border-right: 1px solid #000; border-bottom: 1px solid #000; padding: 6px;"><label style="font-weight:bold;margin-right:5px;">Mobile Number:</label> ${party?.mobileNumber || order?.mobileNumber || ''}</td>
+              <td style="width: 50%; border-left: 1px solid #000; border-bottom: 1px solid #000; padding: 6px;"><label style="font-weight:bold;margin-right:5px;">PO Date:</label> ${order?.orderDate || ''}</td>
+            </tr>
+            <tr>
+              <td style="width: 50%; border-right: 1px solid #000; padding: 6px;"><label style="font-weight:bold;margin-right:5px;">Email ID :</label> ${party?.email || ''}</td>
+              <td style="width: 50%; border-left: 1px solid #000; padding: 6px;"><label style="font-weight:bold;margin-right:5px;">Order Page Number:</label> 1 of 1</td>
             </tr>
           </table>
 
