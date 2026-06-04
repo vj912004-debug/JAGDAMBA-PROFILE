@@ -1229,19 +1229,13 @@ export const generateOrderEntryPDF = (order: Order) => {
 };
 
 export const generateSalesOrderPDF = async (order: Order, parties: any[] = []) => {
-  const hiddenWrapper = document.createElement('div');
-  hiddenWrapper.style.position = 'absolute';
-  hiddenWrapper.style.left = '-9999px';
-  hiddenWrapper.style.top = '0px';
-  hiddenWrapper.style.width = '0px';
-  hiddenWrapper.style.height = '0px';
-  hiddenWrapper.style.overflow = 'hidden';
-  hiddenWrapper.style.zIndex = '-9999';
-
-  const tempDiv = document.createElement('div');
-  tempDiv.style.width = '1000px';
-  tempDiv.style.background = '#ffffff';
-  hiddenWrapper.appendChild(tempDiv);
+  const hiddenIframe = document.createElement('iframe');
+  hiddenIframe.style.position = 'absolute';
+  hiddenIframe.style.left = '-9999px';
+  hiddenIframe.style.top = '0px';
+  hiddenIframe.style.width = '1000px';
+  hiddenIframe.style.height = '1500px';
+  hiddenIframe.style.border = 'none';
 
   const party = parties.find(p => p.partyName === order.partyName);
   const items = order.items || [];
@@ -1418,9 +1412,15 @@ export const generateSalesOrderPDF = async (order: Order, parties: any[] = []) =
     </tr>
   `).join('');
 
-  tempDiv.innerHTML = `
-    <style>${styleStr}</style>
-    <div class="order-container-dl">
+  const htmlContent = `
+    <html>
+      <head>
+        <style>body { margin: 0; padding: 0; background: white; }</style>
+      </head>
+      <body>
+        <div id="pdf-content">
+          <style>${styleStr}</style>
+          <div class="order-container-dl">
       <div class="border-outer-dl">
         <div class="border-inner-dl">
             
@@ -1519,15 +1519,28 @@ export const generateSalesOrderPDF = async (order: Order, parties: any[] = []) =
               </tbody>
             </table>
 
+          </div>
         </div>
       </div>
     </div>
-  `;
+  </body></html>`;
 
-  document.body.appendChild(hiddenWrapper);
+  document.body.appendChild(hiddenIframe);
 
   try {
-    const canvas = await html2canvas(tempDiv, {
+    const iframeDoc = hiddenIframe.contentWindow?.document;
+    if (!iframeDoc) throw new Error("Could not access iframe document");
+    
+    iframeDoc.open();
+    iframeDoc.write(htmlContent);
+    iframeDoc.close();
+    
+    await new Promise(r => setTimeout(r, 100)); // allow DOM to settle
+    
+    const targetElement = iframeDoc.getElementById('pdf-content');
+    if (!targetElement) throw new Error("Could not find content");
+
+    const canvas = await html2canvas(targetElement, {
       scale: 2.5,
       useCORS: true,
       logging: false,
@@ -1546,8 +1559,9 @@ export const generateSalesOrderPDF = async (order: Order, parties: any[] = []) =
     pdf.save(`SalesOrder_${sanitizeFilename(order.orderNo)}.pdf`);
   } catch (error) {
     console.error('Error generating sales order PDF:', error);
+    alert('PDF Generation Error: ' + (error as Error).message);
   } finally {
-    document.body.removeChild(hiddenWrapper);
+    document.body.removeChild(hiddenIframe);
   }
 };
 
