@@ -1,0 +1,180 @@
+  function ChallanOriginalCopy() {
+    return (
+      <div className="challan-container-orig">
+        <div className="copy-stamp-orig">ORIGINAL COPY</div>
+        <div className="inner-border-orig">
+            
+            <div className="header-orig">
+                <div className="logo-container-orig">
+                    <img src={LOGO_BASE64} alt="Jagdamba Profile Logo" className="company-logo-orig" />
+                    <div className="logo-text-orig">Jagdamba Profile</div>
+                </div>
+                <div className="company-info-container-orig">
+                    <div className="company-name-orig">Jagdamba Profile</div>
+                    <div className="company-details-orig">
+                        <div>504/1A, GIDC Makarpura, Vadodara -390010.</div>
+                        <div>GST No: 24AJGPP9863R1Z5</div>
+                        <div className="contact-row-orig">
+                            <div>Mo: 8799617251, 8799617252, 8799617254, 9824025001</div>
+                            <div>Email: jagdambaprofile@gmail.com</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div className="title-orig">DELIVERY CHALLAN</div>
+
+            <div className="flex-row-orig">
+                <div className="flex-col-orig">
+                    <div className="section-header-orig">PARTY DETAILS</div>
+                    <div className="input-row-orig" style={{ height: '40px' }}>
+                        <div className="input-label-orig">Party Name:</div>
+                        <div className="input-value-orig">{challan.partyName}</div>
+                    </div>
+                    <div className="input-row-orig" style={{ height: '50px' }}>
+                        <div className="input-label-orig">Address:</div>
+                        <div className="input-value-orig">{party?.deliveryAddress || order?.deliveryAddress || ''}</div>
+                    </div>
+                    <div className="input-row-orig">
+                        <div className="input-label-orig">GST Number:</div>
+                        <div className="input-value-orig">{party?.gstNumber || order?.gstType || ''}</div>
+                    </div>
+                    <div className="input-row-orig">
+                        <div className="input-label-orig">Mobile Number:</div>
+                        <div className="input-value-orig">{party?.mobileNumber || order?.mobileNumber || ''}</div>
+                    </div>
+                    <div className="input-row-orig">
+                        <div className="input-label-orig">Email ID :</div>
+                        <div className="input-value-orig">{party?.email || ''}</div>
+                    </div>
+                </div>
+                <div className="flex-col-orig">
+                    <div className="section-header-orig">CHALLAN / ORDER DETAILS</div>
+                    <div className="input-row-orig">
+                        <div className="input-label-orig">Challan No:</div>
+                        <div className="input-value-orig" style={{ color: '#1e3a8a', fontWeight: 'bold' }}>{challan.challanNo}</div>
+                    </div>
+                    <div className="input-row-orig" style={{ height: '40px' }}>
+                        <div className="input-label-orig">Challan Date:</div>
+                        <div className="input-value-orig">{challan.challanDate}</div>
+                    </div>
+                    <div className="input-row-orig">
+                        <div className="input-label-orig">PO No:</div>
+                        <div className="input-value-orig">{order?.orderNo || ''}</div>
+                    </div>
+                    <div className="input-row-orig">
+                        <div className="input-label-orig">PO Date:</div>
+                        <div className="input-value-orig">{order?.orderDate || ''}</div>
+                    </div>
+                    <div className="input-row-orig">
+                        <div className="input-label-orig">Order Page Number:</div>
+                        <div className="input-value-orig">1 of 1</div>
+                    </div>
+                </div>
+            </div>
+
+            <table>
+                <tbody>
+                  <tr>
+                      <td colSpan={3} className="section-header-center-orig">VEHICLE TRANSPORT DETAILS</td>
+                  </tr>
+                  <tr>
+                      <td style={{ width: '33.33%' }}><b>Vehicle Number:</b> {vehicleNo}</td>
+                      <td style={{ width: '33.33%' }}><b>Driver Mobile No:</b> {driverMobile}</td>
+                      <td style={{ width: '33.33%' }}><b>Payment Terms :</b> {order?.paymentTerms || ''}</td>
+                  </tr>
+                </tbody>
+            </table>
+
+            <table className="item-table-orig">
+                <thead>
+                  <tr>
+                      <th style={{ width: '5%' }}>Sr No</th>
+                      <th style={{ width: '25%' }}>Item</th>
+                      <th style={{ width: '10%' }}>Grade</th>
+                      <th style={{ width: '10%' }}>Thickness</th>
+                      <th style={{ width: '10%' }}>Width</th>
+                      <th style={{ width: '10%' }}>Length</th>
+                      <th style={{ width: '10%' }}>Nos</th>
+                      <th style={{ width: '10%' }}>Kg</th>
+                      <th style={{ width: '10%' }}>Rate</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {items.map((item, index) => (
+                    <tr key={index}>
+                      <td>{index + 1}</td>
+                      <td style={{ textAlign: 'left', paddingLeft: '8px' }}>{item.partName || item.drawingNumber || '-'}</td>
+                      <td>{item.materialGrade || '-'}</td>
+                      <td>{item.thickness ? `${item.thickness.replace(/mm/gi, '')}mm` : '-'}</td>
+                      <td>{item.width || item.innerDiameter || '-'}</td>
+                      <td>{item.length || item.outerDiameter || '-'}</td>
+                      <td>{item.unitType === 'Nos' ? item.quantity : '-'}</td>
+                      <td>{item.unitType === 'Kg' ? item.quantity : item.totalWeight || '-'}</td>
+                      <td>{item.rate > 0 ? `Γé╣${item.rate.toLocaleString('en-IN')}` : '-'}</td>
+                    </tr>
+                  ))}
+                  {emptyRows.map((_, index) => (
+                    <tr key={`empty-${index}`}>
+                      <td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td>
+                    </tr>
+                  ))}
+                  <tr className="total-row-orig">
+                      <td colSpan={6} style={{ textAlign: 'center' }}>Total</td>
+                      <td style={{ textAlign: 'center' }}>{totalNos > 0 ? totalNos : ''}</td>
+                      <td style={{ textAlign: 'center' }}>{totalKg > 0 ? totalKg.toLocaleString('en-IN') : ''}</td>
+                      <td></td>
+                  </tr>
+                </tbody>
+            </table>
+
+            <div style={{ border: '1px solid #000', marginBottom: '10px' }}>
+                <div className="section-header-orig" style={{ padding: '6px' }}>COMMERCIAL / QUALITY DETAILS</div>
+                <div style={{ display: 'flex' }}>
+                    <div style={{ flex: 6, borderRight: '1px solid #000' }}>
+                        <div style={{ padding: '6px', height: '50px', borderBottom: '1px solid #000', display: 'flex', alignItems: 'center' }}>
+                          <b>Delivery Address :</b> <span style={{ marginLeft: '8px' }}>{order?.deliveryAddress || party?.deliveryAddress || ''}</span>
+                        </div>
+                        <div style={{ padding: '6px', display: 'flex', alignItems: 'center' }}>
+                          <b>TC :</b> <div style={{ flexGrow: 1, borderBottom: '1px solid #000', margin: '0 15px', textAlign: 'center' }}>{tcVal}</div> 
+                          <b>UT :</b> <div style={{ flexGrow: 1, borderBottom: '1px solid #000', margin: '0 15px', textAlign: 'center' }}>{utVal}</div>
+                        </div>
+                    </div>
+                    <div style={{ flex: 4 }}>
+                        <div style={{ padding: '6px', borderBottom: '1px solid #000', display: 'flex', alignItems: 'center' }}>
+                          <b>Loading Charge:</b> <div style={{ flexGrow: 1, borderBottom: '1px solid #000', marginLeft: '10px', textAlign: 'center' }}>{loadingVal}</div>
+                        </div>
+                        <div style={{ padding: '6px', display: 'flex', alignItems: 'center' }}>
+                          <b>Transport Charge:</b> <div style={{ flexGrow: 1, borderBottom: '1px solid #000', marginLeft: '10px', textAlign: 'center' }}>{transportVal}</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div className="terms-box-orig">
+                <div className="section-header-orig" style={{ padding: '6px' }}>GENERAL TERMS AND CONDITIONS</div>
+                <div className="terms-content-orig">
+                    1. Material should be supplied strictly as per challan details. &nbsp;&nbsp;&nbsp; 2. Final weight / quantity will be considered as mutually agreed.<br/>
+                    3. Loading and transport charges as mentioned above. &nbsp;&nbsp;&nbsp; 4. Please verify material at the time of delivery.
+                </div>
+            </div>
+
+            <div className="signature-row-orig">
+                <div className="sig-box-orig">
+                    <div>Receiver's Signature</div>
+                </div>
+                <div className="sig-box-orig">
+                    <div>Dispatch</div>
+                </div>
+                <div className="sig-box-orig right-align-orig">
+                    <div style={{ alignSelf: 'flex-start' }}>For</div>
+                    <div style={{ fontSize: '14px' }}>For Jagdamba Profile</div>
+                </div>
+            </div>
+
+        </div>
+      </div>
+    );
+  }
+
+  function ChallanDuplicateCopy
