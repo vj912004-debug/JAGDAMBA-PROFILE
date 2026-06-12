@@ -444,43 +444,28 @@ export const PurchaseReports: React.FC = () => {
                 </button>
                 {previewPO.supplierEmail && (
                   <button 
-                    onClick={async () => {
-                      const subject = `Purchase Order ${previewPO.poNumber} - Jagdamba Profile`;
-                      
-                      try {
-                        // 1. Get the PDF as a base64 string
-                        const base64Data = await getPdfBase64('po-print-area');
-                        if (!base64Data) {
-                          toast.error('Failed to generate PDF');
-                          return;
-                        }
+                    onClick={() => {
+                      // 1. Auto-download the PDF so they can attach it manually
+                      downloadPDF('po-print-area', `PO_${previewPO.poNumber}`);
 
-                        // 2. Convert base64 to Blob and then to File
-                        const byteString = atob(base64Data.split(',')[1]);
-                        const ab = new ArrayBuffer(byteString.length);
-                        const ia = new Uint8Array(ab);
-                        for (let i = 0; i < byteString.length; i++) {
-                          ia[i] = byteString.charCodeAt(i);
-                        }
-                        const blob = new Blob([ab], { type: 'application/pdf' });
-                        const file = new File([blob], `PO_${previewPO.poNumber}.pdf`, { type: 'application/pdf' });
+                      // 2. Keep the body short and simple
+                      const body = [
+                        `Dear ${previewPO.supplierName},`,
+                        ``,
+                        `Greetings from Jagdamba Profile!`,
+                        ``,
+                        `Please find the attached Purchase Order (${previewPO.poNumber}) for your reference.`,
+                        `Kindly acknowledge receipt and confirm the delivery schedule.`,
+                        ``,
+                        `Thanks & Regards,`,
+                        `Jagdamba Profile`,
+                        `504/1/A, GIDC Makarpura, Vadodara - 390010`,
+                        `Mo: 8799617251 / 8799617252 / 8799617254 / 9824025001`
+                      ].join('\n');
 
-                        // 3. Check if native sharing of files is supported
-                        if (navigator.canShare && navigator.canShare({ files: [file] })) {
-                          await navigator.share({
-                            files: [file],
-                            title: subject,
-                            text: `Please find the attached Purchase Order (${previewPO.poNumber}).`
-                          });
-                        } else {
-                          // Fallback: Just download it and tell the user
-                          downloadPDF('po-print-area', `PO_${previewPO.poNumber}`);
-                          toast('PDF downloaded. Your browser does not support auto-attaching files.', { icon: 'ℹ️' });
-                        }
-                      } catch (err) {
-                        console.error('Error sharing file:', err);
-                        toast.error('Failed to share PDF');
-                      }
+                      const subject = encodeURIComponent(`Purchase Order ${previewPO.poNumber} - Jagdamba Profile`);
+                      const gmailUrl = `https://mail.google.com/mail/?view=cm&fs=1&to=${previewPO.supplierEmail}&su=${subject}&body=${encodeURIComponent(body)}`;
+                      window.open(gmailUrl, '_blank', 'noopener,noreferrer');
                     }}
                     className="flex items-center gap-2 bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-xl text-sm font-bold transition-all shadow-md active:scale-95"
                   >
