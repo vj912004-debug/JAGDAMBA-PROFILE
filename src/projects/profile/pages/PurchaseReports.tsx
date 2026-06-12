@@ -445,9 +445,63 @@ export const PurchaseReports: React.FC = () => {
                 {previewPO.supplierEmail && (
                   <button 
                     onClick={() => {
-                      const subject = encodeURIComponent(`Purchase Order ${previewPO.poNumber}`);
-                      const body = encodeURIComponent(`Dear ${previewPO.supplierName},\n\nPlease find the details for Purchase Order ${previewPO.poNumber} attached.\n\nThank you.`);
-                      window.location.href = `mailto:${previewPO.supplierEmail}?subject=${subject}&body=${body}`;
+                      const itemLines = previewPO.items.map((item, idx) =>
+                        `  ${idx + 1}. ${item.grade || ''}${item.thickness ? ` | ${item.thickness}mm` : ''}${item.width ? ` | W: ${item.width}` : ''}${item.length ? ` | L: ${item.length}` : ''} | Nos: ${item.nos || 0}${item.kg ? ` | Kg: ${item.kg.toLocaleString('en-IN')}` : ''}${item.rate ? ` | Rate: ₹${item.rate.toLocaleString('en-IN')}` : ''}${item.amount ? ` | Amt: ₹${item.amount.toLocaleString('en-IN')}` : ''}`
+                      ).join('\n');
+
+                      const body = [
+                        `Dear ${previewPO.supplierName},`,
+                        ``,
+                        `Greetings from Jagdamba Profile!`,
+                        ``,
+                        `Please find below the details of our Purchase Order. Kindly acknowledge receipt and confirm delivery schedule.`,
+                        ``,
+                        `━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━`,
+                        `  PURCHASE ORDER DETAILS`,
+                        `━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━`,
+                        `  PO Number   : ${previewPO.poNumber}`,
+                        `  PO Date     : ${previewPO.date}`,
+                        `  Supplier    : ${previewPO.supplierName}`,
+                        previewPO.supplierAddress ? `  Address     : ${previewPO.supplierAddress}` : '',
+                        previewPO.supplierGST    ? `  GST No      : ${previewPO.supplierGST}` : '',
+                        previewPO.supplierMobile ? `  Mobile      : ${previewPO.supplierMobile}` : '',
+                        ``,
+                        `━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━`,
+                        `  MATERIAL ITEMS`,
+                        `━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━`,
+                        itemLines,
+                        ``,
+                        previewPO.totalKg     ? `  Total Kg     : ${previewPO.totalKg.toLocaleString('en-IN')} Kg` : '',
+                        previewPO.totalAmount ? `  Total Amount : ₹${previewPO.totalAmount.toLocaleString('en-IN')}` : '',
+                        ``,
+                        `━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━`,
+                        `  DELIVERY & COMMERCIAL DETAILS`,
+                        `━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━`,
+                        previewPO.deliveryAddress  ? `  Delivery To   : ${previewPO.deliveryAddress}` : '',
+                        previewPO.transportName    ? `  Transport     : ${previewPO.transportName}` : '',
+                        previewPO.transportNumber  ? `  Transport No  : ${previewPO.transportNumber}` : '',
+                        previewPO.paymentTerms     ? `  Payment Terms : ${previewPO.paymentTerms}` : '',
+                        previewPO.make             ? `  Make          : ${previewPO.make}` : '',
+                        previewPO.utLevel          ? `  UT Level      : ${previewPO.utLevel}` : '',
+                        ``,
+                        `━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━`,
+                        `  TERMS & CONDITIONS`,
+                        `━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━`,
+                        `  1. Material should be supplied strictly as per above size, grade and specification.`,
+                        `  2. Test Certificate / MTC required wherever applicable.`,
+                        `  3. Material should be free from heavy rust, lamination, oil, paint and major surface defects.`,
+                        `  4. Final weight, rate and payment will be as per mutually agreed terms.`,
+                        `  5. Delivery schedule and transport details must be confirmed before dispatch.`,
+                        ``,
+                        `Thanks & Regards,`,
+                        `Jagdamba Profile`,
+                        `504/1/A, GIDC Makarpura, Vadodara - 390010`,
+                        `Mo: 8799617251 / 8799617252 / 8799617254 / 9824025001`,
+                        `Email: jagdambaprofile@gmail.com`,
+                      ].filter(line => line !== '').join('\n');
+
+                      const subject = encodeURIComponent(`Purchase Order ${previewPO.poNumber} - Jagdamba Profile`);
+                      window.location.href = `mailto:${previewPO.supplierEmail}?subject=${subject}&body=${encodeURIComponent(body)}`;
                     }}
                     className="flex items-center gap-2 bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-xl text-sm font-bold transition-all shadow-md active:scale-95"
                   >
