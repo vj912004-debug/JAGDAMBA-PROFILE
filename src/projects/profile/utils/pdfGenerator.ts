@@ -2,7 +2,7 @@ import { LOGO2_BASE64 } from './logo2Base64';
 import { LOGO_BASE64 } from './logoBase64';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
-import html2canvas from 'html2canvas';
+import html2canvas from 'html2canvas-pro';
 import type { ChallanRecord, Order, PurchaseOrder } from '../store/AppContext';
 
 /**
