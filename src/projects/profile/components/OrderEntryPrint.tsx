@@ -11,7 +11,7 @@ export const OrderEntryPrint: React.FC<OrderEntryPrintProps> = ({ order }) => {
   const emptyRows = Array.from({ length: emptyRowsCount });
 
   return (
-    <div className="bg-white dark:bg-slate-900 p-4 mx-auto" id="order-print-area" style={{ width: '210mm', minHeight: '297mm' }}>
+    <div style={{ backgroundColor: '#ffffff', color: '#000000', width: '210mm', minHeight: '297mm' }} className="p-4 mx-auto" id="order-print-area">
       <style>{`
         .ack-container {
             width: 100%;
