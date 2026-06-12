@@ -16,11 +16,42 @@ const sanitizeFilename = (name: string): string => {
  * Capture a DOM element and download as PDF
  */
 export const downloadPDF = async (elementId: string, filename: string) => {
-  const element = document.getElementById(elementId);
-  if (!element) {
-    console.error(`Element with id ${elementId} not found`);
-    return;
+  try {
+    const element = document.getElementById(elementId);
+    if (!element) {
+      console.error(`Element with id ${elementId} not found`);
+      alert(`Error: Element ${elementId} not found`);
+      return;
+    }
+
+    const canvas = await html2canvas(element, {
+      scale: 2,
+      useCORS: true,
+      logging: true, // Turn on logging to see if it hangs
+      backgroundColor: '#ffffff'
+    });
+
+    const imgData = canvas.toDataURL('image/png');
+    const pdf = new jsPDF('p', 'mm', 'a4');
+    
+    const imgProps = pdf.getImageProperties(imgData);
+    const pdfWidth = pdf.internal.pageSize.getWidth();
+    const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
+
+    pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
+    pdf.save(`${sanitizeFilename(filename)}.pdf`);
+  } catch (err: any) {
+    console.error("PDF Generation Error:", err);
+    alert("Error generating PDF: " + (err.message || String(err)));
   }
+};
+
+/**
+ * Capture a DOM element and return PDF as base64 string
+ */
+export const getPdfBase64 = async (elementId: string): Promise<string | null> => {
+  const element = document.getElementById(elementId);
+  if (!element) return null;
 
   const canvas = await html2canvas(element, {
     scale: 2,
@@ -37,7 +68,7 @@ export const downloadPDF = async (elementId: string, filename: string) => {
   const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
 
   pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
-  pdf.save(`${sanitizeFilename(filename)}.pdf`);
+  return pdf.output('datauristring');
 };
 
 /**
