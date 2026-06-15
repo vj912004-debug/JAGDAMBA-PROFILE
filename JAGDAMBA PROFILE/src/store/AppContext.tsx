@@ -206,9 +206,12 @@ export interface PurchaseOrder {
   deliveryAddress?: string;
   transportName?: string;
   transportNumber?: string;
+  driverMobile?: string;
   paymentTerms?: string;
   make?: string;
   utLevel?: string;
+  tc?: string;
+  note?: string;
   invoiceNo?: string;
   customer?: string;
   location?: string;

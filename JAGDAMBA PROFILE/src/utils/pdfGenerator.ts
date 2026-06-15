@@ -20,22 +20,47 @@ export const downloadPDF = async (elementId: string, filename: string) => {
     return;
   }
 
-  const canvas = await html2canvas(element, {
-    scale: 2,
-    useCORS: true,
-    logging: false,
-    backgroundColor: '#ffffff'
-  });
+  const wrapper = document.createElement('div');
+  wrapper.style.cssText = 'position:fixed;left:0;top:0;z-index:-9999;opacity:1;pointer-events:none;background:#fff;';
+  const clone = element.cloneNode(true) as HTMLElement;
+  wrapper.appendChild(clone);
+  document.body.appendChild(wrapper);
 
-  const imgData = canvas.toDataURL('image/png');
-  const pdf = new jsPDF('p', 'mm', 'a4');
-  
-  const imgProps = pdf.getImageProperties(imgData);
-  const pdfWidth = pdf.internal.pageSize.getWidth();
-  const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
+  try {
+    await new Promise((resolve) => setTimeout(resolve, 150));
 
-  pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
-  pdf.save(`${sanitizeFilename(filename)}.pdf`);
+    const canvas = await html2canvas(clone, {
+      scale: 2,
+      useCORS: true,
+      logging: false,
+      backgroundColor: '#ffffff',
+      width: clone.scrollWidth,
+      height: clone.scrollHeight,
+    });
+
+    const imgData = canvas.toDataURL('image/png');
+    const pdf = new jsPDF('p', 'mm', 'a4');
+    const pageWidth = pdf.internal.pageSize.getWidth();
+    const pageHeight = pdf.internal.pageSize.getHeight();
+    const imgHeight = (canvas.height * pageWidth) / canvas.width;
+
+    let heightLeft = imgHeight;
+    let position = 0;
+
+    pdf.addImage(imgData, 'PNG', 0, position, pageWidth, imgHeight);
+    heightLeft -= pageHeight;
+
+    while (heightLeft > 0) {
+      position -= pageHeight;
+      pdf.addPage();
+      pdf.addImage(imgData, 'PNG', 0, position, pageWidth, imgHeight);
+      heightLeft -= pageHeight;
+    }
+
+    pdf.save(`${sanitizeFilename(filename)}.pdf`);
+  } finally {
+    document.body.removeChild(wrapper);
+  }
 };
 
 /**

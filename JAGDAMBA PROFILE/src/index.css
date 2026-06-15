@@ -315,12 +315,12 @@
 
   #challan-print-area,
   #po-print-area,
-  #order-print-area {
+  #order-print-area,
+  #sales-order-print-area {
     position: absolute;
     left: 0;
     top: 0;
     width: 210mm !important;
-    /* Lock width for printing */
     margin: 0;
     padding: 0;
     box-shadow: none;

@@ -34,11 +34,14 @@ export const PurchaseOrderEntry: React.FC = () => {
   const [deliveryAddress, setDeliveryAddress] = useState('');
   const [transportName, setTransportName] = useState('');
   const [transportNumber, setTransportNumber] = useState('');
+  const [driverMobile, setDriverMobile] = useState('');
   
   // Commercial
   const [paymentTerms, setPaymentTerms] = useState('');
   const [make, setMake] = useState('');
   const [utLevel, setUtLevel] = useState('');
+  const [tc, setTc] = useState('');
+  const [note, setNote] = useState('');
   const [invoiceNo, setInvoiceNo] = useState('');
   const [customer, setCustomer] = useState('');
   const [location, setLocation] = useState('');
@@ -125,9 +128,12 @@ export const PurchaseOrderEntry: React.FC = () => {
       deliveryAddress: deliveryAddress.trim(),
       transportName: transportName.trim(),
       transportNumber: transportNumber.trim(),
+      driverMobile: driverMobile.trim(),
       paymentTerms: paymentTerms.trim(),
       make: make.trim(),
       utLevel: utLevel.trim(),
+      tc: tc.trim(),
+      note: note.trim(),
       invoiceNo: invoiceNo.trim(),
       customer: customer.trim(),
       location: location.trim(),
@@ -195,9 +201,12 @@ export const PurchaseOrderEntry: React.FC = () => {
         setDeliveryAddress(existing.deliveryAddress || '');
         setTransportName(existing.transportName || '');
         setTransportNumber(existing.transportNumber || '');
+        setDriverMobile(existing.driverMobile || '');
         setPaymentTerms(existing.paymentTerms || '');
         setMake(existing.make || '');
         setUtLevel(existing.utLevel || '');
+        setTc(existing.tc || '');
+        setNote(existing.note || '');
         setInvoiceNo(existing.invoiceNo || '');
         setCustomer(existing.customer || '');
         setLocation(existing.location || '');
@@ -215,9 +224,12 @@ export const PurchaseOrderEntry: React.FC = () => {
     setDeliveryAddress('');
     setTransportName('');
     setTransportNumber('');
+    setDriverMobile('');
     setPaymentTerms('');
     setMake('');
     setUtLevel('');
+    setTc('');
+    setNote('');
     setInvoiceNo('');
     setCustomer('');
     setLocation('');
@@ -236,7 +248,7 @@ export const PurchaseOrderEntry: React.FC = () => {
           <p className="text-sm text-slate-500 dark:text-slate-400 mt-0.5">{editId ? 'Modify existing purchase order' : 'Create new purchase order'} • <span className="font-semibold text-blue-600 dark:text-blue-400">{poNumber}</span></p>
         </div>
         <div className="flex gap-2">
-          <button onClick={handleReset} className="flex items-center gap-2 text-slate-600 dark:text-slate-300 hover:text-slate-800 dark:text-slate-100 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 px-4 py-2 rounded-xl text-sm font-medium transition-colors hover:bg-slate-50 dark:hover:bg-slate-800/50 dark:bg-slate-800/50">
+          <button onClick={handleReset} className="flex items-center gap-2 text-slate-600 dark:text-slate-300 hover:text-slate-800 dark:hover:text-slate-100 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 px-4 py-2 rounded-xl text-sm font-medium transition-colors hover:bg-slate-50 dark:hover:bg-slate-800/50">
             <RotateCcw className="w-4 h-4" /> Reset
           </button>
           <button
@@ -262,8 +274,8 @@ export const PurchaseOrderEntry: React.FC = () => {
         </div>
       )}
 
-      {/* Hidden Print Area */}
-      <div style={{ position: 'absolute', left: '-9999px', top: '-9999px', opacity: 0 }}>
+      {/* Hidden Print Area — off-screen but visible for PDF capture */}
+      <div style={{ position: 'fixed', left: 0, top: 0, zIndex: -1, opacity: 0.01, pointerEvents: 'none', width: '210mm' }}>
         {savedPO && <PurchaseOrderPrint po={savedPO} />}
       </div>
 
@@ -277,7 +289,7 @@ export const PurchaseOrderEntry: React.FC = () => {
             </h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="sm:col-span-2">
-                <label className="block text-[10px] font-bold text-slate-400 mb-1 uppercase tracking-wider flex items-center justify-between">
+                <label className="flex items-center justify-between text-[10px] font-bold text-slate-400 mb-1 uppercase tracking-wider">
                   <span>Party Name *</span>
                   {supplierName && parties.some(p => p.partyName === supplierName) && (
                     <span className="text-[10px] text-blue-500 font-bold normal-case tracking-normal">✨ Linked to Master</span>
@@ -292,15 +304,15 @@ export const PurchaseOrderEntry: React.FC = () => {
               </div>
               <div className="sm:col-span-2">
                 <label className="block text-[10px] font-bold text-slate-400 mb-1 uppercase tracking-wider">Address</label>
-                <textarea rows={2} value={supplierAddress} onChange={(e) => setSupplierAddress(e.target.value)} className="w-full bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-lg px-3 py-2 text-sm focus:bg-white dark:bg-slate-900 focus:ring-2 focus:ring-blue-500 transition" placeholder="Supplier full address" />
+                <textarea rows={2} value={supplierAddress} onChange={(e) => setSupplierAddress(e.target.value)} className="w-full bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-lg px-3 py-2 text-sm focus:bg-white focus:dark:bg-slate-900 focus:ring-2 focus:ring-blue-500 transition" placeholder="Supplier full address" />
               </div>
               <div>
                 <label className="block text-[10px] font-bold text-slate-400 mb-1 uppercase tracking-wider">GST Number</label>
-                <input type="text" value={supplierGST} onChange={(e) => setSupplierGST(e.target.value)} className="w-full bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-lg px-3 py-2 text-sm focus:bg-white dark:bg-slate-900 focus:ring-2 focus:ring-blue-500 transition" placeholder="24XXXXX..." />
+                <input type="text" value={supplierGST} onChange={(e) => setSupplierGST(e.target.value)} className="w-full bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-lg px-3 py-2 text-sm focus:bg-white focus:dark:bg-slate-900 focus:ring-2 focus:ring-blue-500 transition" placeholder="24XXXXX..." />
               </div>
               <div>
                 <label className="block text-[10px] font-bold text-slate-400 mb-1 uppercase tracking-wider">E-mail ID</label>
-                <input type="email" value={supplierEmail} onChange={(e) => setSupplierEmail(e.target.value)} className="w-full bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-lg px-3 py-2 text-sm focus:bg-white dark:bg-slate-900 focus:ring-2 focus:ring-blue-500 transition" placeholder="supplier@example.com" />
+                <input type="email" value={supplierEmail} onChange={(e) => setSupplierEmail(e.target.value)} className="w-full bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-lg px-3 py-2 text-sm focus:bg-white focus:dark:bg-slate-900 focus:ring-2 focus:ring-blue-500 transition" placeholder="supplier@example.com" />
               </div>
             </div>
           </div>
@@ -427,6 +439,10 @@ export const PurchaseOrderEntry: React.FC = () => {
                 <label className="block text-[10px] font-bold text-slate-400 mb-1 uppercase tracking-wider">Transport No / Vehicle</label>
                 <input type="text" value={transportNumber} onChange={(e) => setTransportNumber(e.target.value)} className="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-100 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 transition" />
               </div>
+              <div>
+                <label className="block text-[10px] font-bold text-slate-400 mb-1 uppercase tracking-wider">Driver Mobile No</label>
+                <input type="text" value={driverMobile} onChange={(e) => setDriverMobile(e.target.value)} className="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-100 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 transition" placeholder="10-digit mobile" />
+              </div>
             </div>
           </div>
 
@@ -462,6 +478,14 @@ export const PurchaseOrderEntry: React.FC = () => {
                   <label className="block text-[10px] font-bold text-slate-400 mb-1 uppercase tracking-wider">UT Level</label>
                   <input type="text" value={utLevel} onChange={(e) => setUtLevel(e.target.value)} className="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-100 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 transition" placeholder="e.g. Level 2" />
                 </div>
+              </div>
+              <div>
+                <label className="block text-[10px] font-bold text-slate-400 mb-1 uppercase tracking-wider">TC (Test Certificate)</label>
+                <input type="text" value={tc} onChange={(e) => setTc(e.target.value)} className="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-100 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 transition" placeholder="e.g. Required / Yes" />
+              </div>
+              <div>
+                <label className="block text-[10px] font-bold text-slate-400 mb-1 uppercase tracking-wider">Note</label>
+                <textarea rows={2} value={note} onChange={(e) => setNote(e.target.value)} className="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-100 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 transition" placeholder="Commercial / quality notes for PO" />
               </div>
               <div className="grid grid-cols-2 gap-3">
                 <div>

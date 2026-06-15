@@ -474,7 +474,7 @@ export const PurchaseReports: React.FC = () => {
                 </button>
               </div>
             </div>
-            <div className="flex-grow overflow-y-auto p-8 bg-slate-200 dark:bg-slate-700/50">
+            <div className="grow overflow-y-auto p-8 bg-slate-200 dark:bg-slate-700/50">
               <div className="scale-75 sm:scale-90 lg:scale-100 origin-top">
                 <PurchaseOrderPrint po={previewPO} />
               </div>

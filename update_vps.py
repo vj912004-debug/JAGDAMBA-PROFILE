@@ -19,6 +19,7 @@ def update_live_server():
 
     commands = [
         "cd /root/JAGDAMBA-PROFILE && git pull origin master",
+        "cd /root/JAGDAMBA-PROFILE && npm install",
         "cd /root/JAGDAMBA-PROFILE && npm run build"
     ]
 
@@ -27,16 +28,11 @@ def update_live_server():
         stdin, stdout, stderr = client.exec_command(cmd)
         
         # Stream the output in real-time
-        encoding = sys.stdout.encoding or 'utf-8'
         while True:
-            try:
-                line = stdout.readline()
-                if not line:
-                    break
-                clean_line = line.strip().encode(encoding, errors='replace').decode(encoding)
-                print(clean_line)
-            except Exception:
+            line = stdout.readline()
+            if not line:
                 break
+            print(line.strip().encode(sys.stdout.encoding, errors='replace').decode(sys.stdout.encoding, errors='replace'))
             
         err = stderr.read().decode('utf-8', errors='replace').strip()
         if err:

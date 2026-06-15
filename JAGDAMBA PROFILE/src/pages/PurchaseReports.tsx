@@ -352,7 +352,38 @@ export const PurchaseReports: React.FC = () => {
                   <Download className="w-4 h-4" /> Download PDF
                 </button>
                 <button 
-                  onClick={() => window.print()} 
+                  onClick={() => {
+                    const el = document.getElementById('po-print-area');
+                    if (!el) return;
+                    const printWindow = window.open('', '_blank', 'width=900,height=700');
+                    if (!printWindow) return;
+                    printWindow.document.write(`
+                      <!DOCTYPE html>
+                      <html>
+                        <head>
+                          <meta charset="UTF-8" />
+                          <title>Purchase Order - ${previewPO.poNumber}</title>
+                          <style>
+                            * { box-sizing: border-box; margin: 0; padding: 0; }
+                            body { background: #fff; }
+                            @page { size: A4; margin: 0; }
+                            @media print {
+                              body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+                            }
+                          </style>
+                        </head>
+                        <body>
+                          ${el.outerHTML}
+                        </body>
+                      </html>
+                    `);
+                    printWindow.document.close();
+                    printWindow.focus();
+                    setTimeout(() => {
+                      printWindow.print();
+                      printWindow.close();
+                    }, 500);
+                  }}
                   className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-xl text-sm font-bold transition-all shadow-md active:scale-95"
                 >
                   Print PO
@@ -365,7 +396,7 @@ export const PurchaseReports: React.FC = () => {
                 </button>
               </div>
             </div>
-            <div className="flex-grow overflow-y-auto p-8 bg-slate-200/50">
+            <div className="grow overflow-y-auto p-8 bg-slate-200/50">
               <div className="scale-75 sm:scale-90 lg:scale-100 origin-top">
                 <PurchaseOrderPrint po={previewPO} />
               </div>

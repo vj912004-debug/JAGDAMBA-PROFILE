@@ -8,6 +8,13 @@ interface PurchaseOrderPrintProps {
 
 const formatNum = (n: number) => (n ? n.toLocaleString('en-IN') : '');
 
+const formatDate = (dateStr: string) => {
+  if (!dateStr) return '';
+  const [y, m, d] = dateStr.split('-');
+  if (y && m && d) return `${d}/${m}/${y}`;
+  return dateStr;
+};
+
 export const PurchaseOrderPrint: React.FC<PurchaseOrderPrintProps> = ({ po }) => {
   const items = po.items || [];
   const emptyRowsCount = Math.max(0, 10 - items.length);
@@ -50,9 +57,10 @@ export const PurchaseOrderPrint: React.FC<PurchaseOrderPrintProps> = ({ po }) =>
 
         .po-header {
           display: flex;
-          align-items: center;
+          align-items: flex-start;
           padding: 10px 12px;
           border-bottom: 1px solid #000;
+          position: relative;
         }
         .po-logo-wrap {
           display: flex;
@@ -94,6 +102,14 @@ export const PurchaseOrderPrint: React.FC<PurchaseOrderPrintProps> = ({ po }) =>
           justify-content: center;
           flex-wrap: wrap;
           gap: 4px 16px;
+        }
+        .po-email-top {
+          position: absolute;
+          top: 10px;
+          right: 12px;
+          font-size: 11px;
+          color: #000;
+          font-weight: normal;
         }
 
         .po-doc-title {
@@ -265,7 +281,8 @@ export const PurchaseOrderPrint: React.FC<PurchaseOrderPrintProps> = ({ po }) =>
           display: flex;
           flex-direction: column;
           justify-content: space-between;
-          align-items: center;
+          align-items: flex-end;
+          text-align: right;
         }
         .po-sig-blue { color: #00AEEF; }
       `}</style>
@@ -284,10 +301,10 @@ export const PurchaseOrderPrint: React.FC<PurchaseOrderPrintProps> = ({ po }) =>
                 <div className="po-contact-row">
                   <span>GST No: 24AJGPP9863R1Z5</span>
                   <span>Mo: 9824917250, 9824025001, 8799617254</span>
-                  <span>Email: jagdambaprofile@gmail.com</span>
                 </div>
               </div>
             </div>
+            <div className="po-email-top">Email: jagdambaprofile@gmail.com</div>
           </div>
 
           <div className="po-doc-title">PURCHASE ORDER</div>
@@ -326,7 +343,7 @@ export const PurchaseOrderPrint: React.FC<PurchaseOrderPrintProps> = ({ po }) =>
               </div>
               <div className="po-field-row">
                 <span className="po-field-label">PO Date :</span>
-                <span className="po-field-value">{po.date}</span>
+                <span className="po-field-value">{formatDate(po.date)}</span>
               </div>
               <div className="po-field-row">
                 <span className="po-field-label">Payment Terms :</span>
@@ -340,7 +357,7 @@ export const PurchaseOrderPrint: React.FC<PurchaseOrderPrintProps> = ({ po }) =>
                 <span className="po-field-label">UT Level :</span>
                 <span className="po-field-value" style={{ flex: 1 }}>{po.utLevel || ''}</span>
                 <span className="po-field-label" style={{ marginLeft: 12 }}>TC</span>
-                <span className="po-field-value" style={{ flex: 1, maxWidth: 80 }}></span>
+                <span className="po-field-value" style={{ flex: 1, maxWidth: 80 }}>{po.tc || ''}</span>
               </div>
             </div>
           </div>
@@ -351,7 +368,7 @@ export const PurchaseOrderPrint: React.FC<PurchaseOrderPrintProps> = ({ po }) =>
               <b>Vehicle Number :</b> {po.transportNumber || ''}
             </div>
             <div className="po-transport-cell">
-              <b>Driver Mobile No :</b>
+              <b>Driver Mobile No :</b> {po.driverMobile || ''}
             </div>
             <div className="po-transport-cell">
               <b>Transport Name :</b> {po.transportName || ''}
@@ -412,7 +429,7 @@ export const PurchaseOrderPrint: React.FC<PurchaseOrderPrintProps> = ({ po }) =>
           <div className="po-section-bar">COMMERCIAL / QUALITY DETAILS</div>
           <div className="po-note-section">
             <b>Note</b>
-            <span></span>
+            <span>{po.note || ''}</span>
           </div>
 
           <div className="po-section-bar">GENERAL TERMS AND CONDITIONS</div>
