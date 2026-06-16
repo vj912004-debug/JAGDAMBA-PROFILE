@@ -1,5 +1,6 @@
 import React from 'react';
 import type { PurchaseOrder } from '../store/AppContext';
+import { LOGO2_BASE64 } from '../utils/logo2Base64';
 
 interface PurchaseOrderPrintProps {
   po: PurchaseOrder;
@@ -26,7 +27,7 @@ export const PurchaseOrderPrint: React.FC<PurchaseOrderPrintProps> = ({ po }) =>
   const finalAmount = basicAmount + gstAmount;
 
   return (
-    <div style={{ backgroundColor: '#ffffff', color: '#000000' }} id="po-print-area">
+    <div id="po-print-area">
       <style>{`
         @page { size: A4 portrait; margin: 5mm; }
         #po-print-area {
@@ -47,15 +48,73 @@ export const PurchaseOrderPrint: React.FC<PurchaseOrderPrintProps> = ({ po }) =>
           padding: 10px;
         }
 
-        .po-header { text-align: center; }
-        .po-header h1 {
-          color: #1fa3c6;
-          margin: 0;
-          font-size: 26px;
+        .po-header {
+          display: flex;
+          align-items: flex-start;
+          padding: 8px 4px 6px;
+          gap: 12px;
         }
-        .po-header p {
-          margin: 3px 0;
-          font-size: 13px;
+        .po-logo-col {
+          width: 78px;
+          flex-shrink: 0;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+        }
+        .po-logo {
+          width: 64px;
+          height: auto;
+          object-fit: contain;
+        }
+        .po-logo-caption {
+          font-size: 7.5px;
+          font-weight: bold;
+          font-style: italic;
+          text-align: center;
+          margin-top: 2px;
+          color: #000;
+        }
+        .po-header-body {
+          flex: 1;
+          min-width: 0;
+        }
+        .po-header-body h1 {
+          color: #1fa3c6;
+          margin: 0 0 6px;
+          font-size: 32px;
+          font-weight: bold;
+          text-align: center;
+          line-height: 1.1;
+          letter-spacing: 0.3px;
+        }
+        .po-header-addr,
+        .po-header-gst {
+          margin: 2px 0;
+          font-size: 11px;
+          text-align: center;
+          color: #d48a28;
+          line-height: 1.4;
+        }
+        .po-header-contact {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          position: relative;
+          margin-top: 2px;
+          min-height: 18px;
+        }
+        .po-header-mo {
+          font-size: 11px;
+          color: #d48a28;
+          text-align: center;
+        }
+        .po-header-email {
+          position: absolute;
+          right: 0;
+          top: 0;
+          font-size: 11px;
+          color: #000;
+          white-space: nowrap;
         }
 
         .po-title {
@@ -109,15 +168,27 @@ export const PurchaseOrderPrint: React.FC<PurchaseOrderPrintProps> = ({ po }) =>
       `}</style>
 
       <div className="po-container">
+        {/* HEADER */}
         <div className="po-header">
-          <h1>Jagdamba Profile</h1>
-          <p>504/1A, GIDC Makarpura, Vadodara - 390010</p>
-          <p>GST No: 24AJGPP9863R1Z5</p>
-          <p>Mo: 9824917250, 9824025001, 8799617254 | Email: jagdambaprofile@gmail.com</p>
+          <div className="po-logo-col">
+            <img src={LOGO2_BASE64} alt="Jagdamba Profile" className="po-logo" />
+            <div className="po-logo-caption">Jagdamba Profile</div>
+          </div>
+          <div className="po-header-body">
+            <h1>Jagdamba Profile</h1>
+            <p className="po-header-addr">504/1A, GIDC Makarpura, Vadodara - 390010.</p>
+            <p className="po-header-gst">GST No: 24AJGPP9863R1Z5</p>
+            <div className="po-header-contact">
+              <span className="po-header-mo">Mo: 9824917250, 9824025001, 8799617254</span>
+              <span className="po-header-email">Email: jagdambaprofile@gmail.com</span>
+            </div>
+          </div>
         </div>
 
+        {/* TITLE */}
         <div className="po-title">PURCHASE ORDER</div>
 
+        {/* SUPPLIER + PO DETAILS */}
         <table className="po-table">
           <tbody>
             <tr>
@@ -150,6 +221,7 @@ export const PurchaseOrderPrint: React.FC<PurchaseOrderPrintProps> = ({ po }) =>
           </tbody>
         </table>
 
+        {/* TRANSPORT */}
         <table className="po-table">
           <tbody>
             <tr>
@@ -163,6 +235,7 @@ export const PurchaseOrderPrint: React.FC<PurchaseOrderPrintProps> = ({ po }) =>
           </tbody>
         </table>
 
+        {/* ITEM TABLE */}
         <table className="po-table">
           <thead>
             <tr className="po-items-head">
@@ -200,6 +273,7 @@ export const PurchaseOrderPrint: React.FC<PurchaseOrderPrintProps> = ({ po }) =>
           </tbody>
         </table>
 
+        {/* TOTAL */}
         <table className="po-table po-total-box">
           <tbody>
             <tr>
@@ -218,6 +292,7 @@ export const PurchaseOrderPrint: React.FC<PurchaseOrderPrintProps> = ({ po }) =>
           </tbody>
         </table>
 
+        {/* COMMERCIAL */}
         <table className="po-table">
           <tbody>
             <tr>
@@ -229,6 +304,7 @@ export const PurchaseOrderPrint: React.FC<PurchaseOrderPrintProps> = ({ po }) =>
           </tbody>
         </table>
 
+        {/* TERMS */}
         <table className="po-table">
           <tbody>
             <tr>
@@ -246,6 +322,7 @@ export const PurchaseOrderPrint: React.FC<PurchaseOrderPrintProps> = ({ po }) =>
           </tbody>
         </table>
 
+        {/* SIGNATURE */}
         <table className="po-table po-footer-table">
           <tbody>
             <tr>
