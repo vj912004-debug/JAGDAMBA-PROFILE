@@ -15,9 +15,16 @@ const formatDate = (dateStr: string) => {
   return dateStr;
 };
 
+const FieldRow: React.FC<{ label: string; value?: string; children?: React.ReactNode }> = ({ label, value, children }) => (
+  <div className="po-field-row">
+    <span className="po-field-label">{label}</span>
+    {children ?? <span className="po-field-value">{value || ''}</span>}
+  </div>
+);
+
 export const PurchaseOrderPrint: React.FC<PurchaseOrderPrintProps> = ({ po }) => {
   const items = po.items || [];
-  const emptyRowsCount = Math.max(0, 11 - items.length);
+  const emptyRowsCount = Math.max(0, 10 - items.length);
   const emptyRows = Array.from({ length: emptyRowsCount });
 
   const basicAmount = po.totalAmount || 0;
@@ -25,394 +32,372 @@ export const PurchaseOrderPrint: React.FC<PurchaseOrderPrintProps> = ({ po }) =>
   const finalAmount = basicAmount + gstAmount;
 
   return (
-    <div style={{ backgroundColor: '#ffffff', color: '#000000' }} className="p-0 mx-auto font-sans shadow-lg print:shadow-none w-[210mm] min-h-[297mm]" id="po-print-area">
+    <div className="bg-white p-0 mx-auto text-black font-sans shadow-lg print:shadow-none w-[210mm] min-h-[297mm]" id="po-print-area">
       <style>{`
         @page { size: A4 portrait; margin: 5mm; }
         #po-print-area {
-          font-family: Arial, sans-serif;
+          font-family: Arial, Helvetica, sans-serif;
           font-size: 12px;
           margin: 0 auto;
-          padding: 0;
-          background-color: #fff;
+          padding: 8px;
+          background: #fff;
           width: 210mm;
           min-height: 297mm;
           box-sizing: border-box;
           color: #000;
         }
-        #po-print-area * { box-sizing: border-box; margin: 0; padding: 0; color: #000; }
+        #po-print-area * { box-sizing: border-box; }
 
-        .po-container {
-          width: 210mm;
-          background-color: #fff;
-          border: 2px solid #000;
-          padding: 4px;
-          margin: 0 auto;
-        }
-        .po-inner {
+        .po-sheet {
           border: 1px solid #000;
           display: flex;
           flex-direction: column;
         }
 
+        /* ── Header ── */
         .po-header {
           display: flex;
-          align-items: center;
-          padding: 12px 15px;
+          align-items: flex-start;
+          padding: 10px 12px 8px;
           border-bottom: 1px solid #000;
+          position: relative;
         }
-        .po-logo-wrap {
+        .po-logo-col {
+          width: 72px;
+          flex-shrink: 0;
           display: flex;
           flex-direction: column;
           align-items: center;
-          margin-right: 20px;
-          width: 80px;
-          flex-shrink: 0;
+          margin-right: 12px;
         }
-        .po-logo { width: 70px; height: auto; object-fit: contain; }
-        .po-logo-text {
-          font-size: 8px;
+        .po-logo { width: 62px; height: auto; }
+        .po-logo-caption {
+          font-size: 7.5px;
           font-weight: bold;
           font-style: italic;
           text-align: center;
-          margin-top: 3px;
-        }
-        .po-header-text { flex-grow: 1; }
-        .po-company-name {
-          color: #00AEEF;
-          font-size: 32px;
-          font-weight: bold;
-          text-align: center;
-          margin-bottom: 8px;
-        }
-        .po-company-details {
-          font-size: 11px;
-          color: #D97E26;
-          text-align: center;
-          line-height: 1.5;
-        }
-        .po-contact-row {
-          display: flex;
-          justify-content: center;
-          flex-wrap: wrap;
-          gap: 4px 20px;
           margin-top: 2px;
         }
-
-        .po-doc-title {
-          text-align: center;
-          font-size: 14px;
+        .po-header-center { flex: 1; text-align: center; padding-top: 2px; }
+        .po-company-name {
+          font-family: Georgia, 'Times New Roman', serif;
+          font-size: 30px;
           font-weight: bold;
-          padding: 7px;
-          border-bottom: 1px solid #000;
-          background-color: #000;
-          color: #fff !important;
+          color: #00AEEF;
+          margin-bottom: 4px;
+          line-height: 1.1;
+        }
+        .po-company-addr {
+          font-size: 11px;
+          color: #D97E26;
+          line-height: 1.45;
+        }
+        .po-company-gst {
+          font-size: 11px;
+          color: #D97E26;
+        }
+        .po-email-right {
+          position: absolute;
+          top: 10px;
+          right: 12px;
+          font-size: 11px;
+          color: #000;
         }
 
-        .po-grid-2 {
-          display: grid;
-          grid-template-columns: 1fr 1fr;
-        }
-        .po-section-header {
-          background-color: #000 !important;
+        /* ── Section bars ── */
+        .po-bar {
+          background: #000;
           color: #fff !important;
-          font-size: 11px;
-          font-weight: bold;
           text-align: center;
-          padding: 6px 10px;
+          font-weight: bold;
+          font-size: 12px;
+          padding: 6px 8px;
           border-bottom: 1px solid #000;
+          letter-spacing: 0.3px;
         }
-        .po-section-header:first-child { border-right: 1px solid #fff; }
 
-        .po-grid-cell {
-          border-bottom: 1px solid #000;
-          border-right: 1px solid #000;
-          padding: 6px 10px;
-          font-size: 11px;
-          min-height: 28px;
+        /* ── Two stacked columns (Supplier | PO Details) ── */
+        .po-two-cols {
           display: flex;
-          align-items: center;
+          border-bottom: 1px solid #000;
         }
-        .po-grid-cell.no-right { border-right: none; }
-        .po-grid-cell label {
+        .po-col {
+          flex: 1;
+          display: flex;
+          flex-direction: column;
+        }
+        .po-col:first-child { border-right: 1px solid #000; }
+        .po-col-bar {
+          background: #000;
+          color: #fff !important;
+          text-align: center;
+          font-weight: bold;
+          font-size: 11px;
+          padding: 5px 8px;
+          border-bottom: 1px solid #000;
+        }
+        .po-field-row {
+          display: flex;
+          align-items: flex-end;
+          border-bottom: 1px solid #000;
+          min-height: 28px;
+          padding: 4px 8px;
+          font-size: 11px;
+        }
+        .po-col .po-field-row:last-child { border-bottom: none; }
+        .po-field-label {
           font-weight: bold;
           white-space: nowrap;
-          margin-right: 6px;
+          margin-right: 4px;
         }
-        .po-grid-cell .underline {
-          flex-grow: 1;
+        .po-field-value {
+          flex: 1;
           border-bottom: 1px solid #000;
-          min-height: 14px;
-          padding-left: 4px;
+          min-height: 15px;
+          padding: 0 4px 1px;
           font-weight: bold;
+          line-height: 15px;
         }
-        .po-inline-fields {
-          display: flex;
-          align-items: center;
-          flex-grow: 1;
-          gap: 8px;
+        .po-ut-row .po-field-value { flex: 1; }
+        .po-ut-row .po-tc-label {
+          font-weight: bold;
+          margin: 0 4px 0 10px;
+          white-space: nowrap;
         }
-        .po-inline-fields .underline { flex: 1; }
+        .po-ut-row .po-tc-value {
+          width: 60px;
+          border-bottom: 1px solid #000;
+          min-height: 15px;
+        }
 
-        .po-transport-grid {
+        /* ── Transport ── */
+        .po-transport {
           display: grid;
           grid-template-columns: 1fr 1fr 1fr;
           border-bottom: 1px solid #000;
         }
-        .po-transport-grid .po-grid-cell {
+        .po-transport-cell {
+          display: flex;
+          align-items: flex-end;
+          padding: 6px 8px;
+          font-size: 11px;
           border-right: 1px solid #000;
-          border-bottom: none;
+          min-height: 30px;
         }
-        .po-transport-grid .po-grid-cell:last-child { border-right: none; }
+        .po-transport-cell:last-child { border-right: none; }
+        .po-transport-cell .po-field-label { margin-right: 4px; }
+        .po-transport-cell .po-field-value { flex: 1; }
 
-        .po-items-table {
+        /* ── Items table ── */
+        .po-table {
           width: 100%;
           border-collapse: collapse;
         }
-        .po-items-table th, .po-items-table td {
+        .po-table th, .po-table td {
           border: 1px solid #000;
-          padding: 5px 4px;
           text-align: center;
           font-size: 11px;
+          padding: 4px 3px;
         }
-        .po-items-table th {
-          background-color: #000 !important;
+        .po-table th {
+          background: #000 !important;
           color: #fff !important;
           font-weight: bold;
+          padding: 5px 3px;
         }
-        .po-items-table th:first-child, .po-items-table td:first-child { border-left: none; }
-        .po-items-table th:last-child, .po-items-table td:last-child { border-right: none; }
-        .po-items-table .data-row td { height: 24px; }
-        .po-items-table .totals-label {
+        .po-table th:first-child, .po-table td:first-child { border-left: none; }
+        .po-table th:last-child, .po-table td:last-child { border-right: none; }
+        .po-table .data td { height: 23px; }
+        .po-table .total-kg-cell {
           font-weight: bold;
-          text-align: center;
           vertical-align: middle;
+          text-align: center;
         }
-        .po-items-table .amount-label {
+        .po-table .amt-label {
           font-weight: bold;
           text-align: left;
-          padding-left: 8px;
+          padding-left: 6px;
         }
-        .po-items-table .amount-value {
+        .po-table .amt-val {
           font-weight: bold;
           text-align: right;
-          padding-right: 8px;
+          padding-right: 6px;
         }
 
-        .po-note-row {
+        /* ── Note ── */
+        .po-note-block {
           border-bottom: 1px solid #000;
-          padding: 8px 10px;
-          min-height: 32px;
+          padding: 6px 8px 10px;
           font-size: 11px;
-          display: flex;
-          align-items: center;
+          min-height: 34px;
         }
-        .po-note-row label { font-weight: bold; margin-right: 8px; }
-        .po-note-row .underline {
-          flex-grow: 1;
-          border-bottom: 1px solid #000;
-          min-height: 14px;
-        }
+        .po-note-block b { margin-right: 6px; }
 
+        /* ── Terms ── */
         .po-terms {
-          padding: 8px 12px 10px;
+          padding: 7px 10px 8px 22px;
           font-size: 10.5px;
           line-height: 1.55;
           border-bottom: 1px solid #000;
         }
-        .po-terms ol { margin: 0; padding-left: 18px; }
-        .po-terms li { margin-bottom: 2px; }
+        .po-terms ol { margin: 0; padding: 0; list-style-position: outside; }
+        .po-terms li { margin-bottom: 1px; }
 
-        .po-signatures {
+        /* ── Signatures (labels at TOP per template) ── */
+        .po-sigs {
           display: grid;
-          grid-template-columns: 1fr 1fr 1.4fr;
-          min-height: 90px;
+          grid-template-columns: 1fr 1fr 1.35fr;
+          min-height: 85px;
         }
-        .po-sig-box {
+        .po-sig {
           border-right: 1px solid #000;
-          padding: 10px;
+          padding: 8px 10px;
           font-weight: bold;
           font-size: 11px;
           display: flex;
           flex-direction: column;
-          justify-content: flex-end;
-          text-align: center;
         }
-        .po-sig-box:last-child {
-          border-right: none;
-          justify-content: space-between;
+        .po-sig:last-child { border-right: none; }
+        .po-sig-right {
           align-items: flex-end;
-          text-align: right;
+          justify-content: space-between;
         }
         .po-sig-blue { color: #00AEEF !important; }
       `}</style>
 
-      <div className="po-container">
-        <div className="po-inner">
-          <div className="po-header">
-            <div className="po-logo-wrap">
-              <img src={LOGO2_BASE64} alt="Jagdamba Profile" className="po-logo" />
-              <div className="po-logo-text">Jagdamba Profile</div>
-            </div>
-            <div className="po-header-text">
-              <div className="po-company-name">Jagdamba Profile</div>
-              <div className="po-company-details">
-                <div>504/1A, GIDC Makarpura, Vadodara - 390010.</div>
-                <div className="po-contact-row">
-                  <span>GST No: 24AJGPP9863R1Z5</span>
-                  <span>Mo: 9824917250, 9824025001, 8799617254</span>
-                  <span>Email: jagdambaprofile@gmail.com</span>
-                </div>
-              </div>
+      <div className="po-sheet">
+        {/* Header */}
+        <div className="po-header">
+          <div className="po-logo-col">
+            <img src={LOGO2_BASE64} alt="Jagdamba Profile" className="po-logo" />
+            <div className="po-logo-caption">Jagdamba Profile</div>
+          </div>
+          <div className="po-header-center">
+            <div className="po-company-name">Jagdamba Profile</div>
+            <div className="po-company-addr">504/1A, GIDC Makarpura, Vadodara - 390010.</div>
+            <div className="po-company-gst">
+              GST No: 24AJGPP9863R1Z5&nbsp;&nbsp;&nbsp;&nbsp;Mo: 9824917250, 9824025001, 8799617254
             </div>
           </div>
+          <div className="po-email-right">Email: jagdambaprofile@gmail.com</div>
+        </div>
 
-          <div className="po-doc-title">PURCHASE ORDER</div>
+        <div className="po-bar">PURCHASE ORDER</div>
 
-          <div className="po-grid-2">
-            <div className="po-section-header">SUPPLIER DETAILS</div>
-            <div className="po-section-header">PURCHASE ORDER DETAILS</div>
-
-            <div className="po-grid-cell">
-              <label>Party Name :</label>
-              <div className="underline">{po.supplierName}</div>
-            </div>
-            <div className="po-grid-cell no-right">
-              <label>PO No :</label>
-              <div className="underline">{po.poNumber}</div>
-            </div>
-
-            <div className="po-grid-cell">
-              <label>Address :</label>
-              <div className="underline">{po.supplierAddress || ''}</div>
-            </div>
-            <div className="po-grid-cell no-right">
-              <label>PO Date :</label>
-              <div className="underline">{formatDate(po.date)}</div>
-            </div>
-
-            <div className="po-grid-cell">
-              <label>GST Number :</label>
-              <div className="underline">{po.supplierGST || ''}</div>
-            </div>
-            <div className="po-grid-cell no-right">
-              <label>Payment Terms :</label>
-              <div className="underline">{po.paymentTerms || ''}</div>
-            </div>
-
-            <div className="po-grid-cell">
-              <label>Mobile Number :</label>
-              <div className="underline">{po.supplierMobile || ''}</div>
-            </div>
-            <div className="po-grid-cell no-right">
-              <label>Make :</label>
-              <div className="underline">{po.make || ''}</div>
-            </div>
-
-            <div className="po-grid-cell">
-              <label>Email ID :</label>
-              <div className="underline">{po.supplierEmail || ''}</div>
-            </div>
-            <div className="po-grid-cell no-right">
-              <label>UT Level :</label>
-              <div className="po-inline-fields">
-                <div className="underline">{po.utLevel || ''}</div>
-                <label style={{ marginLeft: 4 }}>TC</label>
-                <div className="underline" style={{ maxWidth: 70 }}>{po.tc || ''}</div>
-              </div>
+        {/* Supplier | PO Details — stacked columns */}
+        <div className="po-two-cols">
+          <div className="po-col">
+            <div className="po-col-bar">SUPPLIER DETAILS</div>
+            <FieldRow label="Party Name :" value={po.supplierName} />
+            <FieldRow label="Address :" value={po.supplierAddress} />
+            <FieldRow label="GST Number :" value={po.supplierGST} />
+            <FieldRow label="Mobile Number :" value={po.supplierMobile} />
+            <FieldRow label="Email ID :" value={po.supplierEmail} />
+          </div>
+          <div className="po-col">
+            <div className="po-col-bar">PURCHASE ORDER DETAILS</div>
+            <FieldRow label="PO No :" value={po.poNumber} />
+            <FieldRow label="PO Date :" value={formatDate(po.date)} />
+            <FieldRow label="Payment Terms :" value={po.paymentTerms} />
+            <FieldRow label="Make :" value={po.make} />
+            <div className="po-field-row po-ut-row">
+              <span className="po-field-label">UT Level :</span>
+              <span className="po-field-value">{po.utLevel || ''}</span>
+              <span className="po-tc-label">TC</span>
+              <span className="po-tc-value">{po.tc || ''}</span>
             </div>
           </div>
+        </div>
 
-          <div className="po-section-header" style={{ borderRight: 'none' }}>VEHICLE TRANSPORT DETAILS</div>
-          <div className="po-transport-grid">
-            <div className="po-grid-cell">
-              <label>Vehicle Number :</label>
-              <div className="underline">{po.transportNumber || ''}</div>
-            </div>
-            <div className="po-grid-cell">
-              <label>Driver Mobile No :</label>
-              <div className="underline">{po.driverMobile || ''}</div>
-            </div>
-            <div className="po-grid-cell no-right">
-              <label>Transport Name :</label>
-              <div className="underline">{po.transportName || ''}</div>
-            </div>
+        <div className="po-bar">VEHICLE TRANSPORT DETAILS</div>
+        <div className="po-transport">
+          <div className="po-transport-cell">
+            <span className="po-field-label">Vehicle Number :</span>
+            <span className="po-field-value">{po.transportNumber || ''}</span>
           </div>
+          <div className="po-transport-cell">
+            <span className="po-field-label">Driver Mobile No :</span>
+            <span className="po-field-value">{po.driverMobile || ''}</span>
+          </div>
+          <div className="po-transport-cell">
+            <span className="po-field-label">Transport Name :</span>
+            <span className="po-field-value">{po.transportName || ''}</span>
+          </div>
+        </div>
 
-          <table className="po-items-table">
-            <thead>
-              <tr>
-                <th style={{ width: '5%' }}>Sr No</th>
-                <th style={{ width: '12%' }}>Grade</th>
-                <th style={{ width: '10%' }}>Thickness</th>
-                <th style={{ width: '10%' }}>Width</th>
-                <th style={{ width: '10%' }}>Length</th>
-                <th style={{ width: '8%' }}>Nos</th>
-                <th style={{ width: '10%' }}>Kg</th>
-                <th style={{ width: '12%' }}>Rate</th>
-                <th style={{ width: '13%' }}>Amount</th>
+        <table className="po-table">
+          <thead>
+            <tr>
+              <th style={{ width: '5%' }}>Sr No</th>
+              <th style={{ width: '13%' }}>Grade</th>
+              <th style={{ width: '10%' }}>Thickness</th>
+              <th style={{ width: '10%' }}>Width</th>
+              <th style={{ width: '10%' }}>Length</th>
+              <th style={{ width: '8%' }}>Nos</th>
+              <th style={{ width: '10%' }}>Kg</th>
+              <th style={{ width: '12%' }}>Rate</th>
+              <th style={{ width: '12%' }}>Amount</th>
+            </tr>
+          </thead>
+          <tbody>
+            {items.map((item, idx) => (
+              <tr key={item.id || idx} className="data">
+                <td>{idx + 1}</td>
+                <td>{item.grade || ''}</td>
+                <td>{item.thickness || ''}</td>
+                <td>{item.width || ''}</td>
+                <td>{item.length || ''}</td>
+                <td>{item.nos || ''}</td>
+                <td>{item.kg ? formatNum(item.kg) : ''}</td>
+                <td>{item.rate ? formatNum(item.rate) : ''}</td>
+                <td>{item.amount ? formatNum(item.amount) : ''}</td>
               </tr>
-            </thead>
-            <tbody>
-              {items.map((item, idx) => (
-                <tr key={item.id || idx} className="data-row">
-                  <td>{idx + 1}</td>
-                  <td>{item.grade || ''}</td>
-                  <td>{item.thickness || ''}</td>
-                  <td>{item.width || ''}</td>
-                  <td>{item.length || ''}</td>
-                  <td>{item.nos || ''}</td>
-                  <td>{item.kg ? formatNum(item.kg) : ''}</td>
-                  <td>{item.rate ? formatNum(item.rate) : ''}</td>
-                  <td>{item.amount ? formatNum(item.amount) : ''}</td>
-                </tr>
-              ))}
-              {emptyRows.map((_, idx) => (
-                <tr key={`empty-${idx}`} className="data-row">
-                  <td></td><td></td><td></td><td></td><td></td>
-                  <td></td><td></td><td></td><td></td>
-                </tr>
-              ))}
-              <tr>
-                <td colSpan={6} rowSpan={3} className="totals-label">TOTAL KG</td>
-                <td rowSpan={3}>{po.totalKg ? formatNum(po.totalKg) : ''}</td>
-                <td className="amount-label">BASIC AMOUNT</td>
-                <td className="amount-value">{basicAmount ? formatNum(basicAmount) : ''}</td>
+            ))}
+            {emptyRows.map((_, idx) => (
+              <tr key={`e-${idx}`} className="data">
+                <td></td><td></td><td></td><td></td><td></td>
+                <td></td><td></td><td></td><td></td>
               </tr>
-              <tr>
-                <td className="amount-label">GST @ 18%</td>
-                <td className="amount-value">{gstAmount ? formatNum(gstAmount) : ''}</td>
-              </tr>
-              <tr>
-                <td className="amount-label">FINAL AMOUNT</td>
-                <td className="amount-value">{finalAmount ? formatNum(finalAmount) : ''}</td>
-              </tr>
-            </tbody>
-          </table>
+            ))}
+            <tr>
+              <td colSpan={6} rowSpan={3} className="total-kg-cell">TOTAL KG</td>
+              <td rowSpan={3}>{po.totalKg ? formatNum(po.totalKg) : ''}</td>
+              <td className="amt-label">BASIC AMOUNT</td>
+              <td className="amt-val">{basicAmount ? formatNum(basicAmount) : ''}</td>
+            </tr>
+            <tr>
+              <td className="amt-label">GST @ 18%</td>
+              <td className="amt-val">{gstAmount ? formatNum(gstAmount) : ''}</td>
+            </tr>
+            <tr>
+              <td className="amt-label">FINAL AMOUNT</td>
+              <td className="amt-val">{finalAmount ? formatNum(finalAmount) : ''}</td>
+            </tr>
+          </tbody>
+        </table>
 
-          <div className="po-section-header" style={{ borderRight: 'none', textAlign: 'center' }}>COMMERCIAL / QUALITY DETAILS</div>
-          <div className="po-note-row">
-            <label>Note</label>
-            <div className="underline">{po.note || ''}</div>
-          </div>
+        <div className="po-bar">COMMERCIAL / QUALITY DETAILS</div>
+        <div className="po-note-block">
+          <b>Note</b>{po.note || ''}
+        </div>
 
-          <div className="po-section-header" style={{ borderRight: 'none', textAlign: 'center' }}>GENERAL TERMS AND CONDITIONS</div>
-          <div className="po-terms">
-            <ol>
-              <li>Material should be supplied strictly as per above size, grade and specification.</li>
-              <li>Test Certificate / MTC report wherever applicable.</li>
-              <li>Material should be free from heavy rust, lamination, oil, paint and major surface defects.</li>
-              <li>Final weight, rate and payment will be as per mutually agreed terms.</li>
-              <li>Delivery schedule and transport details must be confirmed before dispatch.</li>
-            </ol>
-          </div>
+        <div className="po-bar">GENERAL TERMS AND CONDITIONS</div>
+        <div className="po-terms">
+          <ol>
+            <li>Material should be supplied strictly as per above size, grade and specification.</li>
+            <li>Test Certificate / MTC report wherever applicable.</li>
+            <li>Material should be free from heavy rust, lamination, oil, paint and major surface defects.</li>
+            <li>Final weight, rate and payment will be as per mutually agreed terms.</li>
+            <li>Delivery schedule and transport details must be confirmed before dispatch.</li>
+          </ol>
+        </div>
 
-          <div className="po-signatures">
-            <div className="po-sig-box">Prepared By</div>
-            <div className="po-sig-box">Checked By</div>
-            <div className="po-sig-box">
-              <span className="po-sig-blue">For Jagdamba Profile</span>
-              <span className="po-sig-blue">Authorized Signatory</span>
-            </div>
+        <div className="po-sigs">
+          <div className="po-sig">Prepared By</div>
+          <div className="po-sig">Checked By</div>
+          <div className="po-sig po-sig-right">
+            <span className="po-sig-blue">For Jagdamba Profile</span>
+            <span className="po-sig-blue">Authorized Signatory</span>
           </div>
         </div>
       </div>
