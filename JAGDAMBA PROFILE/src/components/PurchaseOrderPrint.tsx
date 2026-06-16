@@ -49,23 +49,17 @@ export const PurchaseOrderPrint: React.FC<PurchaseOrderPrintProps> = ({ po }) =>
         }
 
         .po-header {
+          position: relative;
           padding: 8px 6px 10px;
           border-bottom: 2px solid #000;
+          min-height: 96px;
         }
-        .po-header-table {
-          width: 100%;
-          border-collapse: collapse;
-          table-layout: fixed;
-        }
-        .po-header-table td {
-          padding: 1px 0;
-          vertical-align: middle;
-          border: none;
-        }
-        .po-logo-cell {
+        .po-logo-col {
+          position: absolute;
+          left: 6px;
+          top: 8px;
           width: 88px;
-          vertical-align: top;
-          padding-right: 6px;
+          text-align: center;
         }
         .po-logo {
           width: 68px;
@@ -83,9 +77,9 @@ export const PurchaseOrderPrint: React.FC<PurchaseOrderPrintProps> = ({ po }) =>
           color: #000;
           line-height: 1.2;
         }
-        .po-header-center {
+        .po-header-body {
+          width: 100%;
           text-align: center;
-          padding-left: 44px;
         }
         .po-header-title {
           color: #1fa3c6;
@@ -102,29 +96,28 @@ export const PurchaseOrderPrint: React.FC<PurchaseOrderPrintProps> = ({ po }) =>
           color: #d48a28;
           line-height: 1.45;
         }
-        .po-contact-table {
+        .po-contact-row {
+          display: table;
           width: 100%;
-          border-collapse: collapse;
+          margin-top: 3px;
           table-layout: fixed;
-          margin-top: 2px;
         }
-        .po-contact-table td {
-          padding: 0;
-          border: none;
+        .po-contact-row > span {
+          display: table-cell;
           vertical-align: middle;
+          font-size: 11px;
         }
         .po-header-mo {
-          font-size: 11px;
           color: #d48a28;
-          text-align: center;
-          padding-left: 44px;
+          text-align: left;
+          width: 65%;
+          padding-left: 2px;
         }
         .po-header-email {
-          font-size: 11px;
           color: #000;
           text-align: right;
           white-space: nowrap;
-          width: 250px;
+          width: 35%;
           padding-right: 2px;
         }
 
@@ -181,41 +174,19 @@ export const PurchaseOrderPrint: React.FC<PurchaseOrderPrintProps> = ({ po }) =>
       <div className="po-container">
         {/* HEADER */}
         <div className="po-header">
-          <table className="po-header-table">
-            <tbody>
-              <tr>
-                <td className="po-logo-cell" rowSpan={4}>
-                  <img src={LOGO_BASE64} alt="Jagdamba Profile" className="po-logo" />
-                  <div className="po-logo-caption">Jagdamba Profile</div>
-                </td>
-                <td className="po-header-center">
-                  <h1 className="po-header-title">Jagdamba Profile</h1>
-                </td>
-              </tr>
-              <tr>
-                <td className="po-header-center">
-                  <p className="po-header-addr">504/1A, GIDC Makarpura, Vadodara - 390010.</p>
-                </td>
-              </tr>
-              <tr>
-                <td className="po-header-center">
-                  <p className="po-header-gst">GST No: 24AJGPP9863R1Z5</p>
-                </td>
-              </tr>
-              <tr>
-                <td>
-                  <table className="po-contact-table">
-                    <tbody>
-                      <tr>
-                        <td className="po-header-mo">Mo: 9824917250, 9824025001, 8799617254</td>
-                        <td className="po-header-email">Email: jagdambaprofile@gmail.com</td>
-                      </tr>
-                    </tbody>
-                  </table>
-                </td>
-              </tr>
-            </tbody>
-          </table>
+          <div className="po-logo-col">
+            <img src={LOGO_BASE64} alt="Jagdamba Profile" className="po-logo" />
+            <div className="po-logo-caption">Jagdamba Profile</div>
+          </div>
+          <div className="po-header-body">
+            <h1 className="po-header-title">Jagdamba Profile</h1>
+            <p className="po-header-addr">504/1A, GIDC Makarpura, Vadodara - 390010.</p>
+            <p className="po-header-gst">GST No: 24AJGPP9863R1Z5</p>
+            <div className="po-contact-row">
+              <span className="po-header-mo">Mo: 9824917250, 9824025001, 8799617254</span>
+              <span className="po-header-email">Email: jagdambaprofile@gmail.com</span>
+            </div>
+          </div>
         </div>
 
         {/* TITLE */}
