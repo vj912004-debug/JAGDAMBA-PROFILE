@@ -1,6 +1,6 @@
 import React from 'react';
 import type { PurchaseOrder } from '../store/AppContext';
-import { LOGO2_BASE64 } from '../utils/logo2Base64';
+import { LOGO_BASE64 } from '../utils/logoBase64';
 
 interface PurchaseOrderPrintProps {
   po: PurchaseOrder;
@@ -49,59 +49,49 @@ export const PurchaseOrderPrint: React.FC<PurchaseOrderPrintProps> = ({ po }) =>
         }
 
         .po-header {
-          position: relative;
-          padding: 6px 8px 8px;
+          padding: 8px 6px 10px;
           border-bottom: 2px solid #000;
         }
-        .po-logo-col {
-          position: absolute;
-          left: 8px;
-          top: 6px;
-          width: 90px;
-          text-align: center;
+        .po-header-table {
+          width: 100%;
+          border-collapse: collapse;
+          table-layout: fixed;
+        }
+        .po-header-table td {
+          padding: 1px 0;
+          vertical-align: middle;
+          border: none;
+        }
+        .po-logo-cell {
+          width: 88px;
+          vertical-align: top;
+          padding-right: 6px;
         }
         .po-logo {
-          width: 72px;
+          width: 68px;
           height: auto;
           object-fit: contain;
           display: block;
           margin: 0 auto;
-        }
-        .po-logo-brand {
-          font-size: 5.5px;
-          font-weight: bold;
-          text-transform: uppercase;
-          text-align: center;
-          margin-top: 3px;
-          color: #333;
-          line-height: 1.25;
-          letter-spacing: 0.2px;
         }
         .po-logo-caption {
           font-size: 8px;
           font-weight: bold;
           font-style: italic;
           text-align: center;
-          margin-top: 2px;
+          margin-top: 3px;
           color: #000;
+          line-height: 1.2;
         }
-        .po-header-table {
-          width: 100%;
-          border-collapse: collapse;
-        }
-        .po-header-table td {
-          padding: 1px 0;
-          vertical-align: middle;
-        }
-        .po-header-spacer {
-          width: 90px;
+        .po-header-center {
+          text-align: center;
+          padding-left: 44px;
         }
         .po-header-title {
           color: #1fa3c6;
-          margin: 0;
-          font-size: 36px;
+          margin: 0 0 4px;
+          font-size: 38px;
           font-weight: bold;
-          text-align: center;
           line-height: 1.05;
           letter-spacing: 0.3px;
         }
@@ -109,22 +99,33 @@ export const PurchaseOrderPrint: React.FC<PurchaseOrderPrintProps> = ({ po }) =>
         .po-header-gst {
           margin: 0;
           font-size: 11px;
-          text-align: center;
           color: #d48a28;
           line-height: 1.45;
+        }
+        .po-contact-table {
+          width: 100%;
+          border-collapse: collapse;
+          table-layout: fixed;
+          margin-top: 2px;
+        }
+        .po-contact-table td {
+          padding: 0;
+          border: none;
+          vertical-align: middle;
         }
         .po-header-mo {
           font-size: 11px;
           color: #d48a28;
           text-align: center;
+          padding-left: 44px;
         }
         .po-header-email {
           font-size: 11px;
           color: #000;
           text-align: right;
           white-space: nowrap;
+          width: 250px;
           padding-right: 2px;
-          width: 260px;
         }
 
         .po-title {
@@ -180,35 +181,38 @@ export const PurchaseOrderPrint: React.FC<PurchaseOrderPrintProps> = ({ po }) =>
       <div className="po-container">
         {/* HEADER */}
         <div className="po-header">
-          <div className="po-logo-col">
-            <img src={LOGO2_BASE64} alt="Shree Jagdamba Steel Profiles" className="po-logo" />
-            <div className="po-logo-brand">Shree Jagdamba Steel Profiles</div>
-            <div className="po-logo-caption">Jagdamba Profile</div>
-          </div>
           <table className="po-header-table">
             <tbody>
               <tr>
-                <td className="po-header-spacer" />
-                <td colSpan={2}>
+                <td className="po-logo-cell" rowSpan={4}>
+                  <img src={LOGO_BASE64} alt="Jagdamba Profile" className="po-logo" />
+                  <div className="po-logo-caption">Jagdamba Profile</div>
+                </td>
+                <td className="po-header-center">
                   <h1 className="po-header-title">Jagdamba Profile</h1>
                 </td>
               </tr>
               <tr>
-                <td className="po-header-spacer" />
-                <td colSpan={2}>
+                <td className="po-header-center">
                   <p className="po-header-addr">504/1A, GIDC Makarpura, Vadodara - 390010.</p>
                 </td>
               </tr>
               <tr>
-                <td className="po-header-spacer" />
-                <td colSpan={2}>
+                <td className="po-header-center">
                   <p className="po-header-gst">GST No: 24AJGPP9863R1Z5</p>
                 </td>
               </tr>
               <tr>
-                <td className="po-header-spacer" />
-                <td className="po-header-mo">Mo: 9824917250, 9824025001, 8799617254</td>
-                <td className="po-header-email">Email: jagdambaprofile@gmail.com</td>
+                <td>
+                  <table className="po-contact-table">
+                    <tbody>
+                      <tr>
+                        <td className="po-header-mo">Mo: 9824917250, 9824025001, 8799617254</td>
+                        <td className="po-header-email">Email: jagdambaprofile@gmail.com</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </td>
               </tr>
             </tbody>
           </table>
