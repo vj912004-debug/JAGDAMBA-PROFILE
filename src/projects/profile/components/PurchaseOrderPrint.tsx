@@ -105,8 +105,10 @@ export const PurchaseOrderPrint: React.FC<PurchaseOrderPrintProps> = ({ po }) =>
         }
         .po-header-mo {
           display: block;
+          width: 100%;
           text-align: center;
-          padding: 0 240px 0 0;
+          margin: 0;
+          padding: 0;
         }
         .po-header-email {
           position: absolute;
