@@ -17,7 +17,7 @@ const formatDate = (dateStr: string) => {
 
 export const PurchaseOrderPrint: React.FC<PurchaseOrderPrintProps> = ({ po }) => {
   const items = po.items || [];
-  const emptyRowsCount = Math.max(0, 10 - items.length);
+  const emptyRowsCount = Math.max(0, 11 - items.length);
   const emptyRows = Array.from({ length: emptyRowsCount });
 
   const basicAmount = po.totalAmount || 0;
@@ -27,71 +27,64 @@ export const PurchaseOrderPrint: React.FC<PurchaseOrderPrintProps> = ({ po }) =>
   return (
     <div className="bg-white p-0 mx-auto text-black font-sans shadow-lg print:shadow-none w-[210mm] min-h-[297mm]" id="po-print-area">
       <style>{`
-        @page { size: A4; margin: 0; }
+        @page { size: A4 portrait; margin: 5mm; }
         #po-print-area {
           font-family: Arial, sans-serif;
           font-size: 12px;
           margin: 0 auto;
-          padding: 12px;
+          padding: 0;
           background-color: #fff;
           width: 210mm;
           min-height: 297mm;
           box-sizing: border-box;
           color: #000;
         }
-        #po-print-area * { box-sizing: border-box; }
+        #po-print-area * { box-sizing: border-box; margin: 0; padding: 0; color: #000; }
 
-        .po-outer {
-          border: 2px solid #ccc;
-          padding: 6px;
-          min-height: calc(297mm - 24px);
-          display: flex;
-          flex-direction: column;
+        .po-container {
+          width: 210mm;
+          background-color: #fff;
+          border: 2px solid #000;
+          padding: 4px;
+          margin: 0 auto;
         }
         .po-inner {
           border: 1px solid #000;
           display: flex;
           flex-direction: column;
-          flex-grow: 1;
         }
 
         .po-header {
           display: flex;
-          align-items: flex-start;
-          padding: 10px 12px;
+          align-items: center;
+          padding: 12px 15px;
           border-bottom: 1px solid #000;
-          position: relative;
         }
         .po-logo-wrap {
           display: flex;
           flex-direction: column;
           align-items: center;
-          margin-right: 16px;
-          width: 72px;
+          margin-right: 20px;
+          width: 80px;
           flex-shrink: 0;
         }
-        .po-logo {
-          width: 58px;
-          height: auto;
-          object-fit: contain;
-        }
+        .po-logo { width: 70px; height: auto; object-fit: contain; }
         .po-logo-text {
           font-size: 8px;
           font-weight: bold;
           font-style: italic;
           text-align: center;
-          margin-top: 2px;
+          margin-top: 3px;
         }
-        .po-header-body { flex-grow: 1; }
+        .po-header-text { flex-grow: 1; }
         .po-company-name {
-          font-family: Georgia, 'Times New Roman', serif;
-          font-size: 30px;
-          font-weight: bold;
           color: #00AEEF;
+          font-size: 32px;
+          font-weight: bold;
           text-align: center;
-          margin-bottom: 6px;
+          margin-bottom: 8px;
         }
-        .po-contact {
+        .po-company-details {
           font-size: 11px;
           color: #D97E26;
           text-align: center;
@@ -101,301 +94,267 @@ export const PurchaseOrderPrint: React.FC<PurchaseOrderPrintProps> = ({ po }) =>
           display: flex;
           justify-content: center;
           flex-wrap: wrap;
-          gap: 4px 16px;
-        }
-        .po-email-top {
-          position: absolute;
-          top: 10px;
-          right: 12px;
-          font-size: 11px;
-          color: #000;
-          font-weight: normal;
+          gap: 4px 20px;
+          margin-top: 2px;
         }
 
         .po-doc-title {
-          background-color: #000;
-          color: #fff;
           text-align: center;
-          font-weight: bold;
           font-size: 14px;
+          font-weight: bold;
           padding: 7px;
-          letter-spacing: 0.5px;
+          border-bottom: 1px solid #000;
+          background-color: #000;
+          color: #fff !important;
         }
 
-        .po-split-header {
-          display: flex;
-          border-bottom: 1px solid #000;
+        .po-grid-2 {
+          display: grid;
+          grid-template-columns: 1fr 1fr;
         }
-        .po-split-header > div {
-          flex: 1;
-          background-color: #000;
-          color: #fff;
+        .po-section-header {
+          background-color: #000 !important;
+          color: #fff !important;
+          font-size: 11px;
           font-weight: bold;
           text-align: center;
-          padding: 6px;
-          font-size: 11px;
-        }
-        .po-split-header > div:first-child {
-          border-right: 1px solid #fff;
-        }
-
-        .po-split-body {
-          display: flex;
+          padding: 6px 10px;
           border-bottom: 1px solid #000;
         }
-        .po-split-col {
-          flex: 1;
-          padding: 0;
-        }
-        .po-split-col:first-child {
+        .po-section-header:first-child { border-right: 1px solid #fff; }
+
+        .po-grid-cell {
+          border-bottom: 1px solid #000;
           border-right: 1px solid #000;
-        }
-        .po-field-row {
+          padding: 6px 10px;
+          font-size: 11px;
+          min-height: 28px;
           display: flex;
           align-items: center;
-          border-bottom: 1px solid #000;
-          min-height: 30px;
-          padding: 4px 10px;
-          font-size: 11px;
         }
-        .po-field-row:last-child { border-bottom: none; }
-        .po-field-label {
+        .po-grid-cell.no-right { border-right: none; }
+        .po-grid-cell label {
           font-weight: bold;
           white-space: nowrap;
           margin-right: 6px;
         }
-        .po-field-value {
+        .po-grid-cell .underline {
           flex-grow: 1;
-          font-weight: bold;
+          border-bottom: 1px solid #000;
           min-height: 14px;
+          padding-left: 4px;
+          font-weight: bold;
         }
-        .po-field-row-inline {
+        .po-inline-fields {
           display: flex;
           align-items: center;
-          border-bottom: none;
+          flex-grow: 1;
+          gap: 8px;
         }
-        .po-field-row-inline .po-field-value {
-          border-bottom: 1px solid #000;
-          margin-left: 4px;
-          padding-left: 4px;
-        }
+        .po-inline-fields .underline { flex: 1; }
 
-        .po-section-bar {
-          background-color: #000;
-          color: #fff;
-          font-weight: bold;
-          text-align: center;
-          padding: 6px;
-          font-size: 11px;
-          border-bottom: 1px solid #000;
-        }
-
-        .po-transport-row {
+        .po-transport-grid {
           display: grid;
           grid-template-columns: 1fr 1fr 1fr;
           border-bottom: 1px solid #000;
         }
-        .po-transport-cell {
-          padding: 8px 10px;
-          font-size: 11px;
+        .po-transport-grid .po-grid-cell {
           border-right: 1px solid #000;
-          min-height: 32px;
-          display: flex;
-          align-items: center;
+          border-bottom: none;
         }
-        .po-transport-cell:last-child { border-right: none; }
-        .po-transport-cell b { margin-right: 4px; }
+        .po-transport-grid .po-grid-cell:last-child { border-right: none; }
 
-        .po-table {
+        .po-items-table {
           width: 100%;
           border-collapse: collapse;
-          border-bottom: 1px solid #000;
         }
-        .po-table th, .po-table td {
+        .po-items-table th, .po-items-table td {
           border: 1px solid #000;
-          text-align: center;
           padding: 5px 4px;
+          text-align: center;
           font-size: 11px;
         }
-        .po-table th {
-          background-color: #000;
-          color: #fff;
+        .po-items-table th {
+          background-color: #000 !important;
+          color: #fff !important;
           font-weight: bold;
         }
-        .po-table th:first-child, .po-table td:first-child { border-left: none; }
-        .po-table th:last-child, .po-table td:last-child { border-right: none; }
-        .po-table .item-row td, .po-table .empty-row td { height: 24px; }
-        .po-table .totals-label {
+        .po-items-table th:first-child, .po-items-table td:first-child { border-left: none; }
+        .po-items-table th:last-child, .po-items-table td:last-child { border-right: none; }
+        .po-items-table .data-row td { height: 24px; }
+        .po-items-table .totals-label {
           font-weight: bold;
           text-align: center;
           vertical-align: middle;
         }
-        .po-table .amount-label {
+        .po-items-table .amount-label {
           font-weight: bold;
           text-align: left;
           padding-left: 8px;
         }
-        .po-table .amount-value {
+        .po-items-table .amount-value {
           font-weight: bold;
           text-align: right;
           padding-right: 8px;
         }
 
-        .po-note-section {
+        .po-note-row {
           border-bottom: 1px solid #000;
           padding: 8px 10px;
-          min-height: 36px;
+          min-height: 32px;
           font-size: 11px;
           display: flex;
-          align-items: flex-start;
+          align-items: center;
         }
-        .po-note-section b { margin-right: 6px; white-space: nowrap; }
+        .po-note-row label { font-weight: bold; margin-right: 8px; }
+        .po-note-row .underline {
+          flex-grow: 1;
+          border-bottom: 1px solid #000;
+          min-height: 14px;
+        }
 
         .po-terms {
-          padding: 8px 12px;
+          padding: 8px 12px 10px;
           font-size: 10.5px;
-          line-height: 1.6;
+          line-height: 1.55;
           border-bottom: 1px solid #000;
         }
-        .po-terms ol {
-          margin: 0;
-          padding-left: 18px;
-        }
+        .po-terms ol { margin: 0; padding-left: 18px; }
         .po-terms li { margin-bottom: 2px; }
 
         .po-signatures {
           display: grid;
           grid-template-columns: 1fr 1fr 1.4fr;
-          min-height: 80px;
-          margin-top: auto;
+          min-height: 90px;
         }
         .po-sig-box {
           border-right: 1px solid #000;
           padding: 10px;
           font-weight: bold;
           font-size: 11px;
+          display: flex;
+          flex-direction: column;
+          justify-content: flex-end;
           text-align: center;
         }
         .po-sig-box:last-child {
           border-right: none;
-          display: flex;
-          flex-direction: column;
           justify-content: space-between;
           align-items: flex-end;
           text-align: right;
         }
-        .po-sig-blue { color: #00AEEF; }
+        .po-sig-blue { color: #00AEEF !important; }
       `}</style>
 
-      <div className="po-outer">
+      <div className="po-container">
         <div className="po-inner">
-          {/* Header */}
           <div className="po-header">
             <div className="po-logo-wrap">
               <img src={LOGO2_BASE64} alt="Jagdamba Profile" className="po-logo" />
               <div className="po-logo-text">Jagdamba Profile</div>
             </div>
-            <div className="po-header-body">
+            <div className="po-header-text">
               <div className="po-company-name">Jagdamba Profile</div>
-              <div className="po-contact">
+              <div className="po-company-details">
                 <div>504/1A, GIDC Makarpura, Vadodara - 390010.</div>
                 <div className="po-contact-row">
                   <span>GST No: 24AJGPP9863R1Z5</span>
                   <span>Mo: 9824917250, 9824025001, 8799617254</span>
+                  <span>Email: jagdambaprofile@gmail.com</span>
                 </div>
               </div>
             </div>
-            <div className="po-email-top">Email: jagdambaprofile@gmail.com</div>
           </div>
 
           <div className="po-doc-title">PURCHASE ORDER</div>
 
-          {/* Supplier & PO Details */}
-          <div className="po-split-header">
-            <div>SUPPLIER DETAILS</div>
-            <div>PURCHASE ORDER DETAILS</div>
-          </div>
-          <div className="po-split-body">
-            <div className="po-split-col">
-              <div className="po-field-row">
-                <span className="po-field-label">Party Name :</span>
-                <span className="po-field-value">{po.supplierName}</span>
-              </div>
-              <div className="po-field-row">
-                <span className="po-field-label">Address :</span>
-                <span className="po-field-value">{po.supplierAddress || ''}</span>
-              </div>
-              <div className="po-field-row">
-                <span className="po-field-label">GST Number :</span>
-                <span className="po-field-value">{po.supplierGST || ''}</span>
-              </div>
-              <div className="po-field-row">
-                <span className="po-field-label">Mobile Number :</span>
-                <span className="po-field-value">{po.supplierMobile || ''}</span>
-              </div>
-              <div className="po-field-row">
-                <span className="po-field-label">Email ID :</span>
-                <span className="po-field-value">{po.supplierEmail || ''}</span>
-              </div>
+          <div className="po-grid-2">
+            <div className="po-section-header">SUPPLIER DETAILS</div>
+            <div className="po-section-header">PURCHASE ORDER DETAILS</div>
+
+            <div className="po-grid-cell">
+              <label>Party Name :</label>
+              <div className="underline">{po.supplierName}</div>
             </div>
-            <div className="po-split-col">
-              <div className="po-field-row">
-                <span className="po-field-label">PO No :</span>
-                <span className="po-field-value">{po.poNumber}</span>
-              </div>
-              <div className="po-field-row">
-                <span className="po-field-label">PO Date :</span>
-                <span className="po-field-value">{formatDate(po.date)}</span>
-              </div>
-              <div className="po-field-row">
-                <span className="po-field-label">Payment Terms :</span>
-                <span className="po-field-value">{po.paymentTerms || ''}</span>
-              </div>
-              <div className="po-field-row">
-                <span className="po-field-label">Make :</span>
-                <span className="po-field-value">{po.make || ''}</span>
-              </div>
-              <div className="po-field-row po-field-row-inline">
-                <span className="po-field-label">UT Level :</span>
-                <span className="po-field-value" style={{ flex: 1 }}>{po.utLevel || ''}</span>
-                <span className="po-field-label" style={{ marginLeft: 12 }}>TC</span>
-                <span className="po-field-value" style={{ flex: 1, maxWidth: 80 }}>{po.tc || ''}</span>
+            <div className="po-grid-cell no-right">
+              <label>PO No :</label>
+              <div className="underline">{po.poNumber}</div>
+            </div>
+
+            <div className="po-grid-cell">
+              <label>Address :</label>
+              <div className="underline">{po.supplierAddress || ''}</div>
+            </div>
+            <div className="po-grid-cell no-right">
+              <label>PO Date :</label>
+              <div className="underline">{formatDate(po.date)}</div>
+            </div>
+
+            <div className="po-grid-cell">
+              <label>GST Number :</label>
+              <div className="underline">{po.supplierGST || ''}</div>
+            </div>
+            <div className="po-grid-cell no-right">
+              <label>Payment Terms :</label>
+              <div className="underline">{po.paymentTerms || ''}</div>
+            </div>
+
+            <div className="po-grid-cell">
+              <label>Mobile Number :</label>
+              <div className="underline">{po.supplierMobile || ''}</div>
+            </div>
+            <div className="po-grid-cell no-right">
+              <label>Make :</label>
+              <div className="underline">{po.make || ''}</div>
+            </div>
+
+            <div className="po-grid-cell">
+              <label>Email ID :</label>
+              <div className="underline">{po.supplierEmail || ''}</div>
+            </div>
+            <div className="po-grid-cell no-right">
+              <label>UT Level :</label>
+              <div className="po-inline-fields">
+                <div className="underline">{po.utLevel || ''}</div>
+                <label style={{ marginLeft: 4 }}>TC</label>
+                <div className="underline" style={{ maxWidth: 70 }}>{po.tc || ''}</div>
               </div>
             </div>
           </div>
 
-          {/* Vehicle Transport */}
-          <div className="po-section-bar">VEHICLE TRANSPORT DETAILS</div>
-          <div className="po-transport-row">
-            <div className="po-transport-cell">
-              <b>Vehicle Number :</b> {po.transportNumber || ''}
+          <div className="po-section-header" style={{ borderRight: 'none' }}>VEHICLE TRANSPORT DETAILS</div>
+          <div className="po-transport-grid">
+            <div className="po-grid-cell">
+              <label>Vehicle Number :</label>
+              <div className="underline">{po.transportNumber || ''}</div>
             </div>
-            <div className="po-transport-cell">
-              <b>Driver Mobile No :</b> {po.driverMobile || ''}
+            <div className="po-grid-cell">
+              <label>Driver Mobile No :</label>
+              <div className="underline">{po.driverMobile || ''}</div>
             </div>
-            <div className="po-transport-cell">
-              <b>Transport Name :</b> {po.transportName || ''}
+            <div className="po-grid-cell no-right">
+              <label>Transport Name :</label>
+              <div className="underline">{po.transportName || ''}</div>
             </div>
           </div>
 
-          {/* Items Table */}
-          <table className="po-table">
+          <table className="po-items-table">
             <thead>
               <tr>
-                <th style={{ width: '40px' }}>Sr No</th>
-                <th>Grade</th>
-                <th>Thickness</th>
-                <th>Width</th>
-                <th>Length</th>
-                <th>Nos</th>
-                <th>Kg</th>
-                <th>Rate</th>
-                <th>Amount</th>
+                <th style={{ width: '5%' }}>Sr No</th>
+                <th style={{ width: '12%' }}>Grade</th>
+                <th style={{ width: '10%' }}>Thickness</th>
+                <th style={{ width: '10%' }}>Width</th>
+                <th style={{ width: '10%' }}>Length</th>
+                <th style={{ width: '8%' }}>Nos</th>
+                <th style={{ width: '10%' }}>Kg</th>
+                <th style={{ width: '12%' }}>Rate</th>
+                <th style={{ width: '13%' }}>Amount</th>
               </tr>
             </thead>
             <tbody>
               {items.map((item, idx) => (
-                <tr key={item.id || idx} className="item-row">
+                <tr key={item.id || idx} className="data-row">
                   <td>{idx + 1}</td>
                   <td>{item.grade || ''}</td>
                   <td>{item.thickness || ''}</td>
@@ -408,7 +367,7 @@ export const PurchaseOrderPrint: React.FC<PurchaseOrderPrintProps> = ({ po }) =>
                 </tr>
               ))}
               {emptyRows.map((_, idx) => (
-                <tr key={`empty-${idx}`} className="empty-row">
+                <tr key={`empty-${idx}`} className="data-row">
                   <td></td><td></td><td></td><td></td><td></td>
                   <td></td><td></td><td></td><td></td>
                 </tr>
@@ -430,15 +389,13 @@ export const PurchaseOrderPrint: React.FC<PurchaseOrderPrintProps> = ({ po }) =>
             </tbody>
           </table>
 
-          {/* Commercial / Quality */}
-          <div className="po-section-bar">COMMERCIAL / QUALITY DETAILS</div>
-          <div className="po-note-section">
-            <b>Note</b>
-            <span>{po.note || ''}</span>
+          <div className="po-section-header" style={{ borderRight: 'none', textAlign: 'center' }}>COMMERCIAL / QUALITY DETAILS</div>
+          <div className="po-note-row">
+            <label>Note</label>
+            <div className="underline">{po.note || ''}</div>
           </div>
 
-          {/* Terms */}
-          <div className="po-section-bar">GENERAL TERMS AND CONDITIONS</div>
+          <div className="po-section-header" style={{ borderRight: 'none', textAlign: 'center' }}>GENERAL TERMS AND CONDITIONS</div>
           <div className="po-terms">
             <ol>
               <li>Material should be supplied strictly as per above size, grade and specification.</li>
@@ -449,7 +406,6 @@ export const PurchaseOrderPrint: React.FC<PurchaseOrderPrintProps> = ({ po }) =>
             </ol>
           </div>
 
-          {/* Signatures */}
           <div className="po-signatures">
             <div className="po-sig-box">Prepared By</div>
             <div className="po-sig-box">Checked By</div>
