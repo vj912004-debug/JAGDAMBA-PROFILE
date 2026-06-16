@@ -16,7 +16,9 @@ const formatDate = (dateStr: string) => {
 
 export const PurchaseOrderPrint: React.FC<PurchaseOrderPrintProps> = ({ po }) => {
   const items = po.items || [];
-  const emptyRowsCount = Math.max(0, 10 - items.length);
+  const minRows = 10;
+  const totalRows = Math.max(minRows, items.length);
+  const emptyRowsCount = totalRows - items.length;
   const emptyRows = Array.from({ length: emptyRowsCount });
 
   const basicAmount = po.totalAmount || 0;

@@ -8,6 +8,18 @@ import { downloadPDF } from '../utils/pdfGenerator';
 import { EditableSelect } from '../components/EditableSelect';
 import { PartyAutocomplete } from '../components/PartyAutocomplete';
 
+const createEmptyPOItem = (): POItem => ({
+  id: `${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
+  grade: '', thickness: '', width: '', length: '',
+  nos: 0, kg: 0, rate: 0, amount: 0, heatNo: '', actualWeight: 0,
+});
+
+const hasItemContent = (item: POItem) =>
+  Boolean(
+    item.grade.trim() || item.thickness || item.width || item.length ||
+    item.nos || item.kg || item.rate
+  );
+
 export const PurchaseOrderEntry: React.FC = () => {
   const { t, nextPONo, purchaseOrders, setPurchaseOrders, role, parties, addParty } = useAppContext();
   const navigate = useNavigate();
@@ -47,9 +59,7 @@ export const PurchaseOrderEntry: React.FC = () => {
   const [location, setLocation] = useState('');
 
   // Items State
-  const [items, setItems] = useState<POItem[]>([
-    { id: '1', grade: '', thickness: '', width: '', length: '', nos: 0, kg: 0, rate: 0, amount: 0, heatNo: '', actualWeight: 0 }
-  ]);
+  const [items, setItems] = useState<POItem[]>([createEmptyPOItem()]);
 
   const handleSelectParty = (party: any) => {
     setSupplierName(party.partyName);
@@ -68,15 +78,12 @@ export const PurchaseOrderEntry: React.FC = () => {
   const totalAmount = useMemo(() => items.reduce((sum, item) => sum + item.amount, 0), [items]);
 
   const handleAddItem = () => {
-    setItems(prev => [
-      ...prev,
-      { id: Date.now().toString(), grade: '', thickness: '', width: '', length: '', nos: 0, kg: 0, rate: 0, amount: 0, heatNo: '', actualWeight: 0 }
-    ]);
+    setItems(prev => [...prev, createEmptyPOItem()]);
   };
 
   const handleRemoveItem = (id: string) => {
     if (items.length === 1) {
-      setItems([{ id: Date.now().toString(), grade: '', thickness: '', width: '', length: '', nos: 0, kg: 0, rate: 0, amount: 0, heatNo: '', actualWeight: 0 }]);
+      setItems([createEmptyPOItem()]);
       toast('Item cleared', { icon: '🧹' });
       return;
     }
@@ -84,35 +91,40 @@ export const PurchaseOrderEntry: React.FC = () => {
   };
 
   const updateItem = (id: string, field: keyof POItem, value: any) => {
-    setItems(prev => prev.map(item => {
-      if (item.id === id) {
-        const updatedItem = { ...item, [field]: value };
-        
-        // Auto-calculate weight (kg) if dimensions or nos changes
-        if (['thickness', 'width', 'length', 'nos'].includes(field)) {
-          const thk = parseFloat(updatedItem.thickness) || 0;
-          const w = parseFloat(updatedItem.width) || 0;
-          const l = parseFloat(updatedItem.length) || 0;
-          const n = Number(updatedItem.nos) || 0;
+    setItems(prev => {
+      const updated = prev.map(item => {
+        if (item.id === id) {
+          const updatedItem = { ...item, [field]: value };
           
-          // Formula provided by user: thick * width * length * nos * 8 / 1000000
-          updatedItem.kg = (thk * w * l * n * 8) / 1000000;
-        }
+          if (['thickness', 'width', 'length', 'nos'].includes(field)) {
+            const thk = parseFloat(updatedItem.thickness) || 0;
+            const w = parseFloat(updatedItem.width) || 0;
+            const l = parseFloat(updatedItem.length) || 0;
+            const n = Number(updatedItem.nos) || 0;
+            updatedItem.kg = (thk * w * l * n * 8) / 1000000;
+          }
 
-        // Recalculate amount if kg or rate changes
-        if (field === 'kg' || field === 'rate' || ['thickness', 'width', 'length', 'nos'].includes(field)) {
-          updatedItem.amount = Math.ceil(Number(updatedItem.kg) * Number(updatedItem.rate));
+          if (field === 'kg' || field === 'rate' || ['thickness', 'width', 'length', 'nos'].includes(field)) {
+            updatedItem.amount = Math.ceil(Number(updatedItem.kg) * Number(updatedItem.rate));
+          }
+          return updatedItem;
         }
-        return updatedItem;
+        return item;
+      });
+
+      const index = updated.findIndex(item => item.id === id);
+      if (index === updated.length - 1 && hasItemContent(updated[index])) {
+        return [...updated, createEmptyPOItem()];
       }
-      return item;
-    }));
+      return updated;
+    });
   };
 
   const handleSave = async (downloadAfterSave = false) => {
     if (!supplierName.trim()) { toast.error('Supplier Name is required'); return; }
-    if (items.some(item => !item.grade.trim() || item.kg <= 0)) {
-      toast.error('All items must have a grade and weight');
+    const filledItems = items.filter(item => item.grade.trim() && item.kg > 0);
+    if (filledItems.length === 0) {
+      toast.error('Add at least one item with grade and weight');
       return;
     }
 
@@ -137,9 +149,9 @@ export const PurchaseOrderEntry: React.FC = () => {
       invoiceNo: invoiceNo.trim(),
       customer: customer.trim(),
       location: location.trim(),
-      items,
-      totalKg,
-      totalAmount,
+      items: filledItems,
+      totalKg: filledItems.reduce((sum, item) => sum + item.kg, 0),
+      totalAmount: filledItems.reduce((sum, item) => sum + item.amount, 0),
       status: editId ? (purchaseOrders.find(p => p.id === editId)?.status || 'Pending') : 'Pending'
     };
 
@@ -210,7 +222,9 @@ export const PurchaseOrderEntry: React.FC = () => {
         setInvoiceNo(existing.invoiceNo || '');
         setCustomer(existing.customer || '');
         setLocation(existing.location || '');
-        setItems(existing.items.map(item => ({ ...item })));
+        const loaded = existing.items.map(item => ({ ...item }));
+        const last = loaded[loaded.length - 1];
+        setItems(last && hasItemContent(last) ? [...loaded, createEmptyPOItem()] : loaded.length ? loaded : [createEmptyPOItem()]);
       }
     }
   }, [editId, purchaseOrders]);
@@ -233,7 +247,7 @@ export const PurchaseOrderEntry: React.FC = () => {
     setInvoiceNo('');
     setCustomer('');
     setLocation('');
-    setItems([{ id: '1', grade: '', thickness: '', width: '', length: '', nos: 0, kg: 0, rate: 0, amount: 0, heatNo: '', actualWeight: 0 }]);
+    setItems([createEmptyPOItem()]);
     toast('Form cleared', { icon: '🔄' });
   };
 
