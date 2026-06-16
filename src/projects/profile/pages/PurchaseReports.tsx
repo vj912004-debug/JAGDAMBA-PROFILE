@@ -1,11 +1,14 @@
 import React, { useState, useMemo } from 'react';
-import { Clock, CheckCircle, Users, Box, Download, Search, Eye, X, ClipboardCheck, Edit, Trash2, Mail } from 'lucide-react';
+import { Clock, CheckCircle, Users, Box, Download, Search, Eye, X, ClipboardCheck, Edit, Trash2, Mail, MessageSquare } from 'lucide-react';
 import { useAppContext, type PurchaseOrder } from '../store/AppContext';
 import { clsx } from 'clsx';
 import { useNavigate } from 'react-router-dom';
+import toast from 'react-hot-toast';
 
 import { PurchaseOrderPrint } from '../components/PurchaseOrderPrint';
-import { downloadPDF, generatePurchaseReportPDF } from '../utils/pdfGenerator';
+import { downloadPDF, generatePurchaseReportPDF, getPdfBase64 } from '../utils/pdfGenerator';
+import { getWhatsAppApiUrl } from '../utils/whatsappApi';
+import { upper } from '../utils/textCase';
 
 type TabType = 'pending' | 'completed' | 'supplier' | 'item';
 
@@ -41,6 +44,68 @@ export const PurchaseReports: React.FC = () => {
   const [search, setSearch] = useState('');
   const [previewPO, setPreviewPO] = useState<PurchaseOrder | null>(null);
   const [showReceipts, setShowReceipts] = useState<string | null>(null);
+  const [showWhatsAppModal, setShowWhatsAppModal] = useState(false);
+  const [whatsAppData, setWhatsAppData] = useState({ number: '', message: '' });
+  const [poPdfForSend, setPoPdfForSend] = useState<string | null>(null);
+  const [isSendingWhatsApp, setIsSendingWhatsApp] = useState(false);
+
+  const openWhatsAppPO = async (po: PurchaseOrder) => {
+    setWhatsAppData({
+      number: po.supplierMobile?.trim() || '',
+      message: `Dear ${po.supplierName},\n\nPlease find attached Purchase Order ${po.poNumber}.\n\nRegards,\nJagdamba Steel`,
+    });
+    setPoPdfForSend(null);
+    setShowWhatsAppModal(true);
+
+    setTimeout(async () => {
+      const pdf = await getPdfBase64('po-print-area');
+      if (!pdf) toast.error('Failed to generate PO PDF');
+      else setPoPdfForSend(pdf);
+    }, 400);
+  };
+
+  const sendWhatsAppPO = async () => {
+    if (!previewPO) return;
+    if (!whatsAppData.number.trim()) {
+      toast.error('WhatsApp number is required');
+      return;
+    }
+
+    let pdf = poPdfForSend;
+    if (!pdf) {
+      pdf = await getPdfBase64('po-print-area');
+    }
+    if (!pdf) {
+      toast.error('PO PDF not ready — try again');
+      return;
+    }
+
+    setIsSendingWhatsApp(true);
+    const loadingToast = toast.loading('Sending WhatsApp...');
+    try {
+      const response = await fetch(getWhatsAppApiUrl('/api/whatsapp/send-media'), {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          number: whatsAppData.number,
+          mediaData: pdf,
+          fileName: `PO_${previewPO.poNumber}.pdf`,
+          caption: whatsAppData.message,
+        }),
+      });
+      const result = await response.json();
+      if (result.success) {
+        toast.success('PO sent on WhatsApp!', { id: loadingToast });
+        setShowWhatsAppModal(false);
+      } else {
+        throw new Error(result.message);
+      }
+    } catch (err: any) {
+      toast.error(`WhatsApp Error: ${err.message}`, { id: loadingToast });
+    } finally {
+      setIsSendingWhatsApp(false);
+    }
+  };
 
   // Helper to get total received for a PO (in Nos)
   const getReceivedQty = (poId: string) => {
@@ -473,8 +538,14 @@ export const PurchaseReports: React.FC = () => {
                 >
                   <Mail className="w-4 h-4" /> Email PO
                 </button>
+                <button
+                  onClick={() => openWhatsAppPO(previewPO)}
+                  className="flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-xl text-sm font-bold transition-all shadow-md active:scale-95"
+                >
+                  <MessageSquare className="w-4 h-4" /> WhatsApp PO
+                </button>
                 <button 
-                  onClick={() => setPreviewPO(null)} 
+                  onClick={() => { setPreviewPO(null); setShowWhatsAppModal(false); }} 
                   className="p-2 text-slate-400 hover:text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:bg-slate-800 rounded-xl transition-all"
                 >
                   <X className="w-6 h-6" />
@@ -484,6 +555,62 @@ export const PurchaseReports: React.FC = () => {
             <div className="grow overflow-y-auto p-8 bg-slate-200 dark:bg-slate-700/50">
               <div className="scale-75 sm:scale-90 lg:scale-100 origin-top">
                 <PurchaseOrderPrint po={previewPO} />
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {showWhatsAppModal && previewPO && (
+        <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
+          <div className="bg-white dark:bg-slate-900 w-full max-w-lg rounded-3xl shadow-2xl overflow-hidden">
+            <div className="bg-green-600 p-6 text-white flex items-center justify-between">
+              <div>
+                <h3 className="text-xl font-black flex items-center gap-2">
+                  <MessageSquare className="w-6 h-6" />
+                  WhatsApp PO
+                </h3>
+                <p className="text-green-100 text-sm mt-1">{previewPO.poNumber}</p>
+              </div>
+              <button onClick={() => setShowWhatsAppModal(false)} className="p-2 hover:bg-white/10 rounded-full">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            <div className="p-6 space-y-4">
+              <div>
+                <label className="field-label mb-1">WhatsApp Number *</label>
+                <input
+                  type="text"
+                  value={whatsAppData.number}
+                  onChange={(e) => setWhatsAppData({ ...whatsAppData, number: e.target.value })}
+                  placeholder="e.g. 98XXXXXXXX"
+                  className="w-full bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-3 text-sm font-bold focus:ring-2 focus:ring-green-500 outline-none no-uppercase"
+                />
+              </div>
+              <div>
+                <label className="field-label mb-1">Message Caption</label>
+                <textarea
+                  rows={4}
+                  value={whatsAppData.message}
+                  onChange={(e) => setWhatsAppData({ ...whatsAppData, message: upper(e.target.value) })}
+                  className="w-full bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-green-500 outline-none resize-none"
+                />
+              </div>
+              <div className="flex gap-3 pt-2">
+                <button
+                  onClick={() => setShowWhatsAppModal(false)}
+                  className="flex-1 py-3 rounded-xl text-sm font-bold text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-800/50"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={sendWhatsAppPO}
+                  disabled={isSendingWhatsApp}
+                  className="flex-1 py-3 rounded-xl text-sm font-bold bg-green-600 hover:bg-green-700 text-white flex items-center justify-center gap-2 disabled:opacity-50"
+                >
+                  <MessageSquare className="w-4 h-4" />
+                  {isSendingWhatsApp ? 'Sending...' : 'Send WhatsApp'}
+                </button>
               </div>
             </div>
           </div>
