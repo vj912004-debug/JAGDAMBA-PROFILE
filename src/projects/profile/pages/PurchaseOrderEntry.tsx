@@ -1,13 +1,14 @@
 import React, { useState, useMemo, useEffect } from 'react';
-import { ShoppingBag, Save, RotateCcw, Plus, Trash2, Download } from 'lucide-react';
+import { ShoppingBag, Save, RotateCcw, Plus, Trash2, Download, MessageSquare, X } from 'lucide-react';
 import { useAppContext, type PurchaseOrder, type POItem, MATERIAL_GRADES } from '../store/AppContext';
 import toast from 'react-hot-toast';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { PurchaseOrderPrint } from '../components/PurchaseOrderPrint';
-import { downloadPDF } from '../utils/pdfGenerator';
+import { downloadPDF, getPdfBase64 } from '../utils/pdfGenerator';
 import { EditableSelect } from '../components/EditableSelect';
 import { PartyAutocomplete } from '../components/PartyAutocomplete';
 import { upper } from '../utils/textCase';
+import { getWhatsAppApiUrl } from '../utils/whatsappApi';
 
 const createEmptyPOItem = (): POItem => ({
   id: `${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
@@ -74,6 +75,10 @@ export const PurchaseOrderEntry: React.FC = () => {
 
   const [savedPO, setSavedPO] = useState<PurchaseOrder | null>(null);
   const [isDownloading, setIsDownloading] = useState(false);
+  const [showWhatsAppModal, setShowWhatsAppModal] = useState(false);
+  const [whatsAppData, setWhatsAppData] = useState({ number: '', message: '' });
+  const [poPdfForSend, setPoPdfForSend] = useState<string | null>(null);
+  const [pendingWhatsApp, setPendingWhatsApp] = useState(false);
 
   const totalKg = useMemo(() => items.reduce((sum, item) => sum + item.kg, 0), [items]);
   const totalAmount = useMemo(() => items.reduce((sum, item) => sum + item.amount, 0), [items]);
@@ -122,15 +127,15 @@ export const PurchaseOrderEntry: React.FC = () => {
     });
   };
 
-  const handleSave = async (downloadAfterSave = false) => {
-    if (!supplierName.trim()) { toast.error('Supplier Name is required'); return; }
+  const buildPOFromForm = (): PurchaseOrder | null => {
+    if (!supplierName.trim()) { toast.error('Supplier Name is required'); return null; }
     const filledItems = items.filter(item => item.grade.trim() && item.kg > 0);
     if (filledItems.length === 0) {
       toast.error('Add at least one item with grade and weight');
-      return;
+      return null;
     }
 
-    const newPO: PurchaseOrder = {
+    return {
       id: editId || Date.now().toString(),
       poNumber,
       date,
@@ -154,8 +159,13 @@ export const PurchaseOrderEntry: React.FC = () => {
       items: filledItems,
       totalKg: filledItems.reduce((sum, item) => sum + item.kg, 0),
       totalAmount: filledItems.reduce((sum, item) => sum + item.amount, 0),
-      status: editId ? (purchaseOrders.find(p => p.id === editId)?.status || 'Pending') : 'Pending'
+      status: editId ? (purchaseOrders.find(p => p.id === editId)?.status || 'Pending') : 'Pending',
     };
+  };
+
+  const handleSave = async (downloadAfterSave = false) => {
+    const newPO = buildPOFromForm();
+    if (!newPO) return;
 
     // Auto-save new party in Master if it doesn't exist
     const partyNameUpper = supplierName.trim().toUpperCase();
@@ -201,6 +211,68 @@ export const PurchaseOrderEntry: React.FC = () => {
       return () => clearTimeout(timer);
     }
   }, [isDownloading, savedPO, navigate]);
+
+  const handleWhatsAppPO = () => {
+    const po = buildPOFromForm();
+    if (!po) return;
+    setSavedPO(po);
+    setPoPdfForSend(null);
+    setPendingWhatsApp(true);
+  };
+
+  useEffect(() => {
+    if (!pendingWhatsApp || !savedPO) return;
+    const timer = setTimeout(async () => {
+      const pdf = await getPdfBase64('po-print-area');
+      if (!pdf) {
+        toast.error('Failed to generate PO PDF');
+        setPendingWhatsApp(false);
+        return;
+      }
+      setPoPdfForSend(pdf);
+      setWhatsAppData({
+        number: supplierMobile.trim(),
+        message: `Dear ${supplierName.trim().toUpperCase()},\n\nPlease find attached Purchase Order ${poNumber}.\n\nRegards,\nJagdamba Steel`,
+      });
+      setShowWhatsAppModal(true);
+      setPendingWhatsApp(false);
+    }, 500);
+    return () => clearTimeout(timer);
+  }, [pendingWhatsApp, savedPO, supplierMobile, supplierName, poNumber]);
+
+  const sendWhatsAppPO = async () => {
+    if (!whatsAppData.number.trim()) {
+      toast.error('WhatsApp number is required');
+      return;
+    }
+    if (!poPdfForSend) {
+      toast.error('PO PDF not ready — try again');
+      return;
+    }
+
+    const loadingToast = toast.loading('Sending WhatsApp...');
+    try {
+      const response = await fetch(getWhatsAppApiUrl('/api/whatsapp/send-media'), {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          number: whatsAppData.number,
+          mediaData: poPdfForSend,
+          fileName: `PO_${poNumber}.pdf`,
+          caption: whatsAppData.message,
+        }),
+      });
+      const result = await response.json();
+      if (result.success) {
+        toast.success('PO sent on WhatsApp!', { id: loadingToast });
+        setShowWhatsAppModal(false);
+      } else {
+        throw new Error(result.message);
+      }
+    } catch (err: any) {
+      toast.error(`WhatsApp Error: ${err.message}`, { id: loadingToast });
+    }
+  };
 
   useEffect(() => {
     if (editId) {
@@ -266,6 +338,13 @@ export const PurchaseOrderEntry: React.FC = () => {
         <div className="flex gap-2">
           <button onClick={handleReset} className="flex items-center gap-2 text-slate-600 dark:text-slate-300 hover:text-slate-800 dark:hover:text-slate-100 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 px-4 py-2 rounded-xl text-sm font-medium transition-colors hover:bg-slate-50 dark:hover:bg-slate-800/50">
             <RotateCcw className="w-4 h-4" /> Reset
+          </button>
+          <button
+            onClick={handleWhatsAppPO}
+            disabled={!canCreate || isDownloading || pendingWhatsApp}
+            className="flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white px-5 py-2 rounded-xl text-sm font-semibold shadow-sm shadow-green-200 transition-all disabled:opacity-50"
+          >
+            <MessageSquare className="w-4 h-4" /> WhatsApp PO
           </button>
           <button
             onClick={() => handleSave(true)}
@@ -517,6 +596,61 @@ export const PurchaseOrderEntry: React.FC = () => {
           </div>
         </div>
       </div>
+
+      {showWhatsAppModal && (
+        <div className="fixed inset-0 z-100 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
+          <div className="bg-white dark:bg-slate-900 w-full max-w-lg rounded-3xl shadow-2xl overflow-hidden">
+            <div className="bg-green-600 p-6 text-white flex items-center justify-between">
+              <div>
+                <h3 className="text-xl font-black flex items-center gap-2">
+                  <MessageSquare className="w-6 h-6" />
+                  WhatsApp PO
+                </h3>
+                <p className="text-green-100 text-sm mt-1">PO {poNumber}</p>
+              </div>
+              <button onClick={() => setShowWhatsAppModal(false)} className="p-2 hover:bg-white/10 rounded-full">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            <div className="p-6 space-y-4">
+              <div>
+                <label className="field-label mb-1">WhatsApp Number *</label>
+                <input
+                  type="text"
+                  value={whatsAppData.number}
+                  onChange={(e) => setWhatsAppData({ ...whatsAppData, number: e.target.value })}
+                  placeholder="e.g. 98XXXXXXXX"
+                  className="w-full bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-3 text-sm font-bold focus:ring-2 focus:ring-green-500 outline-none no-uppercase"
+                />
+              </div>
+              <div>
+                <label className="field-label mb-1">Message Caption</label>
+                <textarea
+                  rows={4}
+                  value={whatsAppData.message}
+                  onChange={(e) => setWhatsAppData({ ...whatsAppData, message: upper(e.target.value) })}
+                  className="w-full bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-green-500 outline-none resize-none"
+                />
+              </div>
+              <div className="flex gap-3 pt-2">
+                <button
+                  onClick={() => setShowWhatsAppModal(false)}
+                  className="flex-1 py-3 rounded-xl text-sm font-bold text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-800/50"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={sendWhatsAppPO}
+                  className="flex-1 py-3 rounded-xl text-sm font-bold bg-green-600 hover:bg-green-700 text-white flex items-center justify-center gap-2"
+                >
+                  <MessageSquare className="w-4 h-4" />
+                  Send WhatsApp
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

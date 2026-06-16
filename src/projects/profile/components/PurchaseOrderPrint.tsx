@@ -4,6 +4,7 @@ import { LOGO_BASE64 } from '../utils/logoBase64';
 
 interface PurchaseOrderPrintProps {
   po: PurchaseOrder;
+  printAreaId?: string;
 }
 
 const formatNum = (n: number) => (n ? n.toLocaleString('en-IN') : '');
@@ -15,7 +16,7 @@ const formatDate = (dateStr: string) => {
   return dateStr;
 };
 
-export const PurchaseOrderPrint: React.FC<PurchaseOrderPrintProps> = ({ po }) => {
+export const PurchaseOrderPrint: React.FC<PurchaseOrderPrintProps> = ({ po, printAreaId = 'po-print-area' }) => {
   const items = po.items || [];
   const minRows = 10;
   const totalRows = Math.max(minRows, items.length);
@@ -27,10 +28,10 @@ export const PurchaseOrderPrint: React.FC<PurchaseOrderPrintProps> = ({ po }) =>
   const finalAmount = basicAmount + gstAmount;
 
   return (
-    <div id="po-print-area">
+    <div id={printAreaId}>
       <style>{`
         @page { size: A4 portrait; margin: 5mm; }
-        #po-print-area {
+        #${printAreaId} {
           font-family: Arial, sans-serif;
           background: #fff;
           width: 210mm;
@@ -39,7 +40,7 @@ export const PurchaseOrderPrint: React.FC<PurchaseOrderPrintProps> = ({ po }) =>
           box-sizing: border-box;
           color: #000;
         }
-        #po-print-area * { box-sizing: border-box; }
+        #${printAreaId} * { box-sizing: border-box; }
 
         .po-container {
           width: 100%;

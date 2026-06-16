@@ -8,11 +8,13 @@ import {
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { cn } from '../components/Sidebar';
-import { generateTCPDFBase64 } from '../utils/pdfGenerator';
+import { generateTCPDFBase64, getPdfBase64 } from '../utils/pdfGenerator';
 import { upper } from '../utils/textCase';
+import { PurchaseOrderPrint } from '../components/PurchaseOrderPrint';
+import type { PurchaseOrder } from '../store/AppContext';
 
 export const TCManagement: React.FC = () => {
-  const { t, tcRecords, addTCRecord, updateTCRecord, deleteTCRecord } = useAppContext();
+  const { t, tcRecords, addTCRecord, updateTCRecord, deleteTCRecord, purchaseOrders } = useAppContext();
   
   const [isAdding, setIsAdding] = useState(false);
   const [selectedTC, setSelectedTC] = useState<TCRecord | null>(null);
@@ -23,6 +25,10 @@ export const TCManagement: React.FC = () => {
   const [showGlobalWAModal, setShowGlobalWAModal] = useState(false);
   const [mailData, setMailData] = useState({ to: '', subject: '', message: '' });
   const [whatsAppData, setWhatsAppData] = useState({ number: '', message: '' });
+  const [showPoMailModal, setShowPoMailModal] = useState(false);
+  const [poMailData, setPoMailData] = useState({ to: '', subject: '', message: '' });
+  const [poForSend, setPoForSend] = useState<PurchaseOrder | null>(null);
+  const [poPdfForSend, setPoPdfForSend] = useState<string | null>(null);
   
   // WhatsApp Connection State
   const [waStatus, setWaStatus] = useState<string>('DISCONNECTED');
@@ -280,6 +286,81 @@ export const TCManagement: React.FC = () => {
       }
     } catch (err: any) {
       toast.error(`Failed to send email: ${err.message}`, { id: loadingToast });
+    }
+  };
+
+  const handleEmailPO = (record: TCRecord) => {
+    if (!record.purchaseOrderNumber?.trim()) {
+      toast.error('No Purchase Order linked to this TC');
+      return;
+    }
+    const po = purchaseOrders.find(
+      (p) => p.poNumber.toUpperCase() === record.purchaseOrderNumber!.trim().toUpperCase()
+    );
+    if (!po) {
+      toast.error(`Purchase Order ${record.purchaseOrderNumber} not found`);
+      return;
+    }
+    setSelectedTC(record);
+    setPoForSend(po);
+    setPoPdfForSend(null);
+    setPoMailData({
+      to: po.supplierEmail || '',
+      subject: `Purchase Order ${po.poNumber} - Jagdamba Steel`,
+      message: `Dear ${po.supplierName},\n\nPlease find attached Purchase Order ${po.poNumber}.\n\nRegards,\nJagdamba Steel`,
+    });
+    setShowPoMailModal(true);
+  };
+
+  useEffect(() => {
+    if (!showPoMailModal || !poForSend) return;
+    const timer = setTimeout(async () => {
+      const pdf = await getPdfBase64('tc-po-print-area');
+      if (pdf) setPoPdfForSend(pdf);
+    }, 500);
+    return () => clearTimeout(timer);
+  }, [showPoMailModal, poForSend]);
+
+  const sendPoEmail = async () => {
+    if (!poForSend) return;
+    if (!poMailData.to.trim()) {
+      toast.error('Recipient email is required');
+      return;
+    }
+
+    let pdf = poPdfForSend;
+    if (!pdf) {
+      pdf = await getPdfBase64('tc-po-print-area');
+    }
+    if (!pdf) {
+      toast.error('Failed to generate PO PDF');
+      return;
+    }
+
+    const loadingToast = toast.loading('Sending PO email...');
+    try {
+      const response = await fetch('/api/mail/send-po', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          to: poMailData.to,
+          subject: poMailData.subject,
+          message: poMailData.message,
+          poData: pdf,
+          fileName: `PO_${poForSend.poNumber}.pdf`,
+        }),
+      });
+      const result = await response.json();
+      if (result.success) {
+        toast.success('PO email sent successfully!', { id: loadingToast });
+        setShowPoMailModal(false);
+        setPoForSend(null);
+        setPoPdfForSend(null);
+      } else {
+        throw new Error(result.message);
+      }
+    } catch (err: any) {
+      toast.error(`Failed to send PO email: ${err.message}`, { id: loadingToast });
     }
   };
 
@@ -745,6 +826,15 @@ export const TCManagement: React.FC = () => {
                       <Send className="w-4 h-4" />
                       Mail TC
                     </button>
+                    {selectedTC.purchaseOrderNumber && (
+                      <button 
+                        onClick={() => handleEmailPO(selectedTC)}
+                        className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-xl text-xs font-bold shadow-lg shadow-indigo-100 transition-all active:scale-95"
+                      >
+                        <Send className="w-4 h-4" />
+                        Email PO
+                      </button>
+                    )}
                     <button 
                       onClick={() => handleWhatsAppTC(selectedTC)}
                       className="flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-xl text-xs font-bold shadow-lg shadow-green-100 transition-all active:scale-95"
@@ -851,6 +941,75 @@ export const TCManagement: React.FC = () => {
         </div>
       </div>
     </div>
+
+    <div style={{ position: 'fixed', left: 0, top: 0, zIndex: -1, opacity: 0.01, pointerEvents: 'none', width: '210mm' }}>
+      {poForSend && <PurchaseOrderPrint po={poForSend} printAreaId="tc-po-print-area" />}
+    </div>
+
+    {/* Email PO Modal */}
+    {showPoMailModal && poForSend && (
+      <div className="fixed inset-0 z-100 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in">
+        <div className="bg-white dark:bg-slate-900 w-full max-w-lg rounded-[2.5rem] shadow-2xl overflow-hidden slide-up">
+          <div className="bg-indigo-600 p-8 text-white">
+            <div className="flex justify-between items-center mb-2">
+              <h3 className="text-2xl font-black flex items-center gap-3">
+                <Send className="w-8 h-8" />
+                Email Purchase Order
+              </h3>
+              <button onClick={() => { setShowPoMailModal(false); setPoForSend(null); }} className="p-2 hover:bg-white/10 rounded-full transition-colors">
+                <X className="w-6 h-6" />
+              </button>
+            </div>
+            <p className="text-indigo-100 text-sm font-medium">PO {poForSend.poNumber} • TC Heat: {selectedTC?.heatNumber}</p>
+          </div>
+          <div className="p-8 space-y-4">
+            <div>
+              <label className="block text-2xs font-black text-slate-400 uppercase tracking-widest mb-1.5">Recipient Email *</label>
+              <input
+                type="email"
+                value={poMailData.to}
+                onChange={(e) => setPoMailData({ ...poMailData, to: e.target.value })}
+                className="w-full bg-slate-50 dark:bg-slate-800/50 border-none rounded-2xl px-4 py-3 text-sm font-bold focus:ring-2 focus:ring-indigo-500 outline-none no-uppercase"
+                placeholder="supplier@example.com"
+              />
+            </div>
+            <div>
+              <label className="block text-2xs font-black text-slate-400 uppercase tracking-widest mb-1.5">Subject</label>
+              <input
+                type="text"
+                value={poMailData.subject}
+                onChange={(e) => setPoMailData({ ...poMailData, subject: upper(e.target.value) })}
+                className="w-full bg-slate-50 dark:bg-slate-800/50 border-none rounded-2xl px-4 py-3 text-sm font-bold focus:ring-2 focus:ring-indigo-500 outline-none"
+              />
+            </div>
+            <div>
+              <label className="block text-2xs font-black text-slate-400 uppercase tracking-widest mb-1.5">Message</label>
+              <textarea
+                rows={5}
+                value={poMailData.message}
+                onChange={(e) => setPoMailData({ ...poMailData, message: upper(e.target.value) })}
+                className="w-full bg-slate-50 dark:bg-slate-800/50 border-none rounded-2xl px-4 py-3 text-sm font-medium focus:ring-2 focus:ring-indigo-500 outline-none resize-none"
+              />
+            </div>
+            <div className="flex gap-3 pt-2">
+              <button
+                onClick={() => { setShowPoMailModal(false); setPoForSend(null); }}
+                className="flex-1 py-4 rounded-2xl text-sm font-black text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={sendPoEmail}
+                className="flex-1 py-4 rounded-2xl text-sm font-black bg-indigo-600 hover:bg-indigo-700 text-white flex items-center justify-center gap-2 transition-all active:scale-95"
+              >
+                <Send className="w-4 h-4" />
+                Send PO Email
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    )}
 
     {/* Email Modal */}
     {showMailModal && (
