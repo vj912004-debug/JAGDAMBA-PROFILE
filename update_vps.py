@@ -20,7 +20,11 @@ def update_live_server():
     commands = [
         "cd /root/JAGDAMBA-PROFILE && git pull origin master",
         "cd /root/JAGDAMBA-PROFILE && npm install",
-        "cd /root/JAGDAMBA-PROFILE && npm run build"
+        "cd /root/JAGDAMBA-PROFILE/backend && npm install",
+        "cd /root/JAGDAMBA-PROFILE/backend && node run_init.js",
+        "cd /root/JAGDAMBA-PROFILE && npm run build",
+        "pm2 restart api --update-env",
+        "pm2 save",
     ]
 
     for cmd in commands:

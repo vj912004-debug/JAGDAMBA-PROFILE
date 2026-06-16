@@ -1,9 +1,8 @@
 "use client";
 
-import React, { createContext, useContext, useState, useEffect, useCallback, type ReactNode } from 'react';
-// import api from '../services/api'; // Removed for local-only version
+import React, { createContext, useContext, useState, useEffect, useCallback, useRef, type ReactNode } from 'react';
+import { fetchErpData, saveErpData, ERP_VERSION, type ErpStoredData } from '../services/erpApi';
 import toast from 'react-hot-toast';
-// import { socket, connectSocket, disconnectSocket } from '../services/socket'; // Removed for local-only version
 
 // ─── Enums & Types ────────────────────────────────────────────
 export type Role = 'Admin' | 'Office Entry' | 'Production Supervisor' | 'Nesting Operator' | 'Dispatch' | 'Accounts User';
@@ -727,7 +726,7 @@ const seedParties: PartyMaster[] = [
 const STORAGE_KEY = 'jagdamba_erp_data';
 const AUTH_KEY = 'jagdamba_erp_auth';
 const STORAGE_VERSION_KEY = 'jagdamba_erp_data_version';
-const CURRENT_VERSION = 'v4_seeded';
+const CURRENT_VERSION = ERP_VERSION;
 
 interface StoredData {
   orders: Order[];
@@ -780,7 +779,56 @@ function loadFromStorage(): StoredData | null {
 function saveToStorage(data: StoredData) {
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+    localStorage.setItem(STORAGE_VERSION_KEY, CURRENT_VERSION);
   } catch { /* ignore */ }
+}
+
+function getSeedData(): StoredData {
+  return {
+    orders: seedOrders,
+    plates: seedPlates,
+    usages: seedUsages,
+    dispatches: seedDispatches,
+    challans: seedChallans,
+    purchaseOrders: seedPurchaseOrders,
+    purchaseReceipts: seedPurchaseReceipts,
+    tcRecords: seedTCRecords,
+    quotations: [],
+    cncQuotations: [],
+    logs: [],
+    parties: seedParties,
+  };
+}
+
+function applyStoredData(
+  stored: StoredData,
+  setters: {
+    setOrders: React.Dispatch<React.SetStateAction<Order[]>>;
+    setPlates: React.Dispatch<React.SetStateAction<Plate[]>>;
+    setUsages: React.Dispatch<React.SetStateAction<Usage[]>>;
+    setDispatches: React.Dispatch<React.SetStateAction<DispatchRecord[]>>;
+    setChallans: React.Dispatch<React.SetStateAction<ChallanRecord[]>>;
+    setPurchaseOrders: React.Dispatch<React.SetStateAction<PurchaseOrder[]>>;
+    setPurchaseReceipts: React.Dispatch<React.SetStateAction<PurchaseReceipt[]>>;
+    setTCRecords: React.Dispatch<React.SetStateAction<TCRecord[]>>;
+    setQuotations: React.Dispatch<React.SetStateAction<QuotationRecord[]>>;
+    setCNCQuotations: React.Dispatch<React.SetStateAction<CNCQuotationRecord[]>>;
+    setLogs: React.Dispatch<React.SetStateAction<ActivityLog[]>>;
+    setParties: React.Dispatch<React.SetStateAction<PartyMaster[]>>;
+  }
+) {
+  setters.setOrders(stored.orders ?? []);
+  setters.setPlates(stored.plates ?? []);
+  setters.setUsages(stored.usages ?? []);
+  setters.setDispatches(stored.dispatches ?? []);
+  setters.setChallans(stored.challans ?? []);
+  setters.setPurchaseOrders(stored.purchaseOrders ?? []);
+  setters.setPurchaseReceipts(stored.purchaseReceipts ?? []);
+  setters.setTCRecords(stored.tcRecords ?? []);
+  setters.setQuotations(stored.quotations ?? []);
+  setters.setCNCQuotations(stored.cncQuotations ?? []);
+  setters.setLogs(stored.logs ?? []);
+  setters.setParties(stored.parties?.length ? stored.parties : seedParties);
 }
 
 // ─── Context ──────────────────────────────────────────────────
@@ -827,52 +875,51 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   const [cncQuotations, setCNCQuotations] = useState<CNCQuotationRecord[]>([]);
   const [logs, setLogs] = useState<ActivityLog[]>([]);
   const [parties, setParties] = useState<PartyMaster[]>([]);
+  const dataReadyRef = useRef(false);
+  const saveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const fetchData = useCallback(async () => {
+    const setters = {
+      setOrders, setPlates, setUsages, setDispatches, setChallans,
+      setPurchaseOrders, setPurchaseReceipts, setTCRecords,
+      setQuotations, setCNCQuotations, setLogs, setParties,
+    };
+
     try {
-      const stored = loadFromStorage();
-      if (stored) {
-        setOrders(stored.orders ?? []);
-        setPlates(stored.plates ?? []);
-        setDispatches(stored.dispatches ?? []);
-        setChallans(stored.challans ?? []);
-        setPurchaseOrders(stored.purchaseOrders ?? []);
-        setPurchaseReceipts(stored.purchaseReceipts ?? []);
-        setTCRecords(stored.tcRecords ?? []);
-        setQuotations(stored.quotations ?? []);
-        setCNCQuotations(stored.cncQuotations ?? []);
-        setLogs(stored.logs ?? []);
-        setParties(stored.parties ?? seedParties);
-      } else {
-        // Fallback to seed data on first load
-        setOrders(seedOrders);
-        setPlates(seedPlates);
-        setUsages(seedUsages);
-        setDispatches(seedDispatches);
-        setChallans(seedChallans);
-        setPurchaseOrders(seedPurchaseOrders);
-        setPurchaseReceipts(seedPurchaseReceipts);
-        setTCRecords(seedTCRecords);
-        setParties(seedParties);
-        
-        saveToStorage({
-          orders: seedOrders,
-          plates: seedPlates,
-          usages: seedUsages,
-          dispatches: seedDispatches,
-          challans: seedChallans,
-          purchaseOrders: seedPurchaseOrders,
-          purchaseReceipts: seedPurchaseReceipts,
-          tcRecords: seedTCRecords,
-          quotations: [],
-          cncQuotations: [],
-          logs: [],
-          parties: seedParties
-        });
+      const server = await fetchErpData();
+      if (server.data) {
+        applyStoredData(server.data as StoredData, setters);
+        saveToStorage(server.data as StoredData);
+        dataReadyRef.current = true;
+        return;
       }
+
+      const local = loadFromStorage();
+      if (local) {
+        applyStoredData(local, setters);
+        await saveErpData(local as ErpStoredData, CURRENT_VERSION);
+        dataReadyRef.current = true;
+        return;
+      }
+
+      const seed = getSeedData();
+      applyStoredData(seed, setters);
+      await saveErpData(seed as ErpStoredData, CURRENT_VERSION);
+      saveToStorage(seed);
+      dataReadyRef.current = true;
     } catch (error) {
       console.error('Error loading data:', error);
-      toast.error('Failed to load data from local storage.');
+      const local = loadFromStorage();
+      if (local) {
+        applyStoredData(local, setters);
+        toast.error('Server unavailable — loaded from browser cache.');
+      } else {
+        const seed = getSeedData();
+        applyStoredData(seed, setters);
+        saveToStorage(seed);
+        toast.error('Failed to load from server. Using default data.');
+      }
+      dataReadyRef.current = true;
     }
   }, []);
 
@@ -904,9 +951,31 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     localStorage.removeItem('jagdamba_erp_token');
   }, []);
 
-  // Sync to local storage on every state change
+  // Sync to server + local cache on every state change
   useEffect(() => {
-    saveToStorage({ orders, plates, usages, dispatches, challans, purchaseOrders, purchaseReceipts, tcRecords, quotations, cncQuotations, logs, parties });
+    if (!dataReadyRef.current) return;
+
+    const payload: StoredData = {
+      orders, plates, usages, dispatches, challans,
+      purchaseOrders, purchaseReceipts, tcRecords,
+      quotations, cncQuotations, logs, parties,
+    };
+
+    saveToStorage(payload);
+
+    if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
+    saveTimerRef.current = setTimeout(async () => {
+      try {
+        await saveErpData(payload as ErpStoredData, CURRENT_VERSION);
+      } catch (error) {
+        console.error('Error saving to server:', error);
+        toast.error('Failed to save to server. Data kept in browser cache.');
+      }
+    }, 800);
+
+    return () => {
+      if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
+    };
   }, [orders, plates, usages, dispatches, challans, purchaseOrders, purchaseReceipts, tcRecords, quotations, cncQuotations, logs, parties]);
 
   const t = useCallback((key: string) => {

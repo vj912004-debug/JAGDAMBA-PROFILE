@@ -14,4 +14,12 @@ export default defineConfig({
       '@client': '/src/projects/client',
     },
   },
+  server: {
+    proxy: {
+      '/api': {
+        target: 'http://localhost:5000',
+        changeOrigin: true,
+      },
+    },
+  },
 })

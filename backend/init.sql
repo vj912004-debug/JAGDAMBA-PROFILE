@@ -14,3 +14,15 @@ CREATE TABLE IF NOT EXISTS email_logs (
 -- Index for faster searching
 CREATE INDEX IF NOT EXISTS idx_recipient_email ON email_logs(recipient_email);
 CREATE INDEX IF NOT EXISTS idx_sent_at ON email_logs(sent_at);
+
+-- Central ERP data store (shared across all users/devices)
+CREATE TABLE IF NOT EXISTS erp_data (
+    id TEXT PRIMARY KEY DEFAULT 'main',
+    data JSONB NOT NULL DEFAULT '{}',
+    version TEXT DEFAULT 'v4_seeded',
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+INSERT INTO erp_data (id, data, version)
+VALUES ('main', '{}', 'v4_seeded')
+ON CONFLICT (id) DO NOTHING;

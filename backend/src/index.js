@@ -3,6 +3,7 @@ import cors from 'cors';
 import dotenv from 'dotenv';
 import pool from './config/db.js';
 import mailRoutes from './routes/mail.js';
+import erpRoutes from './routes/erp.js';
 
 dotenv.config();
 
@@ -15,6 +16,7 @@ app.use(express.urlencoded({ limit: '50mb', extended: true }));
 
 // Routes
 app.use('/api/mail', mailRoutes);
+app.use('/api/erp', erpRoutes);
 
 // Health Check Endpoint
 app.get('/api/health', async (req, res) => {
