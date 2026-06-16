@@ -94,7 +94,7 @@ export const ChallanPage: React.FC = () => {
         <div className="bg-white dark:bg-slate-900 rounded-2xl p-5 shadow-sm border border-teal-100 slide-up">
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-base font-semibold text-slate-800 dark:text-slate-100">New Challan</h2>
-            <button onClick={() => setShowCreate(false)} className="p-1.5 text-slate-400 hover:text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 dark:bg-slate-800 rounded-lg transition-colors"><X className="w-4 h-4" /></button>
+            <button onClick={() => setShowCreate(false)} className="p-1.5 text-slate-400 hover:text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:bg-slate-800 rounded-lg transition-colors"><X className="w-4 h-4" /></button>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
             <div>
@@ -151,23 +151,23 @@ export const ChallanPage: React.FC = () => {
           <table className="w-full text-left border-collapse whitespace-nowrap">
             <thead>
               <tr className="bg-slate-50 dark:bg-slate-800/50 border-b border-slate-100 dark:border-slate-800">
-                <th className="p-3 text-[10px] font-bold tracking-wider text-slate-500 dark:text-slate-400 uppercase">Challan No</th>
-                <th className="p-3 text-[10px] font-bold tracking-wider text-slate-500 dark:text-slate-400 uppercase">Date</th>
-                <th className="p-3 text-[10px] font-bold tracking-wider text-slate-500 dark:text-slate-400 uppercase">Order</th>
-                <th className="p-3 text-[10px] font-bold tracking-wider text-slate-500 dark:text-slate-400 uppercase">Party</th>
-                <th className="p-3 text-[10px] font-bold tracking-wider text-slate-500 dark:text-slate-400 uppercase">Taxable (₹)</th>
-                <th className="p-3 text-[10px] font-bold tracking-wider text-slate-500 dark:text-slate-400 uppercase">GST (₹)</th>
-                <th className="p-3 text-[10px] font-bold tracking-wider text-slate-500 dark:text-slate-400 uppercase">Total (₹)</th>
-                <th className="p-3 text-[10px] font-bold tracking-wider text-slate-500 dark:text-slate-400 uppercase">Paid (₹)</th>
-                <th className="p-3 text-[10px] font-bold tracking-wider text-slate-500 dark:text-slate-400 uppercase">Balance (₹)</th>
-                <th className="p-3 text-[10px] font-bold tracking-wider text-slate-500 dark:text-slate-400 uppercase">Due Date</th>
-                <th className="p-3 text-[10px] font-bold tracking-wider text-slate-500 dark:text-slate-400 uppercase text-center">Status</th>
-                <th className="p-3 text-[10px] font-bold tracking-wider text-slate-500 dark:text-slate-400 uppercase text-center">Actions</th>
+                <th className="p-3 table-head-cell">Challan No</th>
+                <th className="p-3 table-head-cell">Date</th>
+                <th className="p-3 table-head-cell">Order</th>
+                <th className="p-3 table-head-cell">Party</th>
+                <th className="p-3 table-head-cell">Taxable (₹)</th>
+                <th className="p-3 table-head-cell">GST (₹)</th>
+                <th className="p-3 table-head-cell">Total (₹)</th>
+                <th className="p-3 table-head-cell">Paid (₹)</th>
+                <th className="p-3 table-head-cell">Balance (₹)</th>
+                <th className="p-3 table-head-cell">Due Date</th>
+                <th className="p-3 table-head-cell text-center">Status</th>
+                <th className="p-3 table-head-cell text-center">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
               {[...challans].sort((a,b) => b.challanDate.localeCompare(a.challanDate) || b.challanNo.localeCompare(a.challanNo)).map(item => (
-                <tr key={item.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/50 dark:bg-slate-800/50 transition-colors">
+                <tr key={item.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/50 transition-colors">
                   <td className="p-3 text-sm font-bold text-slate-700 dark:text-slate-200 font-mono">{item.challanNo}</td>
                   <td className="p-3 text-sm text-slate-600 dark:text-slate-300">{item.challanDate}</td>
                   <td className="p-3 text-sm text-slate-600 dark:text-slate-300 font-mono">{item.orderNo}</td>
@@ -186,7 +186,7 @@ export const ChallanPage: React.FC = () => {
                     <button
                       onClick={() => toggleStatus(item.id)}
                       disabled={!canEdit}
-                      className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold transition-colors cursor-pointer disabled:cursor-default ${item.status === 'Done' ? 'bg-emerald-100 text-emerald-700 dark:text-emerald-400 hover:bg-emerald-200' : 'bg-amber-100 text-amber-700 hover:bg-amber-200'}`}
+                      className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-2xs font-bold transition-colors cursor-pointer disabled:cursor-default ${item.status === 'Done' ? 'bg-emerald-100 text-emerald-700 dark:text-emerald-400 hover:bg-emerald-200' : 'bg-amber-100 text-amber-700 hover:bg-amber-200'}`}
                     >
                       {item.status === 'Done' ? <CheckCircle className="w-3 h-3" /> : <Clock className="w-3 h-3" />}
                       {item.status}
@@ -199,7 +199,7 @@ export const ChallanPage: React.FC = () => {
                           const order = orders.find(o => o.orderNo === item.orderNo);
                           setPreviewChallan({ challan: item, order });
                         }}
-                        className="p-1.5 text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/30 dark:bg-blue-900/30 rounded-lg transition-colors"
+                        className="p-1.5 text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded-lg transition-colors"
                         title="Preview & Print"
                       >
                         <Eye className="w-4 h-4" />
@@ -218,7 +218,7 @@ export const ChallanPage: React.FC = () => {
                       {canEdit && (
                         <button
                           onClick={() => handleDelete(item.id)}
-                          className="p-1.5 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30 dark:bg-red-900/30 rounded-lg transition-colors"
+                          className="p-1.5 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-lg transition-colors"
                           title="Delete Challan"
                         >
                           <Trash2 className="w-4 h-4" />
@@ -264,7 +264,7 @@ export const ChallanPage: React.FC = () => {
                 </button>
                 <button 
                   onClick={() => setPreviewChallan(null)} 
-                  className="p-2 text-slate-400 hover:text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 dark:bg-slate-800 rounded-xl transition-all"
+                  className="p-2 text-slate-400 hover:text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:bg-slate-800 rounded-xl transition-all"
                 >
                   <X className="w-6 h-6" />
                 </button>

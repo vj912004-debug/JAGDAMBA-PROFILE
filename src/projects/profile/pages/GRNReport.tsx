@@ -57,7 +57,7 @@ export const GRNReport: React.FC = () => {
               className="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl pl-10 pr-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
           </div>
-          <button onClick={handleExport} className="flex items-center gap-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 px-4 py-2 rounded-xl text-sm font-semibold hover:bg-slate-50 dark:hover:bg-slate-800/50 dark:bg-slate-800/50 transition-all">
+          <button onClick={handleExport} className="flex items-center gap-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 px-4 py-2 rounded-xl text-sm font-semibold hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-all">
             <Download className="w-4 h-4" /> Export
           </button>
         </div>
@@ -85,7 +85,7 @@ export const GRNReport: React.FC = () => {
               {grnReport.length === 0 ? (
                 <tr><td colSpan={10} className="p-10 text-center text-slate-400 italic">No material receipts recorded yet</td></tr>
               ) : grnReport.map((pr, idx) => (
-                <tr key={`${pr.id}-${idx}`} className="hover:bg-slate-50 dark:hover:bg-slate-800/50 dark:bg-slate-800/50 transition-colors">
+                <tr key={`${pr.id}-${idx}`} className="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
                   <td className="p-4 text-sm text-slate-600 dark:text-slate-300 font-medium">{pr.date}</td>
                   <td className="p-4 text-sm font-mono text-blue-600 dark:text-blue-400 font-bold">{pr.poNumber}</td>
                   <td className="p-4 text-sm font-medium text-slate-800 dark:text-slate-100">{pr.supplierName}</td>

@@ -100,7 +100,7 @@ export const Dashboard: React.FC = () => {
             </div>
             <div>
               <h3 className="text-lg font-bold text-slate-800 leading-tight">{stat.value}</h3>
-              <p className="text-[10px] font-semibold text-slate-500">{stat.label}</p>
+              <p className="text-2xs font-semibold text-slate-500">{stat.label}</p>
             </div>
           </div>
         ))}
@@ -115,7 +115,7 @@ export const Dashboard: React.FC = () => {
               <div key={s.stage} className="flex items-center gap-1.5">
                 <div className="bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-center min-w-[80px]">
                   <p className="text-lg font-bold text-slate-800">{s.count}</p>
-                  <p className="text-[9px] font-semibold text-slate-500 uppercase tracking-wider leading-tight">{s.stage}</p>
+                  <p className="text-3xs font-semibold text-slate-500 uppercase tracking-wider leading-tight">{s.stage}</p>
                 </div>
                 {i < stageCounts.length - 1 && <ArrowRight className="w-3.5 h-3.5 text-slate-300 flex-shrink-0" />}
               </div>
@@ -138,7 +138,7 @@ export const Dashboard: React.FC = () => {
                   {order.urgent && <span className="w-1.5 h-1.5 rounded-full bg-red-500 pulse-dot flex-shrink-0"></span>}
                   <div>
                     <p className="text-sm font-bold text-slate-800">{order.partyName}</p>
-                    <p className="text-[11px] text-slate-500">
+                    <p className="text-xxs text-slate-500">
                       {order.orderNo} • {order.items[0]?.cuttingType} 
                       {order.items[0]?.thickness ? ` • ${order.items[0].thickness}${!order.items[0].thickness.toLowerCase().includes('mm') ? 'mm' : ''}` : ''}
                       {order.items[0]?.cuttingType === 'Circle' && ` (OD:${order.items[0].outerDiameter || '-'})`}
@@ -146,7 +146,7 @@ export const Dashboard: React.FC = () => {
                     </p>
                   </div>
                 </div>
-                <span className="text-[10px] font-bold text-slate-600 bg-slate-100 px-2 py-1 rounded-full whitespace-nowrap">
+                <span className="text-2xs font-bold text-slate-600 bg-slate-100 px-2 py-1 rounded-full whitespace-nowrap">
                   {order.stage}
                 </span>
               </div>
@@ -170,11 +170,11 @@ export const Dashboard: React.FC = () => {
               <div key={order.id} className="px-4 py-3 flex items-center justify-between hover:bg-red-50/30 transition-colors">
                 <div>
                   <p className="text-sm font-bold text-slate-800">{order.partyName}</p>
-                  <p className="text-[11px] text-slate-500">
+                  <p className="text-xxs text-slate-500">
                     {order.orderNo} • Due: {order.deliveryDate ? new Date(order.deliveryDate).toLocaleDateString('en-IN', { day: '2-digit', month: 'short' }) : 'N/A'}
                   </p>
                 </div>
-                <span className="text-[10px] font-bold text-amber-700 bg-amber-100 px-2 py-1 rounded-full whitespace-nowrap">
+                <span className="text-2xs font-bold text-amber-700 bg-amber-100 px-2 py-1 rounded-full whitespace-nowrap">
                   {order.stage}
                 </span>
               </div>

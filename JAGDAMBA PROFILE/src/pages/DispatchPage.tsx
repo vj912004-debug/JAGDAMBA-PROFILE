@@ -98,7 +98,7 @@ export const DispatchPage: React.FC = () => {
                 </div>
                 <h3 className={`font-bold text-sm mb-1 truncate ${selectedOrderId === order.id ? 'text-white' : 'text-slate-800'}`}>{order.partyName}</h3>
                 <div className="flex items-center gap-2">
-                  <span className={`text-[10px] px-1.5 py-0.5 rounded-full ${selectedOrderId === order.id ? 'bg-white/20 text-white' : 'bg-emerald-50 text-emerald-600 font-bold'}`}>
+                  <span className={`text-2xs px-1.5 py-0.5 rounded-full ${selectedOrderId === order.id ? 'bg-white/20 text-white' : 'bg-emerald-50 text-emerald-600 font-bold'}`}>
                     {order.items.filter(i => (i.completedQty || 0) > (i.dispatchedQty || 0)).length} Items Ready
                   </span>
                 </div>
@@ -129,10 +129,10 @@ export const DispatchPage: React.FC = () => {
                 <table className="w-full text-left border-collapse">
                   <thead>
                     <tr className="border-b border-slate-100">
-                      <th className="pb-3 text-[10px] font-bold text-slate-400 uppercase">Item Description</th>
-                      <th className="pb-3 text-[10px] font-bold text-slate-400 uppercase text-center">Ready</th>
-                      <th className="pb-3 text-[10px] font-bold text-slate-400 uppercase text-center">Prev. Disp</th>
-                      <th className="pb-3 text-[10px] font-bold text-slate-400 uppercase text-center w-32">Qty to Dispatch</th>
+                      <th className="pb-3 text-2xs font-bold text-slate-400 uppercase">Item Description</th>
+                      <th className="pb-3 text-2xs font-bold text-slate-400 uppercase text-center">Ready</th>
+                      <th className="pb-3 text-2xs font-bold text-slate-400 uppercase text-center">Prev. Disp</th>
+                      <th className="pb-3 text-2xs font-bold text-slate-400 uppercase text-center w-32">Qty to Dispatch</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-50">
@@ -141,7 +141,7 @@ export const DispatchPage: React.FC = () => {
                         <td className="py-4">
                           <div className="flex flex-col">
                             <span className="text-sm font-bold text-slate-700">{item.partName || item.cuttingType}</span>
-                            <span className="text-[10px] text-slate-400">{item.thickness} | {item.materialGrade}</span>
+                            <span className="text-2xs text-slate-400">{item.thickness} | {item.materialGrade}</span>
                           </div>
                         </td>
                         <td className="py-4 text-center">
@@ -169,7 +169,7 @@ export const DispatchPage: React.FC = () => {
               <div className="p-6 bg-slate-50/80 border-t border-slate-100 space-y-4">
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div className="space-y-1">
-                    <label className="text-[10px] font-bold text-slate-400 uppercase ml-1">Vehicle Number</label>
+                    <label className="text-2xs font-bold text-slate-400 uppercase ml-1">Vehicle Number</label>
                     <input 
                       type="text" 
                       value={vehicleNo}
@@ -179,7 +179,7 @@ export const DispatchPage: React.FC = () => {
                     />
                   </div>
                   <div className="space-y-1">
-                    <label className="text-[10px] font-bold text-slate-400 uppercase ml-1">Remark / Delivery Note</label>
+                    <label className="text-2xs font-bold text-slate-400 uppercase ml-1">Remark / Delivery Note</label>
                     <input 
                       type="text" 
                       value={remark}
@@ -223,19 +223,19 @@ export const DispatchPage: React.FC = () => {
         <div className="p-6 border-b border-slate-100 bg-slate-50/50 flex items-center justify-between">
           <h2 className="text-lg font-bold text-slate-800 flex items-center gap-2">
             Dispatch History
-            <span className="bg-emerald-100 text-emerald-600 text-[10px] px-2 py-0.5 rounded-full font-bold uppercase">{completedDispatches.length}</span>
+            <span className="bg-emerald-100 text-emerald-600 text-2xs px-2 py-0.5 rounded-full font-bold uppercase">{completedDispatches.length}</span>
           </h2>
         </div>
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse whitespace-nowrap">
             <thead>
               <tr className="bg-slate-50 border-b border-slate-100">
-                <th className="p-4 text-[10px] font-bold tracking-wider text-slate-500 uppercase">Dispatch Date</th>
-                <th className="p-4 text-[10px] font-bold tracking-wider text-slate-500 uppercase">Order / Party</th>
-                <th className="p-4 text-[10px] font-bold tracking-wider text-slate-500 uppercase text-center">Qty Dispatched</th>
-                <th className="p-4 text-[10px] font-bold tracking-wider text-slate-500 uppercase">Vehicle No</th>
-                <th className="p-4 text-[10px] font-bold tracking-wider text-slate-500 uppercase">DN Number</th>
-                <th className="p-4 text-[10px] font-bold tracking-wider text-slate-500 uppercase">Remark</th>
+                <th className="p-4 text-2xs font-bold tracking-wider text-slate-500 uppercase">Dispatch Date</th>
+                <th className="p-4 text-2xs font-bold tracking-wider text-slate-500 uppercase">Order / Party</th>
+                <th className="p-4 text-2xs font-bold tracking-wider text-slate-500 uppercase text-center">Qty Dispatched</th>
+                <th className="p-4 text-2xs font-bold tracking-wider text-slate-500 uppercase">Vehicle No</th>
+                <th className="p-4 text-2xs font-bold tracking-wider text-slate-500 uppercase">DN Number</th>
+                <th className="p-4 text-2xs font-bold tracking-wider text-slate-500 uppercase">Remark</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">

@@ -275,19 +275,19 @@ export const PurchaseOrderEntry: React.FC = () => {
             </h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="sm:col-span-2">
-                <label className="block text-[10px] font-bold text-slate-400 mb-1 uppercase tracking-wider">Party Name *</label>
+                <label className="block text-2xs font-bold text-slate-400 mb-1 uppercase tracking-wider">Party Name *</label>
                 <input type="text" value={supplierName} onChange={(e) => setSupplierName(e.target.value)} className="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-sm focus:bg-white focus:ring-2 focus:ring-blue-500 transition" placeholder="Enter supplier name" />
               </div>
               <div className="sm:col-span-2">
-                <label className="block text-[10px] font-bold text-slate-400 mb-1 uppercase tracking-wider">Address</label>
+                <label className="block text-2xs font-bold text-slate-400 mb-1 uppercase tracking-wider">Address</label>
                 <textarea rows={2} value={supplierAddress} onChange={(e) => setSupplierAddress(e.target.value)} className="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-sm focus:bg-white focus:ring-2 focus:ring-blue-500 transition" placeholder="Supplier full address" />
               </div>
               <div>
-                <label className="block text-[10px] font-bold text-slate-400 mb-1 uppercase tracking-wider">GST Number</label>
+                <label className="block text-2xs font-bold text-slate-400 mb-1 uppercase tracking-wider">GST Number</label>
                 <input type="text" value={supplierGST} onChange={(e) => setSupplierGST(e.target.value)} className="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-sm focus:bg-white focus:ring-2 focus:ring-blue-500 transition" placeholder="24XXXXX..." />
               </div>
               <div>
-                <label className="block text-[10px] font-bold text-slate-400 mb-1 uppercase tracking-wider">E-mail ID</label>
+                <label className="block text-2xs font-bold text-slate-400 mb-1 uppercase tracking-wider">E-mail ID</label>
                 <input type="email" value={supplierEmail} onChange={(e) => setSupplierEmail(e.target.value)} className="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-sm focus:bg-white focus:ring-2 focus:ring-blue-500 transition" placeholder="supplier@example.com" />
               </div>
             </div>
@@ -304,7 +304,7 @@ export const PurchaseOrderEntry: React.FC = () => {
             <div className="overflow-x-auto">
               <table className="w-full text-left border-collapse min-w-[800px]">
                 <thead>
-                  <tr className="bg-slate-50 text-[10px] uppercase font-bold text-slate-500">
+                  <tr className="bg-slate-50 text-2xs uppercase font-bold text-slate-500">
                     <th className="p-3 border-b">Grade</th>
                     <th className="p-3 border-b">Thk</th>
                     <th className="p-3 border-b">Width</th>
@@ -381,19 +381,19 @@ export const PurchaseOrderEntry: React.FC = () => {
             <h2 className="text-sm font-bold text-slate-800 mb-4 uppercase tracking-widest border-b border-slate-50 pb-2">PO Details</h2>
             <div className="space-y-4">
               <div>
-                <label className="block text-[10px] font-bold text-slate-400 mb-1 uppercase tracking-wider">PO Number</label>
+                <label className="block text-2xs font-bold text-slate-400 mb-1 uppercase tracking-wider">PO Number</label>
                 <input type="text" className="w-full bg-slate-50 border border-slate-200 text-slate-500 rounded-lg px-3 py-2 text-sm font-mono focus:outline-none" value={poNumber} readOnly />
               </div>
               <div>
-                <label className="block text-[10px] font-bold text-slate-400 mb-1 uppercase tracking-wider">Date</label>
+                <label className="block text-2xs font-bold text-slate-400 mb-1 uppercase tracking-wider">Date</label>
                 <input type="date" value={date} onChange={(e) => setDate(e.target.value)} className="w-full bg-white border border-slate-200 text-slate-800 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 transition" />
               </div>
               <div>
-                <label className="block text-[10px] font-bold text-slate-400 mb-1 uppercase tracking-wider">Mobile Number</label>
+                <label className="block text-2xs font-bold text-slate-400 mb-1 uppercase tracking-wider">Mobile Number</label>
                 <input type="text" value={supplierMobile} onChange={(e) => setSupplierMobile(e.target.value)} className="w-full bg-white border border-slate-200 text-slate-800 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 transition" placeholder="Supplier contact" />
               </div>
               <div>
-                <label className="block text-[10px] font-bold text-slate-400 mb-1 uppercase tracking-wider">Invoice No</label>
+                <label className="block text-2xs font-bold text-slate-400 mb-1 uppercase tracking-wider">Invoice No</label>
                 <input type="text" value={invoiceNo} onChange={(e) => setInvoiceNo(e.target.value)} className="w-full bg-white border border-slate-200 text-slate-800 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 transition" placeholder="INV-..." />
               </div>
             </div>
@@ -404,19 +404,19 @@ export const PurchaseOrderEntry: React.FC = () => {
             <h2 className="text-sm font-bold text-slate-800 mb-4 uppercase tracking-widest border-b border-slate-50 pb-2">Delivery & Transport</h2>
             <div className="space-y-4">
               <div>
-                <label className="block text-[10px] font-bold text-slate-400 mb-1 uppercase tracking-wider">Delivery Address</label>
+                <label className="block text-2xs font-bold text-slate-400 mb-1 uppercase tracking-wider">Delivery Address</label>
                 <textarea rows={2} value={deliveryAddress} onChange={(e) => setDeliveryAddress(e.target.value)} className="w-full bg-white border border-slate-200 text-slate-800 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 transition" placeholder="Ship to address" />
               </div>
               <div>
-                <label className="block text-[10px] font-bold text-slate-400 mb-1 uppercase tracking-wider">Transport Name</label>
+                <label className="block text-2xs font-bold text-slate-400 mb-1 uppercase tracking-wider">Transport Name</label>
                 <input type="text" value={transportName} onChange={(e) => setTransportName(e.target.value)} className="w-full bg-white border border-slate-200 text-slate-800 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 transition" />
               </div>
               <div>
-                <label className="block text-[10px] font-bold text-slate-400 mb-1 uppercase tracking-wider">Transport No / Vehicle</label>
+                <label className="block text-2xs font-bold text-slate-400 mb-1 uppercase tracking-wider">Transport No / Vehicle</label>
                 <input type="text" value={transportNumber} onChange={(e) => setTransportNumber(e.target.value)} className="w-full bg-white border border-slate-200 text-slate-800 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 transition" />
               </div>
               <div>
-                <label className="block text-[10px] font-bold text-slate-400 mb-1 uppercase tracking-wider">Driver Mobile No</label>
+                <label className="block text-2xs font-bold text-slate-400 mb-1 uppercase tracking-wider">Driver Mobile No</label>
                 <input type="text" value={driverMobile} onChange={(e) => setDriverMobile(e.target.value)} className="w-full bg-white border border-slate-200 text-slate-800 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 transition" placeholder="10-digit mobile" />
               </div>
             </div>
@@ -427,34 +427,34 @@ export const PurchaseOrderEntry: React.FC = () => {
             <h2 className="text-sm font-bold text-slate-800 mb-4 uppercase tracking-widest border-b border-slate-50 pb-2">Commercial / Quality</h2>
             <div className="space-y-4">
               <div>
-                <label className="block text-[10px] font-bold text-slate-400 mb-1 uppercase tracking-wider">Payment Term</label>
+                <label className="block text-2xs font-bold text-slate-400 mb-1 uppercase tracking-wider">Payment Term</label>
                 <input type="text" value={paymentTerms} onChange={(e) => setPaymentTerms(e.target.value)} className="w-full bg-white border border-slate-200 text-slate-800 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 transition" placeholder="e.g. 30 Days" />
               </div>
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-[10px] font-bold text-slate-400 mb-1 uppercase tracking-wider">Make</label>
+                  <label className="block text-2xs font-bold text-slate-400 mb-1 uppercase tracking-wider">Make</label>
                   <input type="text" value={make} onChange={(e) => setMake(e.target.value)} className="w-full bg-white border border-slate-200 text-slate-800 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 transition" placeholder="e.g. AMNS" />
                 </div>
                 <div>
-                  <label className="block text-[10px] font-bold text-slate-400 mb-1 uppercase tracking-wider">UT Level</label>
+                  <label className="block text-2xs font-bold text-slate-400 mb-1 uppercase tracking-wider">UT Level</label>
                   <input type="text" value={utLevel} onChange={(e) => setUtLevel(e.target.value)} className="w-full bg-white border border-slate-200 text-slate-800 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 transition" placeholder="e.g. Level 2" />
                 </div>
               </div>
               <div>
-                <label className="block text-[10px] font-bold text-slate-400 mb-1 uppercase tracking-wider">TC (Test Certificate)</label>
+                <label className="block text-2xs font-bold text-slate-400 mb-1 uppercase tracking-wider">TC (Test Certificate)</label>
                 <input type="text" value={tc} onChange={(e) => setTc(e.target.value)} className="w-full bg-white border border-slate-200 text-slate-800 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 transition" placeholder="e.g. Required / Yes" />
               </div>
               <div>
-                <label className="block text-[10px] font-bold text-slate-400 mb-1 uppercase tracking-wider">Note</label>
+                <label className="block text-2xs font-bold text-slate-400 mb-1 uppercase tracking-wider">Note</label>
                 <textarea rows={2} value={note} onChange={(e) => setNote(e.target.value)} className="w-full bg-white border border-slate-200 text-slate-800 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 transition" placeholder="Commercial / quality notes for PO" />
               </div>
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-[10px] font-bold text-slate-400 mb-1 uppercase tracking-wider">Customer</label>
+                  <label className="block text-2xs font-bold text-slate-400 mb-1 uppercase tracking-wider">Customer</label>
                   <input type="text" value={customer} onChange={(e) => setCustomer(e.target.value)} className="w-full bg-white border border-slate-200 text-slate-800 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 transition" />
                 </div>
                 <div>
-                  <label className="block text-[10px] font-bold text-slate-400 mb-1 uppercase tracking-wider">Location</label>
+                  <label className="block text-2xs font-bold text-slate-400 mb-1 uppercase tracking-wider">Location</label>
                   <input type="text" value={location} onChange={(e) => setLocation(e.target.value)} className="w-full bg-white border border-slate-200 text-slate-800 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 transition" />
                 </div>
               </div>

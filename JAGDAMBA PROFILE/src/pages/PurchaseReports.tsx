@@ -200,7 +200,7 @@ export const PurchaseReports: React.FC = () => {
                       <td className="p-4">
                         <div className="flex flex-col gap-1">
                           <span className={clsx(
-                            "px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider w-max",
+                            "px-2.5 py-1 rounded-full text-2xs font-bold uppercase tracking-wider w-max",
                             po.status === 'Complete' ? "bg-emerald-100 text-emerald-700 border border-emerald-200" :
                             po.status === 'Partial' ? "bg-blue-100 text-blue-700 border border-blue-200" :
                             "bg-slate-100 text-slate-600 border border-slate-200"
@@ -208,12 +208,12 @@ export const PurchaseReports: React.FC = () => {
                             {po.status}
                           </span>
                           {po.status === 'Partial' && (
-                            <span className="text-[10px] text-blue-600 font-bold ml-1">
+                            <span className="text-2xs text-blue-600 font-bold ml-1">
                               ({pending.toFixed(3)} Pending)
                             </span>
                           )}
                           {po.status === 'Pending' && (
-                            <span className="text-[10px] text-slate-500 font-bold ml-1">
+                            <span className="text-2xs text-slate-500 font-bold ml-1">
                               ({po.totalKg.toFixed(3)} Pending)
                             </span>
                           )}
@@ -262,10 +262,10 @@ export const PurchaseReports: React.FC = () => {
                               <table className="w-full text-left border-collapse">
                                 <thead className="bg-amber-50">
                                   <tr>
-                                    <th className="p-2.5 text-[10px] font-bold text-amber-800 uppercase">Date</th>
-                                    <th className="p-2.5 text-[10px] font-bold text-amber-800 uppercase text-right">Qty Received</th>
-                                    <th className="p-2.5 text-[10px] font-bold text-amber-800 uppercase text-right">Qty Pending</th>
-                                    <th className="p-2.5 text-[10px] font-bold text-amber-800 uppercase">Remark</th>
+                                    <th className="p-2.5 text-2xs font-bold text-amber-800 uppercase">Date</th>
+                                    <th className="p-2.5 text-2xs font-bold text-amber-800 uppercase text-right">Qty Received</th>
+                                    <th className="p-2.5 text-2xs font-bold text-amber-800 uppercase text-right">Qty Pending</th>
+                                    <th className="p-2.5 text-2xs font-bold text-amber-800 uppercase">Remark</th>
                                   </tr>
                                 </thead>
                                 <tbody className="divide-y divide-amber-50">

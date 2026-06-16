@@ -113,12 +113,12 @@ export const ProductionList: React.FC = () => {
         {Object.entries(workerSummary).map(([worker, stats]) => (
           <div key={worker} className={`p-3 rounded-xl border transition-all ${workerFilter === worker ? 'bg-blue-600 border-blue-600 text-white shadow-md' : 'bg-white border-slate-100 text-slate-600 hover:border-blue-200'}`} onClick={() => setWorkerFilter(worker === workerFilter ? 'All' : worker)}>
             <div className="flex justify-between items-start mb-1">
-              <span className="text-[10px] font-bold uppercase tracking-wider opacity-80">{worker}</span>
+              <span className="text-2xs font-bold uppercase tracking-wider opacity-80">{worker}</span>
               <User className={`w-3 h-3 ${workerFilter === worker ? 'text-blue-100' : 'text-slate-400'}`} />
             </div>
             <div className="flex items-end justify-between">
               <span className="text-lg font-bold">{stats.completed}/{stats.total}</span>
-              <span className="text-[10px] font-medium opacity-80">{Math.round((stats.completed / stats.total) * 100)}%</span>
+              <span className="text-2xs font-medium opacity-80">{Math.round((stats.completed / stats.total) * 100)}%</span>
             </div>
             <div className="w-full bg-black/10 h-1 rounded-full mt-2 overflow-hidden">
               <div className={`h-full ${workerFilter === worker ? 'bg-white' : 'bg-blue-500'}`} style={{ width: `${(stats.completed / stats.total) * 100}%` }}></div>
@@ -132,14 +132,14 @@ export const ProductionList: React.FC = () => {
           <table className="w-full text-left border-collapse whitespace-nowrap">
             <thead>
               <tr className="bg-slate-50 border-b border-slate-100">
-                <th className="p-4 text-[10px] font-bold tracking-wider text-slate-500 uppercase">Order / Customer</th>
-                <th className="p-4 text-[10px] font-bold tracking-wider text-slate-500 uppercase">Item Details</th>
-                <th className="p-4 text-[10px] font-bold tracking-wider text-slate-500 uppercase">Specifications</th>
-                <th className="p-4 text-[10px] font-bold tracking-wider text-slate-500 uppercase text-center">Completed / Total Qty</th>
-                <th className="p-4 text-[10px] font-bold tracking-wider text-slate-500 uppercase">Assigned Worker</th>
-                <th className="p-4 text-[10px] font-bold tracking-wider text-slate-500 uppercase text-center">{t('itemStatus')}</th>
-                <th className="p-4 text-[10px] font-bold tracking-wider text-slate-500 uppercase text-center">Docs</th>
-                {canEdit && <th className="p-4 text-[10px] font-bold tracking-wider text-slate-500 uppercase text-center">Update Completed</th>}
+                <th className="p-4 text-2xs font-bold tracking-wider text-slate-500 uppercase">Order / Customer</th>
+                <th className="p-4 text-2xs font-bold tracking-wider text-slate-500 uppercase">Item Details</th>
+                <th className="p-4 text-2xs font-bold tracking-wider text-slate-500 uppercase">Specifications</th>
+                <th className="p-4 text-2xs font-bold tracking-wider text-slate-500 uppercase text-center">Completed / Total Qty</th>
+                <th className="p-4 text-2xs font-bold tracking-wider text-slate-500 uppercase">Assigned Worker</th>
+                <th className="p-4 text-2xs font-bold tracking-wider text-slate-500 uppercase text-center">{t('itemStatus')}</th>
+                <th className="p-4 text-2xs font-bold tracking-wider text-slate-500 uppercase text-center">Docs</th>
+                {canEdit && <th className="p-4 text-2xs font-bold tracking-wider text-slate-500 uppercase text-center">Update Completed</th>}
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
@@ -161,21 +161,21 @@ export const ProductionList: React.FC = () => {
                   <td className="p-4">
                     <div className="flex flex-col">
                       <span className="text-sm font-medium text-slate-800">{item.partName || 'No Part Name'}</span>
-                      <span className="text-[10px] text-slate-400 font-mono">{item.drawingNumber}</span>
+                      <span className="text-2xs text-slate-400 font-mono">{item.drawingNumber}</span>
                     </div>
                   </td>
                   <td className="p-4">
                     <div className="flex flex-wrap gap-1">
-                      <span className="text-[10px] bg-slate-100 px-1.5 py-0.5 rounded text-slate-600">{item.cuttingType}</span>
-                      <span className="text-[10px] bg-blue-50 px-1.5 py-0.5 rounded text-blue-600">{item.materialGrade}</span>
-                      <span className="text-[10px] bg-slate-100 px-1.5 py-0.5 rounded text-slate-600">{item.thickness}{item.thickness && !item.thickness.toLowerCase().includes('mm') ? 'mm' : ''}</span>
+                      <span className="text-2xs bg-slate-100 px-1.5 py-0.5 rounded text-slate-600">{item.cuttingType}</span>
+                      <span className="text-2xs bg-blue-50 px-1.5 py-0.5 rounded text-blue-600">{item.materialGrade}</span>
+                      <span className="text-2xs bg-slate-100 px-1.5 py-0.5 rounded text-slate-600">{item.thickness}{item.thickness && !item.thickness.toLowerCase().includes('mm') ? 'mm' : ''}</span>
                       {item.cuttingType === 'Circle' && (item.outerDiameter || item.innerDiameter) && (
-                        <span className="text-[10px] bg-indigo-50 px-1.5 py-0.5 rounded text-indigo-600 font-bold">
+                        <span className="text-2xs bg-indigo-50 px-1.5 py-0.5 rounded text-indigo-600 font-bold">
                           OD:{item.outerDiameter || '-'} ID:{item.innerDiameter || '-'}
                         </span>
                       )}
                       {item.cuttingType === 'Square' && (item.length || item.width) && (
-                        <span className="text-[10px] bg-indigo-50 px-1.5 py-0.5 rounded text-indigo-600 font-bold">
+                        <span className="text-2xs bg-indigo-50 px-1.5 py-0.5 rounded text-indigo-600 font-bold">
                           {item.length || '-'}x{item.width || '-'}
                         </span>
                       )}
@@ -186,7 +186,7 @@ export const ProductionList: React.FC = () => {
                       <span className="text-sm font-bold text-slate-700">
                         {item.completedQty || 0} / {item.quantity}
                       </span>
-                      <span className="text-[9px] text-slate-400">{item.unitType}</span>
+                      <span className="text-3xs text-slate-400">{item.unitType}</span>
                       <div className="w-12 bg-slate-100 h-1 rounded-full mt-1 overflow-hidden">
                         <div className="h-full bg-emerald-500" style={{ width: `${((item.completedQty || 0) / item.quantity) * 100}%` }}></div>
                       </div>
@@ -199,7 +199,7 @@ export const ProductionList: React.FC = () => {
                     </div>
                   </td>
                   <td className="p-4 text-center">
-                    <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider
+                    <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-2xs font-bold uppercase tracking-wider
                       ${(item.itemStatus || 'Pending') === 'Completed' ? 'bg-emerald-50 text-emerald-700 border border-emerald-100' : 
                         (item.itemStatus || 'Pending') === 'In Progress' ? 'bg-amber-50 text-amber-700 border border-amber-100' : 
                         'bg-slate-100 text-slate-600 border border-slate-200'}`}>
@@ -209,7 +209,7 @@ export const ProductionList: React.FC = () => {
                       {item.itemStatus || 'Pending'}
                     </span>
                     {item.completedAt && (
-                      <div className="text-[9px] text-slate-400 mt-1">
+                      <div className="text-3xs text-slate-400 mt-1">
                         Done: {new Date(item.completedAt).toLocaleDateString()}
                       </div>
                     )}
@@ -300,16 +300,16 @@ export const ProductionList: React.FC = () => {
               <table className="w-full text-left border-collapse whitespace-nowrap">
                 <thead>
                   <tr className="bg-slate-50 border-b border-slate-100">
-                    <th className="p-3 text-[10px] font-bold tracking-wider text-slate-500 uppercase">Item Details</th>
-                    <th className="p-3 text-[10px] font-bold tracking-wider text-slate-500 uppercase text-center">Thick</th>
-                    <th className="p-3 text-[10px] font-bold tracking-wider text-slate-500 uppercase text-center">Width</th>
-                    <th className="p-3 text-[10px] font-bold tracking-wider text-slate-500 uppercase text-center">Length</th>
-                    <th className="p-3 text-[10px] font-bold tracking-wider text-slate-500 uppercase text-center">Total Nos</th>
-                    <th className="p-3 text-[10px] font-bold tracking-wider text-slate-500 uppercase text-center">Done</th>
-                    <th className="p-3 text-[10px] font-bold tracking-wider text-slate-500 uppercase text-center">Grade</th>
-                    <th className="p-3 text-[10px] font-bold tracking-wider text-slate-500 uppercase">Worker</th>
-                    <th className="p-3 text-[10px] font-bold tracking-wider text-slate-500 uppercase text-center">Status</th>
-                    {canEdit && <th className="p-3 text-[10px] font-bold tracking-wider text-slate-500 uppercase text-center">Update</th>}
+                    <th className="p-3 text-2xs font-bold tracking-wider text-slate-500 uppercase">Item Details</th>
+                    <th className="p-3 text-2xs font-bold tracking-wider text-slate-500 uppercase text-center">Thick</th>
+                    <th className="p-3 text-2xs font-bold tracking-wider text-slate-500 uppercase text-center">Width</th>
+                    <th className="p-3 text-2xs font-bold tracking-wider text-slate-500 uppercase text-center">Length</th>
+                    <th className="p-3 text-2xs font-bold tracking-wider text-slate-500 uppercase text-center">Total Nos</th>
+                    <th className="p-3 text-2xs font-bold tracking-wider text-slate-500 uppercase text-center">Done</th>
+                    <th className="p-3 text-2xs font-bold tracking-wider text-slate-500 uppercase text-center">Grade</th>
+                    <th className="p-3 text-2xs font-bold tracking-wider text-slate-500 uppercase">Worker</th>
+                    <th className="p-3 text-2xs font-bold tracking-wider text-slate-500 uppercase text-center">Status</th>
+                    {canEdit && <th className="p-3 text-2xs font-bold tracking-wider text-slate-500 uppercase text-center">Update</th>}
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100">
@@ -318,7 +318,7 @@ export const ProductionList: React.FC = () => {
                       <td className="p-3">
                         <div className="flex flex-col">
                           <span className="text-xs font-bold text-slate-800">{item.partName || 'No Part Name'}</span>
-                          <span className="text-[10px] text-slate-400 font-mono">{item.drawingNumber}</span>
+                          <span className="text-2xs text-slate-400 font-mono">{item.drawingNumber}</span>
                         </div>
                       </td>
                       <td className="p-3 text-center">
@@ -341,7 +341,7 @@ export const ProductionList: React.FC = () => {
                         </span>
                       </td>
                       <td className="p-3 text-center">
-                        <span className="text-[10px] bg-blue-50 text-blue-600 px-1.5 py-0.5 rounded font-bold">
+                        <span className="text-2xs bg-blue-50 text-blue-600 px-1.5 py-0.5 rounded font-bold">
                           {item.materialGrade}
                         </span>
                       </td>
@@ -349,7 +349,7 @@ export const ProductionList: React.FC = () => {
                         <span className="text-xs text-slate-600">{item.assignedWorker || 'Unassigned'}</span>
                       </td>
                       <td className="p-3 text-center">
-                        <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-wider
+                        <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-3xs font-bold uppercase tracking-wider
                           ${(item.itemStatus || 'Pending') === 'Completed' ? 'bg-emerald-50 text-emerald-700 border border-emerald-100' : 
                             (item.itemStatus || 'Pending') === 'In Progress' ? 'bg-amber-50 text-amber-700 border border-amber-100' : 
                             'bg-slate-100 text-slate-600 border border-slate-200'}`}>

@@ -9,6 +9,7 @@ import {
 import toast from 'react-hot-toast';
 import { cn } from '../components/Sidebar';
 import { generateTCPDFBase64 } from '../utils/pdfGenerator';
+import { upper } from '../utils/textCase';
 
 export const TCManagement: React.FC = () => {
   const { t, tcRecords, addTCRecord, updateTCRecord, deleteTCRecord } = useAppContext();
@@ -337,7 +338,7 @@ export const TCManagement: React.FC = () => {
         <div>
           <h1 className="text-3xl font-black flex items-center gap-3">
             <FileSearch className="w-8 h-8 text-blue-600 dark:text-blue-400" />
-            <span className="bg-gradient-to-r from-slate-900 to-slate-600 dark:from-slate-100 dark:to-slate-400 bg-clip-text text-transparent">
+            <span className="bg-linear-to-r from-slate-900 to-slate-600 dark:from-slate-100 dark:to-slate-400 bg-clip-text text-transparent">
               {t('tcManagement')}
             </span>
           </h1>
@@ -355,8 +356,8 @@ export const TCManagement: React.FC = () => {
                 : waStatus === 'QR_READY'
                 ? "bg-amber-50 dark:bg-amber-950/20 border-amber-200 dark:border-amber-900/30 text-amber-700 dark:text-amber-400 hover:bg-amber-100 dark:hover:bg-amber-900/30 animate-pulse"
                 : waStatus === 'INITIALIZING'
-                ? "bg-blue-50 dark:bg-blue-950/20 border-blue-200 dark:border-blue-900/30 text-blue-700 dark:text-blue-400 hover:bg-blue-100 dark:hover:bg-blue-900/50 dark:hover:bg-blue-900/30 animate-pulse"
-                : "bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-350 hover:bg-slate-100 dark:hover:bg-slate-800 dark:bg-slate-800 dark:hover:bg-slate-700/50"
+                ? "bg-blue-50 dark:bg-blue-950/20 border-blue-200 dark:border-blue-900/30 text-blue-700 dark:text-blue-400 hover:bg-blue-100 dark:hover:bg-blue-900/50 animate-pulse"
+                : "bg-slate-50 border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:bg-slate-800 dark:hover:bg-slate-700/50"
             )}
           >
             <MessageSquare className="w-4 h-4" />
@@ -364,7 +365,7 @@ export const TCManagement: React.FC = () => {
           </button>
 
           <div className="flex flex-col items-end px-4 border-r border-slate-100 dark:border-slate-800">
-            <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500 dark:text-slate-400 uppercase tracking-widest">Total Certificates</span>
+            <span className="meta-10">Total Certificates</span>
             <span className="text-xl font-black text-slate-800 dark:text-slate-100">{tcRecords.length}</span>
           </div>
           
@@ -397,7 +398,7 @@ export const TCManagement: React.FC = () => {
               onClick={() => setShowAdvancedSearch(!showAdvancedSearch)}
               className={cn(
                 "w-full flex items-center justify-center gap-2 py-2 rounded-xl text-xs font-bold transition-all",
-                showAdvancedSearch ? "bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400" : "bg-slate-50 dark:bg-slate-800/50 text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 dark:bg-slate-800"
+                showAdvancedSearch ? "bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400" : "bg-slate-50 text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:bg-slate-800"
               )}
             >
               <Filter className="w-4 h-4" />
@@ -408,11 +409,11 @@ export const TCManagement: React.FC = () => {
               <div className="grid grid-cols-2 gap-2 pt-2 border-t border-slate-50 slide-down">
                 {Object.keys(filters).map((key) => (
                   <div key={key}>
-                    <label className="block text-[10px] font-bold text-slate-400 uppercase mb-1">{key.replace(/([A-Z])/g, ' $1')}</label>
+                    <label className="field-label mb-1">{key.replace(/([A-Z])/g, ' $1')}</label>
                     {key === 'grade' ? (
                       <select 
                         value={(filters as any)[key]}
-                        onChange={(e) => setFilters({...filters, [key]: e.target.value})}
+                        onChange={(e) => setFilters({...filters, [key]: upper(e.target.value)})}
                         className="w-full bg-slate-50 dark:bg-slate-800/50 border-none rounded-lg px-3 py-2 text-xs focus:ring-1 focus:ring-blue-500 outline-none font-bold"
                       >
                         <option value="">All Grades</option>
@@ -421,7 +422,7 @@ export const TCManagement: React.FC = () => {
                     ) : key === 'make' ? (
                       <select 
                         value={(filters as any)[key]}
-                        onChange={(e) => setFilters({...filters, [key]: e.target.value})}
+                        onChange={(e) => setFilters({...filters, [key]: upper(e.target.value)})}
                         className="w-full bg-slate-50 dark:bg-slate-800/50 border-none rounded-lg px-3 py-2 text-xs focus:ring-1 focus:ring-blue-500 outline-none font-bold"
                       >
                         <option value="">All Makes</option>
@@ -437,7 +438,7 @@ export const TCManagement: React.FC = () => {
                       <input 
                         type="text" 
                         value={(filters as any)[key]}
-                        onChange={(e) => setFilters({...filters, [key]: e.target.value})}
+                        onChange={(e) => setFilters({...filters, [key]: upper(e.target.value)})}
                         className="w-full bg-slate-50 dark:bg-slate-800/50 border-none rounded-lg px-3 py-2 text-xs focus:ring-1 focus:ring-blue-500 outline-none font-bold"
                       />
                     )}
@@ -445,7 +446,7 @@ export const TCManagement: React.FC = () => {
                 ))}
                 <button 
                   onClick={() => setFilters({ heatNumber: '', plateNumber: '', tcNumber: '', salesOrderNumber: '', partyName: '', grade: '', thickness: '', make: '', invoiceNumber: '' })}
-                  className="col-span-2 text-[10px] font-bold text-red-500 uppercase py-2 hover:bg-red-50 dark:hover:bg-red-900/30 dark:bg-red-900/30 rounded-lg transition-colors"
+                  className="col-span-2 text-2xs font-bold text-red-500 uppercase py-2 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-lg transition-colors"
                 >
                   Clear All Filters
                 </button>
@@ -463,13 +464,13 @@ export const TCManagement: React.FC = () => {
                   key={record.id}
                   onClick={() => handleSelectRecord(record)}
                   className={cn(
-                    "p-4 hover:bg-blue-50/30 dark:hover:bg-blue-900/30 dark:bg-blue-900/30 cursor-pointer transition-all group",
+                    "p-4 hover:bg-blue-50/30 dark:hover:bg-blue-900/30 cursor-pointer transition-all group",
                     selectedTC?.id === record.id ? "bg-blue-50 dark:bg-blue-900/30 border-l-4 border-blue-600" : ""
                   )}
                 >
                   <div className="flex items-center justify-between mb-1">
-                    <span className="text-sm font-black text-slate-800 dark:text-slate-100 group-hover:text-blue-600 dark:text-blue-400 transition-colors">{record.heatNumber}</span>
-                    <span className="text-[10px] font-bold bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 px-2 py-0.5 rounded-full uppercase">{record.grade}</span>
+                    <span className="text-sm font-black text-slate-800 dark:text-slate-100 group-hover:text-blue-600 dark:hover:text-blue-400 transition-colors">{record.heatNumber}</span>
+                    <span className="text-2xs font-bold bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 px-2 py-0.5 rounded-full uppercase">{record.grade}</span>
                   </div>
                   <div className="flex items-center gap-3 text-xs text-slate-500 dark:text-slate-400 font-medium">
                     <span className="flex items-center gap-1"><Hash className="w-3 h-3" /> {record.plateNumber}</span>
@@ -514,20 +515,20 @@ export const TCManagement: React.FC = () => {
                     </h3>
                     <div className="space-y-3">
                       <div>
-                        <label className="block text-[10px] font-bold text-slate-400 uppercase mb-1">Heat Number *</label>
-                        <input type="text" required value={formData.heatNumber} onChange={e => setFormData({...formData, heatNumber: e.target.value})} className="w-full bg-slate-50 dark:bg-slate-800/50 border-none rounded-xl px-4 py-2.5 text-sm font-bold focus:ring-2 focus:ring-blue-500 outline-none" placeholder="e.g. H12345" />
+                        <label className="field-label mb-1">Heat Number *</label>
+                        <input type="text" required value={formData.heatNumber} onChange={e => setFormData({...formData, heatNumber: upper(e.target.value)})} className="w-full bg-slate-50 dark:bg-slate-800/50 border-none rounded-xl px-4 py-2.5 text-sm font-bold focus:ring-2 focus:ring-blue-500 outline-none" placeholder="e.g. H12345" />
                       </div>
                       <div>
-                        <label className="block text-[10px] font-bold text-slate-400 uppercase mb-1">Plate Number *</label>
-                        <input type="text" required value={formData.plateNumber} onChange={e => setFormData({...formData, plateNumber: e.target.value})} className="w-full bg-slate-50 dark:bg-slate-800/50 border-none rounded-xl px-4 py-2.5 text-sm font-bold focus:ring-2 focus:ring-blue-500 outline-none" placeholder="e.g. P9876" />
+                        <label className="field-label mb-1">Plate Number *</label>
+                        <input type="text" required value={formData.plateNumber} onChange={e => setFormData({...formData, plateNumber: upper(e.target.value)})} className="w-full bg-slate-50 dark:bg-slate-800/50 border-none rounded-xl px-4 py-2.5 text-sm font-bold focus:ring-2 focus:ring-blue-500 outline-none" placeholder="e.g. P9876" />
                       </div>
                       <div>
-                        <label className="block text-[10px] font-bold text-slate-400 uppercase mb-1">TC Number *</label>
-                        <input type="text" required value={formData.tcNumber} onChange={e => setFormData({...formData, tcNumber: e.target.value})} className="w-full bg-slate-50 dark:bg-slate-800/50 border-none rounded-xl px-4 py-2.5 text-sm font-bold focus:ring-2 focus:ring-blue-500 outline-none" placeholder="e.g. TC-2026-001" />
+                        <label className="field-label mb-1">TC Number *</label>
+                        <input type="text" required value={formData.tcNumber} onChange={e => setFormData({...formData, tcNumber: upper(e.target.value)})} className="w-full bg-slate-50 dark:bg-slate-800/50 border-none rounded-xl px-4 py-2.5 text-sm font-bold focus:ring-2 focus:ring-blue-500 outline-none" placeholder="e.g. TC-2026-001" />
                       </div>
                       <div>
-                        <label className="block text-[10px] font-bold text-slate-400 uppercase mb-1">TC Date</label>
-                        <input type="date" value={formData.tcDate} onChange={e => setFormData({...formData, tcDate: e.target.value})} className="w-full bg-slate-50 dark:bg-slate-800/50 border-none rounded-xl px-4 py-2.5 text-sm font-bold focus:ring-2 focus:ring-blue-500 outline-none" />
+                        <label className="field-label mb-1">TC Date</label>
+                        <input type="date" value={formData.tcDate} onChange={e => setFormData({...formData, tcDate: upper(e.target.value)})} className="w-full bg-slate-50 dark:bg-slate-800/50 border-none rounded-xl px-4 py-2.5 text-sm font-bold focus:ring-2 focus:ring-blue-500 outline-none" />
                       </div>
                     </div>
                   </div>
@@ -540,37 +541,37 @@ export const TCManagement: React.FC = () => {
                     <div className="space-y-3">
                       <div className="grid grid-cols-2 gap-2">
                         <div>
-                          <label className="block text-[10px] font-bold text-slate-400 uppercase mb-1">Sales Order No</label>
-                          <input type="text" value={formData.salesOrderNumber} onChange={e => setFormData({...formData, salesOrderNumber: e.target.value})} className="w-full bg-slate-50 dark:bg-slate-800/50 border-none rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-blue-500 outline-none" />
+                          <label className="field-label mb-1">Sales Order No</label>
+                          <input type="text" value={formData.salesOrderNumber} onChange={e => setFormData({...formData, salesOrderNumber: upper(e.target.value)})} className="w-full bg-slate-50 dark:bg-slate-800/50 border-none rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-blue-500 outline-none" />
                         </div>
                         <div>
-                          <label className="block text-[10px] font-bold text-slate-400 uppercase mb-1">SO Date</label>
-                          <input type="date" value={formData.salesOrderDate} onChange={e => setFormData({...formData, salesOrderDate: e.target.value})} className="w-full bg-slate-50 dark:bg-slate-800/50 border-none rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-blue-500 outline-none" />
-                        </div>
-                      </div>
-                      <div className="grid grid-cols-2 gap-2">
-                        <div>
-                          <label className="block text-[10px] font-bold text-slate-400 uppercase mb-1">Purchase Order No</label>
-                          <input type="text" value={formData.purchaseOrderNumber} onChange={e => setFormData({...formData, purchaseOrderNumber: e.target.value})} className="w-full bg-slate-50 dark:bg-slate-800/50 border-none rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-blue-500 outline-none" />
-                        </div>
-                        <div>
-                          <label className="block text-[10px] font-bold text-slate-400 uppercase mb-1">PO Date</label>
-                          <input type="date" value={formData.purchaseOrderDate} onChange={e => setFormData({...formData, purchaseOrderDate: e.target.value})} className="w-full bg-slate-50 dark:bg-slate-800/50 border-none rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-blue-500 outline-none" />
+                          <label className="field-label mb-1">SO Date</label>
+                          <input type="date" value={formData.salesOrderDate} onChange={e => setFormData({...formData, salesOrderDate: upper(e.target.value)})} className="w-full bg-slate-50 dark:bg-slate-800/50 border-none rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-blue-500 outline-none" />
                         </div>
                       </div>
                       <div className="grid grid-cols-2 gap-2">
                         <div>
-                          <label className="block text-[10px] font-bold text-slate-400 uppercase mb-1">Supplier Inv No</label>
-                          <input type="text" value={formData.supplierInvoiceNumber} onChange={e => setFormData({...formData, supplierInvoiceNumber: e.target.value})} className="w-full bg-slate-50 dark:bg-slate-800/50 border-none rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-blue-500 outline-none" />
+                          <label className="field-label mb-1">Purchase Order No</label>
+                          <input type="text" value={formData.purchaseOrderNumber} onChange={e => setFormData({...formData, purchaseOrderNumber: upper(e.target.value)})} className="w-full bg-slate-50 dark:bg-slate-800/50 border-none rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-blue-500 outline-none" />
                         </div>
                         <div>
-                          <label className="block text-[10px] font-bold text-slate-400 uppercase mb-1">Inv Date</label>
-                          <input type="date" value={formData.supplierInvoiceDate} onChange={e => setFormData({...formData, supplierInvoiceDate: e.target.value})} className="w-full bg-slate-50 dark:bg-slate-800/50 border-none rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-blue-500 outline-none" />
+                          <label className="field-label mb-1">PO Date</label>
+                          <input type="date" value={formData.purchaseOrderDate} onChange={e => setFormData({...formData, purchaseOrderDate: upper(e.target.value)})} className="w-full bg-slate-50 dark:bg-slate-800/50 border-none rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-blue-500 outline-none" />
+                        </div>
+                      </div>
+                      <div className="grid grid-cols-2 gap-2">
+                        <div>
+                          <label className="field-label mb-1">Supplier Inv No</label>
+                          <input type="text" value={formData.supplierInvoiceNumber} onChange={e => setFormData({...formData, supplierInvoiceNumber: upper(e.target.value)})} className="w-full bg-slate-50 dark:bg-slate-800/50 border-none rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-blue-500 outline-none" />
+                        </div>
+                        <div>
+                          <label className="field-label mb-1">Inv Date</label>
+                          <input type="date" value={formData.supplierInvoiceDate} onChange={e => setFormData({...formData, supplierInvoiceDate: upper(e.target.value)})} className="w-full bg-slate-50 dark:bg-slate-800/50 border-none rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-blue-500 outline-none" />
                         </div>
                       </div>
                       <div>
-                        <label className="block text-[10px] font-bold text-slate-400 uppercase mb-1">GRN Number</label>
-                        <input type="text" value={formData.grnNumber} onChange={e => setFormData({...formData, grnNumber: e.target.value})} className="w-full bg-slate-50 dark:bg-slate-800/50 border-none rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-blue-500 outline-none" />
+                        <label className="field-label mb-1">GRN Number</label>
+                        <input type="text" value={formData.grnNumber} onChange={e => setFormData({...formData, grnNumber: upper(e.target.value)})} className="w-full bg-slate-50 dark:bg-slate-800/50 border-none rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-blue-500 outline-none" />
                       </div>
                     </div>
                   </div>
@@ -583,10 +584,10 @@ export const TCManagement: React.FC = () => {
                     <div className="space-y-3">
                       <div className="grid grid-cols-2 gap-2">
                         <div>
-                          <label className="block text-[10px] font-bold text-slate-400 uppercase mb-1">Grade</label>
+                          <label className="field-label mb-1">Grade</label>
                           <select 
                             value={formData.grade} 
-                            onChange={e => setFormData({...formData, grade: e.target.value})} 
+                            onChange={e => setFormData({...formData, grade: upper(e.target.value)})} 
                             className="w-full bg-slate-50 dark:bg-slate-800/50 border-none rounded-xl px-4 py-2.5 text-sm font-bold focus:ring-2 focus:ring-blue-500 outline-none"
                           >
                             <option value="">Select Grade</option>
@@ -596,30 +597,30 @@ export const TCManagement: React.FC = () => {
                           </select>
                         </div>
                         <div>
-                          <label className="block text-[10px] font-bold text-slate-400 uppercase mb-1">Thickness</label>
-                          <input type="text" value={formData.thickness} onChange={e => setFormData({...formData, thickness: e.target.value})} className="w-full bg-slate-50 dark:bg-slate-800/50 border-none rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-blue-500 outline-none" placeholder="e.g. 10mm" />
+                          <label className="field-label mb-1">Thickness</label>
+                          <input type="text" value={formData.thickness} onChange={e => setFormData({...formData, thickness: upper(e.target.value)})} className="w-full bg-slate-50 dark:bg-slate-800/50 border-none rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-blue-500 outline-none" placeholder="e.g. 10mm" />
                         </div>
                       </div>
                       <div className="grid grid-cols-2 gap-2">
                         <div>
-                          <label className="block text-[10px] font-bold text-slate-400 uppercase mb-1">Width (mm)</label>
-                          <input type="text" value={formData.width} onChange={e => setFormData({...formData, width: e.target.value})} className="w-full bg-slate-50 dark:bg-slate-800/50 border-none rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-blue-500 outline-none" />
+                          <label className="field-label mb-1">Width (mm)</label>
+                          <input type="text" value={formData.width} onChange={e => setFormData({...formData, width: upper(e.target.value)})} className="w-full bg-slate-50 dark:bg-slate-800/50 border-none rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-blue-500 outline-none" />
                         </div>
                         <div>
-                          <label className="block text-[10px] font-bold text-slate-400 uppercase mb-1">Length (mm)</label>
-                          <input type="text" value={formData.length} onChange={e => setFormData({...formData, length: e.target.value})} className="w-full bg-slate-50 dark:bg-slate-800/50 border-none rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-blue-500 outline-none" />
+                          <label className="field-label mb-1">Length (mm)</label>
+                          <input type="text" value={formData.length} onChange={e => setFormData({...formData, length: upper(e.target.value)})} className="w-full bg-slate-50 dark:bg-slate-800/50 border-none rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-blue-500 outline-none" />
                         </div>
                       </div>
                       <div className="grid grid-cols-2 gap-2">
                         <div>
-                          <label className="block text-[10px] font-bold text-slate-400 uppercase mb-1">Plate Wt (Kg)</label>
-                          <input type="text" value={formData.plateWeight} onChange={e => setFormData({...formData, plateWeight: e.target.value})} className="w-full bg-slate-50 dark:bg-slate-800/50 border-none rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-blue-500 outline-none" />
+                          <label className="field-label mb-1">Plate Wt (Kg)</label>
+                          <input type="text" value={formData.plateWeight} onChange={e => setFormData({...formData, plateWeight: upper(e.target.value)})} className="w-full bg-slate-50 dark:bg-slate-800/50 border-none rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-blue-500 outline-none" />
                         </div>
                         <div>
-                          <label className="block text-[10px] font-bold text-slate-400 uppercase mb-1">Make / Company</label>
+                          <label className="field-label mb-1">Make / Company</label>
                           <select 
                             value={formData.make} 
-                            onChange={e => setFormData({...formData, make: e.target.value})} 
+                            onChange={e => setFormData({...formData, make: upper(e.target.value)})} 
                             className="w-full bg-slate-50 dark:bg-slate-800/50 border-none rounded-xl px-4 py-2.5 text-sm font-bold focus:ring-2 focus:ring-blue-500 outline-none"
                           >
                             <option value="">Select Make</option>
@@ -636,8 +637,8 @@ export const TCManagement: React.FC = () => {
                         </div>
                       </div>
                       <div>
-                        <label className="block text-[10px] font-bold text-slate-400 uppercase mb-1">Standard / Specification</label>
-                        <input type="text" value={formData.standard} onChange={e => setFormData({...formData, standard: e.target.value})} className="w-full bg-slate-50 dark:bg-slate-800/50 border-none rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-blue-500 outline-none" placeholder="e.g. ASTM A36" />
+                        <label className="field-label mb-1">Standard / Specification</label>
+                        <input type="text" value={formData.standard} onChange={e => setFormData({...formData, standard: upper(e.target.value)})} className="w-full bg-slate-50 dark:bg-slate-800/50 border-none rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-blue-500 outline-none" placeholder="e.g. ASTM A36" />
                       </div>
                     </div>
                   </div>
@@ -649,7 +650,7 @@ export const TCManagement: React.FC = () => {
                     <Printer className="w-4 h-4" /> Attachments
                   </h3>
                   <div className="flex items-center gap-4">
-                    <label className="flex-1 flex flex-col items-center justify-center border-2 border-dashed border-slate-200 dark:border-slate-700 rounded-2xl p-6 hover:border-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/30 dark:bg-blue-900/30 transition-all cursor-pointer group">
+                    <label className="flex-1 flex flex-col items-center justify-center border-2 border-dashed border-slate-200 dark:border-slate-700 rounded-2xl p-6 hover:border-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/30 transition-all cursor-pointer group">
                       <Download className="w-8 h-8 text-slate-300 group-hover:text-blue-500 mb-2" />
                       <span className="text-sm font-bold text-slate-600 dark:text-slate-300">
                         {formData.pdfName ? formData.pdfName : 'Upload TC PDF or Photo'}
@@ -699,7 +700,7 @@ export const TCManagement: React.FC = () => {
                 </div>
 
                 <div className="flex items-center justify-end gap-3 pt-4">
-                  <button type="button" onClick={() => setIsAdding(false)} className="px-8 py-3 rounded-2xl text-sm font-bold text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/50 dark:bg-slate-800/50 transition-colors">Cancel</button>
+                  <button type="button" onClick={() => setIsAdding(false)} className="px-8 py-3 rounded-2xl text-sm font-bold text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">Cancel</button>
                   <button type="submit" className="px-10 py-3 rounded-2xl text-sm font-bold bg-blue-600 hover:bg-blue-700 text-white shadow-lg shadow-blue-200 transition-all active:scale-95 flex items-center gap-2">
                     {selectedTC ? <CheckCircle2 className="w-4 h-4" /> : <Plus className="w-4 h-4" />}
                     {selectedTC ? 'Update Record' : 'Save TC Master'}
@@ -751,9 +752,9 @@ export const TCManagement: React.FC = () => {
                       <MessageSquare className="w-4 h-4" />
                       WhatsApp TC
                     </button>
-                    <button onClick={() => handleEdit(selectedTC)} className="p-2 text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/30 dark:bg-blue-900/30 rounded-xl transition-colors" title="Edit Record"><Edit3 className="w-5 h-5" /></button>
-                    <button onClick={() => handleDelete(selectedTC.id)} className="p-2 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/30 dark:bg-red-900/30 rounded-xl transition-colors" title="Delete Record"><Trash2 className="w-5 h-5" /></button>
-                    <button className="p-2 text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 dark:bg-slate-800 rounded-xl transition-colors" title="Print TC"><Printer className="w-5 h-5" /></button>
+                    <button onClick={() => handleEdit(selectedTC)} className="p-2 text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded-xl transition-colors" title="Edit Record"><Edit3 className="w-5 h-5" /></button>
+                    <button onClick={() => handleDelete(selectedTC.id)} className="p-2 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-xl transition-colors" title="Delete Record"><Trash2 className="w-5 h-5" /></button>
+                    <button className="p-2 text-slate-400 hover:bg-slate-100 dark:bg-slate-800 rounded-xl transition-colors" title="Print TC"><Printer className="w-5 h-5" /></button>
                   </div>
                 </div>
 
@@ -778,7 +779,7 @@ export const TCManagement: React.FC = () => {
                   </h3>
                   <button 
                     onClick={() => handleResendEmail(selectedTC)}
-                    className="flex items-center gap-2 text-xs font-bold text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/30 dark:bg-blue-900/30 px-4 py-2 rounded-xl transition-all"
+                    className="flex items-center gap-2 text-xs font-bold text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/30 px-4 py-2 rounded-xl transition-all"
                   >
                     <Send className="w-4 h-4" />
                     Resend Email to All
@@ -788,7 +789,7 @@ export const TCManagement: React.FC = () => {
                 <div className="overflow-x-auto">
                   <table className="w-full text-left">
                     <thead>
-                      <tr className="bg-slate-50/50 dark:bg-slate-800/50 text-[10px] font-black text-slate-400 uppercase tracking-widest border-b border-slate-50">
+                      <tr className="bg-slate-50/50 dark:bg-slate-800/50 text-2xs font-black text-slate-400 uppercase tracking-widest border-b border-slate-50">
                         <th className="px-6 py-4">Party Name</th>
                         <th className="px-6 py-4">Date of Dispatch</th>
                         <th className="px-6 py-4">SO Number</th>
@@ -799,14 +800,14 @@ export const TCManagement: React.FC = () => {
                     </thead>
                     <tbody className="divide-y divide-slate-50">
                       {selectedTC.dispatchHistory.map((history, idx) => (
-                        <tr key={idx} className="hover:bg-slate-50/30 dark:hover:bg-slate-800/50 dark:bg-slate-800/30 transition-colors">
+                        <tr key={idx} className="hover:bg-slate-50/30 dark:hover:bg-slate-800/50 transition-colors">
                           <td className="px-6 py-4 font-bold text-slate-800 dark:text-slate-100 text-sm">{history.partyName}</td>
                           <td className="px-6 py-4 text-xs font-medium text-slate-500 dark:text-slate-400">{history.dispatchDate}</td>
                           <td className="px-6 py-4 text-xs font-bold text-slate-700 dark:text-slate-200">{history.salesOrderNumber}</td>
                           <td className="px-6 py-4 text-xs font-mono text-slate-500 dark:text-slate-400">{history.tcNumber}</td>
                           <td className="px-6 py-4">
                             <span className={cn(
-                              "px-2 py-1 rounded-full text-[9px] font-black uppercase tracking-tighter",
+                              "px-2 py-1 rounded-full text-3xs font-black uppercase tracking-tighter",
                               history.emailStatus === 'Sent' ? "bg-emerald-100 text-emerald-700 dark:text-emerald-400" : "bg-amber-100 text-amber-700"
                             )}>
                               {history.emailStatus}
@@ -815,7 +816,7 @@ export const TCManagement: React.FC = () => {
                           <td className="px-6 py-4 text-right">
                             <button 
                               onClick={() => handleResendEmail(selectedTC)}
-                              className="text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:text-blue-300 text-xs font-bold"
+                              className="text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 text-xs font-bold"
                             >
                               Resend
                             </button>
@@ -833,7 +834,7 @@ export const TCManagement: React.FC = () => {
               </div>
             </div>
           ) : (
-            <div className="h-full flex flex-col items-center justify-center p-12 bg-white dark:bg-slate-900 rounded-3xl shadow-sm border border-slate-100 dark:border-slate-800 text-center border-dashed border-2 border-slate-200 dark:border-slate-700">
+            <div className="h-full flex flex-col items-center justify-center p-12 bg-white dark:bg-slate-900 rounded-3xl shadow-sm text-center border-dashed border-2 border-slate-200 dark:border-slate-700">
               <div className="w-20 h-20 bg-slate-50 dark:bg-slate-800/50 rounded-full flex items-center justify-center mb-4">
                 <FileSearch className="w-10 h-10 text-slate-300" />
               </div>
@@ -853,7 +854,7 @@ export const TCManagement: React.FC = () => {
 
     {/* Email Modal */}
     {showMailModal && (
-      <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in">
+      <div className="fixed inset-0 z-100 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in">
         <div className="bg-white dark:bg-slate-900 w-full max-w-lg rounded-[2.5rem] shadow-2xl overflow-hidden slide-up">
           <div className="bg-emerald-600 p-8 text-white">
             <div className="flex justify-between items-center mb-2">
@@ -871,7 +872,7 @@ export const TCManagement: React.FC = () => {
           <div className="p-8 space-y-6">
             <div className="space-y-4">
               <div>
-                <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5">Recipient Email *</label>
+                <label className="block text-2xs font-black text-slate-400 uppercase tracking-widest mb-1.5">Recipient Email *</label>
                 <div className="relative">
                   <input 
                     type="email" 
@@ -885,21 +886,21 @@ export const TCManagement: React.FC = () => {
               </div>
               
               <div>
-                <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5">Subject</label>
+                <label className="block text-2xs font-black text-slate-400 uppercase tracking-widest mb-1.5">Subject</label>
                 <input 
                   type="text" 
                   value={mailData.subject}
-                  onChange={e => setMailData({...mailData, subject: e.target.value})}
+                  onChange={e => setMailData({...mailData, subject: upper(e.target.value)})}
                   className="w-full bg-slate-50 dark:bg-slate-800/50 border-none rounded-2xl px-4 py-3 text-sm font-bold focus:ring-2 focus:ring-emerald-500 outline-none"
                 />
               </div>
               
               <div>
-                <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5">Message</label>
+                <label className="block text-2xs font-black text-slate-400 uppercase tracking-widest mb-1.5">Message</label>
                 <textarea 
                   rows={4}
                   value={mailData.message}
-                  onChange={e => setMailData({...mailData, message: e.target.value})}
+                  onChange={e => setMailData({...mailData, message: upper(e.target.value)})}
                   className="w-full bg-slate-50 dark:bg-slate-800/50 border-none rounded-2xl px-4 py-3 text-sm font-medium focus:ring-2 focus:ring-emerald-500 outline-none resize-none"
                 />
               </div>
@@ -910,7 +911,7 @@ export const TCManagement: React.FC = () => {
                 </div>
                 <div className="flex-1 min-w-0">
                   <p className="text-xs font-black text-emerald-900 truncate">{selectedTC?.pdfName || `Generated_TC_${selectedTC?.heatNumber}.pdf`}</p>
-                  <p className="text-[10px] text-emerald-600 dark:text-emerald-400 font-bold uppercase tracking-wider">{selectedTC?.pdfData ? 'Ready as Attachment' : 'Auto-Generated Attachment'}</p>
+                  <p className="text-2xs text-emerald-600 dark:text-emerald-400 font-bold uppercase tracking-wider">{selectedTC?.pdfData ? 'Ready as Attachment' : 'Auto-Generated Attachment'}</p>
                 </div>
               </div>
             </div>
@@ -918,7 +919,7 @@ export const TCManagement: React.FC = () => {
             <div className="flex gap-3">
               <button 
                 onClick={() => setShowMailModal(false)}
-                className="flex-1 py-4 rounded-2xl text-sm font-black text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/50 dark:bg-slate-800/50 transition-colors"
+                className="flex-1 py-4 rounded-2xl text-sm font-black text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors"
               >
                 Cancel
               </button>
@@ -937,7 +938,7 @@ export const TCManagement: React.FC = () => {
 
     {/* WhatsApp Modal */}
     {showWhatsAppModal && (
-      <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in">
+      <div className="fixed inset-0 z-100 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in">
         <div className="bg-white dark:bg-slate-900 w-full max-w-lg rounded-[2.5rem] shadow-2xl overflow-hidden slide-up">
           <div className="bg-green-600 p-8 text-white">
             <div className="flex justify-between items-center mb-2">
@@ -968,7 +969,7 @@ export const TCManagement: React.FC = () => {
               <>
                 <div className="space-y-4">
                   <div>
-                    <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5">WhatsApp Number *</label>
+                    <label className="block text-2xs font-black text-slate-400 uppercase tracking-widest mb-1.5">WhatsApp Number *</label>
                     <input 
                       type="text" 
                       required
@@ -980,11 +981,11 @@ export const TCManagement: React.FC = () => {
                   </div>
                   
                   <div>
-                    <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5">Message Caption</label>
+                    <label className="block text-2xs font-black text-slate-400 uppercase tracking-widest mb-1.5">Message Caption</label>
                     <textarea 
                       rows={5}
                       value={whatsAppData.message}
-                      onChange={e => setWhatsAppData({...whatsAppData, message: e.target.value})}
+                      onChange={e => setWhatsAppData({...whatsAppData, message: upper(e.target.value)})}
                       className="w-full bg-slate-50 dark:bg-slate-800/50 border-none rounded-2xl px-4 py-3 text-sm font-medium focus:ring-2 focus:ring-green-500 outline-none resize-none"
                     />
                   </div>
@@ -995,7 +996,7 @@ export const TCManagement: React.FC = () => {
                     </div>
                     <div className="flex-1 min-w-0">
                       <p className="text-xs font-black text-green-900 truncate">{selectedTC?.pdfName || `Generated_TC_${selectedTC?.heatNumber}.pdf`}</p>
-                      <p className="text-[10px] text-green-600 font-bold uppercase tracking-wider">{selectedTC?.pdfData ? 'Ready for WhatsApp' : 'Auto-Generated Attachment'}</p>
+                      <p className="text-2xs text-green-600 font-bold uppercase tracking-wider">{selectedTC?.pdfData ? 'Ready for WhatsApp' : 'Auto-Generated Attachment'}</p>
                     </div>
                   </div>
                 </div>
@@ -1003,7 +1004,7 @@ export const TCManagement: React.FC = () => {
                 <div className="flex gap-3">
                   <button 
                     onClick={() => setShowWhatsAppModal(false)}
-                    className="flex-1 py-4 rounded-2xl text-sm font-black text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/50 dark:bg-slate-800/50 transition-colors"
+                    className="flex-1 py-4 rounded-2xl text-sm font-black text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors"
                   >
                     Cancel
                   </button>
@@ -1046,7 +1047,7 @@ export const TCManagement: React.FC = () => {
 
     {/* Global WhatsApp Connection Modal */}
     {showGlobalWAModal && (
-      <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in">
+      <div className="fixed inset-0 z-100 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in">
         <div className="bg-white dark:bg-slate-900 w-full max-w-md rounded-[2.5rem] shadow-2xl overflow-hidden slide-up border border-slate-100 dark:border-slate-800 transition-colors">
           <div className="bg-green-600 p-8 text-white">
             <div className="flex justify-between items-center">
@@ -1064,7 +1065,7 @@ export const TCManagement: React.FC = () => {
           <div className="p-8 space-y-6 bg-white dark:bg-slate-900 transition-colors">
             <div className="flex items-center justify-between p-4 bg-slate-50 dark:bg-slate-800/50 rounded-2xl border border-slate-100 dark:border-slate-800">
               <div>
-                <p className="text-[10px] font-black text-slate-400 dark:text-slate-500 dark:text-slate-400 uppercase tracking-widest">Connection Status</p>
+                <p className="meta-10">Connection Status</p>
                 <p className={cn(
                   "text-lg font-black mt-0.5",
                   waStatus === 'CONNECTED' ? "text-green-600 dark:text-green-400" :
@@ -1109,7 +1110,7 @@ export const TCManagement: React.FC = () => {
                   <button 
                     onClick={handleWaDisconnect} 
                     disabled={isWaLoading}
-                    className="flex-1 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-200 dark:bg-slate-800 dark:text-slate-350 py-3 rounded-xl text-xs font-bold transition-all"
+                    className="flex-1 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300 py-3 rounded-xl text-xs font-bold transition-all"
                   >
                     Reset/Disconnect
                   </button>
@@ -1124,7 +1125,7 @@ export const TCManagement: React.FC = () => {
             ) : (
               <div className="text-center space-y-4">
                 <div className="w-20 h-20 bg-slate-50 dark:bg-slate-800 rounded-full flex items-center justify-center mx-auto">
-                  <MessageSquare className="w-10 h-10 text-slate-400 dark:text-slate-500 dark:text-slate-400" />
+                  <MessageSquare className="w-10 h-10 text-slate-400 dark:text-slate-500" />
                 </div>
                 <div>
                   <h4 className="text-lg font-bold text-slate-800 dark:text-slate-100">WhatsApp is Disconnected</h4>
@@ -1141,7 +1142,7 @@ export const TCManagement: React.FC = () => {
                   {(waStatus === 'INITIALIZING' || isWaLoading) && (
                     <button 
                       onClick={handleWaDisconnect}
-                      className="px-4 bg-slate-100 dark:bg-slate-850 text-slate-650 dark:text-slate-300 py-4 rounded-2xl text-sm font-bold"
+                      className="px-4 bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-300 py-4 rounded-2xl text-sm font-bold"
                     >
                       Cancel
                     </button>
@@ -1161,7 +1162,7 @@ const DetailCard: React.FC<{ icon: any, label: string, value: string, variant?: 
   <div className="space-y-1.5">
     <div className="flex items-center gap-2 text-slate-400">
       <Icon className="w-3.5 h-3.5" />
-      <span className="text-[10px] font-bold uppercase tracking-widest">{label}</span>
+      <span className="text-2xs font-bold uppercase tracking-widest">{label}</span>
     </div>
     <p className={cn(
       "text-sm font-black",

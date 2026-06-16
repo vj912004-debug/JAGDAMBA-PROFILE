@@ -3,6 +3,7 @@ import { Calculator, Plus, Trash2, Printer, RotateCcw, User, Ruler, Scissors, Se
 import { useAppContext, type CNCQuotationRecord, MATERIAL_GRADES } from '../store/AppContext';
 import toast from 'react-hot-toast';
 import { EditableSelect } from '../components/EditableSelect';
+import { upper } from '../utils/textCase';
 
 interface CNCItem {
   id: string;
@@ -125,9 +126,11 @@ export const CNCQuotation: React.FC = () => {
   };
 
   const updateItem = (id: string, field: keyof CNCItem, value: any) => {
+    const enumFields: (keyof CNCItem)[] = ['shape', 'piercingType'];
+    const normalized = typeof value === 'string' && !enumFields.includes(field) ? upper(value) : value;
     setItems(prev => prev.map((item: CNCItem) => {
       if (item.id === id) {
-        let updated = { ...item, [field]: value };
+        let updated = { ...item, [field]: normalized };
         
         // Auto-update burning loss factor when thickness changes
         if (field === 'thickness') {
@@ -252,7 +255,7 @@ export const CNCQuotation: React.FC = () => {
         <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-800 overflow-hidden">
           <table className="w-full text-left border-collapse whitespace-nowrap">
             <thead>
-              <tr className="bg-slate-50 dark:bg-slate-800/50 text-[10px] uppercase font-black text-slate-500 dark:text-slate-400">
+              <tr className="bg-slate-50 dark:bg-slate-800/50 text-2xs uppercase font-black text-slate-500 dark:text-slate-400">
                 <th className="p-4">Quote No</th>
                 <th className="p-4">Party Name</th>
                 <th className="p-4">Date</th>
@@ -263,18 +266,18 @@ export const CNCQuotation: React.FC = () => {
             </thead>
             <tbody className="divide-y divide-slate-50">
               {filteredQuotations.map((q: CNCQuotationRecord) => (
-                <tr key={q.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/50 dark:bg-slate-800/50 transition-all">
+                <tr key={q.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-all">
                   <td className="p-4 font-mono font-bold text-blue-600 dark:text-blue-400">{q.quoteNo}</td>
                   <td className="p-4">
                     <p className="font-bold text-slate-800 dark:text-slate-100">{q.partyName}</p>
-                    <p className="text-[10px] text-slate-400">{q.mobileNo}</p>
+                    <p className="text-2xs text-slate-400">{q.mobileNo}</p>
                   </td>
                   <td className="p-4 text-sm text-slate-600 dark:text-slate-300">{q.date}</td>
                   <td className="p-4 text-sm text-slate-600 dark:text-slate-300">{q.items.length} Parts</td>
                   <td className="p-4 font-bold text-slate-800 dark:text-slate-100">₹{q.grandTotal.toLocaleString()}</td>
                   <td className="p-4 text-right space-x-2">
-                    <button onClick={() => loadQuotation(q)} className="text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/30 dark:bg-blue-900/30 px-2 py-1 rounded text-xs font-bold transition-all">Edit</button>
-                    <button onClick={() => deleteCNCQuotation(q.id)} className="text-red-500 hover:bg-red-50 dark:hover:bg-red-900/30 dark:bg-red-900/30 px-2 py-1 rounded text-xs font-bold transition-all">Delete</button>
+                    <button onClick={() => loadQuotation(q)} className="text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/30 px-2 py-1 rounded text-xs font-bold transition-all">Edit</button>
+                    <button onClick={() => deleteCNCQuotation(q.id)} className="text-red-500 hover:bg-red-50 dark:hover:bg-red-900/30 px-2 py-1 rounded text-xs font-bold transition-all">Delete</button>
                   </td>
                 </tr>
               ))}
@@ -302,10 +305,10 @@ export const CNCQuotation: React.FC = () => {
           <p className="text-sm text-slate-500 dark:text-slate-400 mt-0.5">Specialized pricing for CNC Profile cutting</p>
         </div>
         <div className="flex gap-2">
-          <button onClick={() => setViewMode('list')} className="flex items-center gap-2 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 px-4 py-2 rounded-xl text-sm font-semibold hover:bg-slate-200 dark:bg-slate-700 transition-all">
+          <button onClick={() => setViewMode('list')} className="flex items-center gap-2 bg-slate-100 text-slate-600 dark:text-slate-300 px-4 py-2 rounded-xl text-sm font-semibold hover:bg-slate-200 dark:bg-slate-700 transition-all">
             <List className="w-4 h-4" /> Saved Quotes
           </button>
-          <button onClick={handleReset} className="flex items-center gap-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 px-4 py-2 rounded-xl text-sm font-semibold hover:bg-slate-50 dark:hover:bg-slate-800/50 dark:bg-slate-800/50 transition-all">
+          <button onClick={handleReset} className="flex items-center gap-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 px-4 py-2 rounded-xl text-sm font-semibold hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-all">
             <RotateCcw className="w-4 h-4" /> Reset
           </button>
           <button onClick={handleSave} className="flex items-center gap-2 bg-emerald-600 text-white px-5 py-2 rounded-xl text-sm font-semibold hover:bg-emerald-700 transition-all shadow-md">
@@ -327,32 +330,32 @@ export const CNCQuotation: React.FC = () => {
             </h2>
             <div className="space-y-4">
               <div>
-                <label className="block text-xs font-bold text-slate-400 uppercase mb-1">Customer Name</label>
-                <input type="text" value={partyName} onChange={(e) => setPartyName(e.target.value)} className="w-full bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-lg px-3 py-2 text-sm" placeholder="Party Name" />
+                <label className="field-label-sm mb-1">Customer Name</label>
+                <input type="text" value={partyName} onChange={(e) => setPartyName(upper(e.target.value))} className="w-full bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-lg px-3 py-2 text-sm" placeholder="Party Name" />
               </div>
               <div>
-                <label className="block text-xs font-bold text-slate-400 uppercase mb-1">Contact / Mobile</label>
-                <input type="text" value={mobileNo} onChange={(e) => setMobileNo(e.target.value)} className="w-full bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-lg px-3 py-2 text-sm" placeholder="7359604778" />
+                <label className="field-label-sm mb-1">Contact / Mobile</label>
+                <input type="text" value={mobileNo} onChange={(e) => setMobileNo(e.target.value)} className="w-full bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-lg px-3 py-2 text-sm no-uppercase" placeholder="7359604778" />
               </div>
               <div>
-                <label className="block text-xs font-bold text-slate-400 uppercase mb-1">Quotation No</label>
-                <input type="text" value={quoteNo} onChange={(e) => setQuoteNo(e.target.value)} className="w-full bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-lg px-3 py-2 text-sm font-mono" />
+                <label className="field-label-sm mb-1">Quotation No</label>
+                <input type="text" value={quoteNo} onChange={(e) => setQuoteNo(upper(e.target.value))} className="w-full bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-lg px-3 py-2 text-sm font-mono" />
               </div>
               <div>
-                <label className="block text-xs font-bold text-slate-400 uppercase mb-1">Date</label>
+                <label className="field-label-sm mb-1">Date</label>
                 <input type="date" value={date} onChange={(e) => setDate(e.target.value)} className="w-full bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-lg px-3 py-2 text-sm" />
               </div>
             </div>
           </div>
 
-          <div className="bg-gradient-to-br from-slate-800 to-slate-900 rounded-2xl p-6 text-white shadow-lg">
+          <div className="card-primary-dark rounded-2xl p-6 text-white shadow-lg">
             <div className="flex items-center gap-3 mb-6">
               <div className="w-10 h-10 bg-white dark:bg-slate-900/10 rounded-xl flex items-center justify-center">
                 <Calculator className="w-6 h-6" />
               </div>
               <div>
                 <h3 className="text-sm font-bold uppercase tracking-wider">Summary</h3>
-                <p className="text-[10px] opacity-60">Final CNC Quote</p>
+                <p className="text-2xs opacity-60">Final CNC Quote</p>
               </div>
             </div>
             <div className="space-y-4">
@@ -428,7 +431,7 @@ export const CNCQuotation: React.FC = () => {
                           onChange={(v) => updateItem(item.id, 'grade', v)} 
                           options={MATERIAL_GRADES}
                           placeholder="GRADE"
-                          className="w-28 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded px-1.5 py-0.5 text-[10px] uppercase font-bold text-slate-700 dark:text-slate-200 outline-none"
+                          className="w-28 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded px-1.5 py-0.5 text-2xs uppercase font-bold text-slate-700 dark:text-slate-200 outline-none"
                         />
                       </div>
                     </td>
@@ -438,11 +441,11 @@ export const CNCQuotation: React.FC = () => {
                     <td className="p-3 border-r">
                       <div className="flex flex-col gap-1">
                         <div className="flex items-center gap-1">
-                          <span className="text-[10px] font-bold text-slate-400">QTY</span>
+                          <span className="text-2xs font-bold text-slate-400">QTY</span>
                           <input type="number" value={item.plateNos ?? ''} onChange={(e) => updateItem(item.id, 'plateNos', e.target.value)} className="w-16 bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded px-2 py-1 text-sm font-bold" />
                         </div>
                         <div className="flex items-center gap-1">
-                          <span className="text-[10px] font-bold text-slate-400">RATE</span>
+                          <span className="text-2xs font-bold text-slate-400">RATE</span>
                           <input type="number" value={item.plateRate ?? ''} onChange={(e) => updateItem(item.id, 'plateRate', e.target.value)} className="w-full bg-emerald-50 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 font-bold rounded px-1.5 py-0.5" />
                         </div>
                       </div>
@@ -546,7 +549,7 @@ export const CNCQuotation: React.FC = () => {
                     </td>
                     <td className="p-3 border-r bg-emerald-50/30 dark:bg-emerald-900/30">
                       <span className="text-sm font-black text-emerald-700 dark:text-emerald-400">₹{item.finalRate.toLocaleString()}</span>
-                      <p className="text-[10px] text-slate-400 uppercase font-bold">Per Part</p>
+                      <p className="text-2xs text-slate-400 uppercase font-bold">Per Part</p>
                     </td>
                     <td className="p-3 text-right font-black">
                       ₹{item.amount.toLocaleString()}
@@ -554,7 +557,7 @@ export const CNCQuotation: React.FC = () => {
                     <td className="p-3 text-center print:hidden">
                       <button 
                         onClick={() => removeItem(item.id)} 
-                        className="p-2 text-slate-400 hover:text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30 dark:bg-red-900/30 rounded-xl transition-all shadow-sm group"
+                        className="p-2 text-slate-400 hover:text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-xl transition-all shadow-sm group"
                         title="Remove Item"
                       >
                         <Trash2 className="w-5 h-5 group-hover:scale-110 transition-transform" />
@@ -605,7 +608,7 @@ export const CNCQuotation: React.FC = () => {
       </div>
 
       {/* Formal Print Format for CNC */}
-      <div id="cnc-quotation-print-area" className="hidden print:block fixed inset-0 bg-white dark:bg-slate-900 p-0 m-0 z-[9999] overflow-visible">
+      <div id="cnc-quotation-print-area" className="hidden print:block fixed inset-0 bg-white dark:bg-slate-900 p-0 m-0 overflow-visible">
         <style dangerouslySetInnerHTML={{ __html: `
           @page { size: A4 landscape; margin: 10mm 10mm; }
           body { font-family: Arial, sans-serif; color: #000; background: #fff; font-size: 9pt; line-height: 1.3; }

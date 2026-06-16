@@ -157,18 +157,18 @@ export const ChallanPage: React.FC = () => {
           <table className="w-full text-left border-collapse whitespace-nowrap">
             <thead>
               <tr className="bg-slate-50 border-b border-slate-100">
-                <th className="p-3 text-[10px] font-bold tracking-wider text-slate-500 uppercase">Challan No</th>
-                <th className="p-3 text-[10px] font-bold tracking-wider text-slate-500 uppercase">Date</th>
-                <th className="p-3 text-[10px] font-bold tracking-wider text-slate-500 uppercase">Order</th>
-                <th className="p-3 text-[10px] font-bold tracking-wider text-slate-500 uppercase">Party</th>
-                <th className="p-3 text-[10px] font-bold tracking-wider text-slate-500 uppercase">Taxable (₹)</th>
-                <th className="p-3 text-[10px] font-bold tracking-wider text-slate-500 uppercase">GST (₹)</th>
-                <th className="p-3 text-[10px] font-bold tracking-wider text-slate-500 uppercase">Total (₹)</th>
-                <th className="p-3 text-[10px] font-bold tracking-wider text-slate-500 uppercase">Paid (₹)</th>
-                <th className="p-3 text-[10px] font-bold tracking-wider text-slate-500 uppercase">Balance (₹)</th>
-                <th className="p-3 text-[10px] font-bold tracking-wider text-slate-500 uppercase">Due Date</th>
-                <th className="p-3 text-[10px] font-bold tracking-wider text-slate-500 uppercase text-center">Status</th>
-                <th className="p-3 text-[10px] font-bold tracking-wider text-slate-500 uppercase text-center">Actions</th>
+                <th className="p-3 text-2xs font-bold tracking-wider text-slate-500 uppercase">Challan No</th>
+                <th className="p-3 text-2xs font-bold tracking-wider text-slate-500 uppercase">Date</th>
+                <th className="p-3 text-2xs font-bold tracking-wider text-slate-500 uppercase">Order</th>
+                <th className="p-3 text-2xs font-bold tracking-wider text-slate-500 uppercase">Party</th>
+                <th className="p-3 text-2xs font-bold tracking-wider text-slate-500 uppercase">Taxable (₹)</th>
+                <th className="p-3 text-2xs font-bold tracking-wider text-slate-500 uppercase">GST (₹)</th>
+                <th className="p-3 text-2xs font-bold tracking-wider text-slate-500 uppercase">Total (₹)</th>
+                <th className="p-3 text-2xs font-bold tracking-wider text-slate-500 uppercase">Paid (₹)</th>
+                <th className="p-3 text-2xs font-bold tracking-wider text-slate-500 uppercase">Balance (₹)</th>
+                <th className="p-3 text-2xs font-bold tracking-wider text-slate-500 uppercase">Due Date</th>
+                <th className="p-3 text-2xs font-bold tracking-wider text-slate-500 uppercase text-center">Status</th>
+                <th className="p-3 text-2xs font-bold tracking-wider text-slate-500 uppercase text-center">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
@@ -198,7 +198,7 @@ export const ChallanPage: React.FC = () => {
                     <button
                       onClick={() => toggleStatus(item.id)}
                       disabled={!canEdit}
-                      className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold transition-colors cursor-pointer disabled:cursor-default ${item.status === 'Done' ? 'bg-emerald-100 text-emerald-700 hover:bg-emerald-200' : 'bg-amber-100 text-amber-700 hover:bg-amber-200'}`}
+                      className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-2xs font-bold transition-colors cursor-pointer disabled:cursor-default ${item.status === 'Done' ? 'bg-emerald-100 text-emerald-700 hover:bg-emerald-200' : 'bg-amber-100 text-amber-700 hover:bg-amber-200'}`}
                     >
                       {item.status === 'Done' ? <CheckCircle className="w-3 h-3" /> : <Clock className="w-3 h-3" />}
                       {item.status}

@@ -87,7 +87,7 @@ export const Sidebar: React.FC = () => {
         <h1 className="text-lg font-black bg-gradient-to-r from-blue-700 to-sky-500 bg-clip-text text-transparent tracking-tighter">
           JAGDAMBA PROFILE
         </h1>
-        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Steel Cutting ERP</p>
+        <p className="text-2xs font-bold text-slate-400 uppercase tracking-widest">Steel Cutting ERP</p>
       </div>
 
       {/* Navigation */}
@@ -98,7 +98,7 @@ export const Sidebar: React.FC = () => {
 
           return (
             <div key={section.title} className="space-y-1.5">
-              <h3 className="px-3 text-[10px] font-extrabold text-slate-400 uppercase tracking-[0.15em] mb-2">
+              <h3 className="px-3 text-2xs font-extrabold text-slate-400 uppercase tracking-[0.15em] mb-2">
                 {section.title}
               </h3>
               <div className="space-y-1">
@@ -137,7 +137,7 @@ export const Sidebar: React.FC = () => {
           </div>
           <div>
             <p className="text-xs font-bold text-slate-700">{role}</p>
-            <p className="text-[10px] text-slate-400">v2.0 Stable</p>
+            <p className="text-2xs text-slate-400">v2.0 Stable</p>
           </div>
         </div>
       </div>
@@ -152,7 +152,7 @@ const NotificationBadge: React.FC = () => {
   if (alertCount === 0) return null;
   
   return (
-    <span className="flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-[10px] font-black text-white animate-pulse">
+    <span className="flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-2xs font-black text-white animate-pulse">
       {alertCount > 9 ? '9+' : alertCount}
     </span>
   );

@@ -177,11 +177,11 @@ export const PartyAutocomplete: React.FC<PartyAutocompleteProps> = ({
       {isOpen && dropdownItems.length > 0 && (
         <div className="absolute left-0 right-0 mt-1.5 max-h-60 overflow-y-auto z-50 bg-white border border-slate-200 rounded-xl shadow-xl divide-y divide-slate-100 transition-all">
           <div className="px-3 py-1.5 bg-slate-50 flex items-center justify-between">
-            <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-1.5">
+            <span className="text-2xs font-black text-slate-400 uppercase tracking-widest flex items-center gap-1.5">
               <Building2 className="w-3.5 h-3.5" />
               List of Ledgers (Tally Prime)
             </span>
-            <span className="text-[9px] font-medium text-slate-400 tracking-wider">
+            <span className="text-3xs font-medium text-slate-400 tracking-wider">
               Arrows/Enter to select
             </span>
           </div>
@@ -206,7 +206,7 @@ export const PartyAutocomplete: React.FC<PartyAutocompleteProps> = ({
                     <span className="font-bold flex items-center justify-between">
                       {item.data.partyName}
                       <span className={cn(
-                        "text-[9px] px-1.5 py-0.5 rounded-md",
+                        "text-3xs px-1.5 py-0.5 rounded-md",
                         isHighlighted 
                           ? "bg-blue-500 text-white" 
                           : "bg-slate-100 text-slate-500"
@@ -216,7 +216,7 @@ export const PartyAutocomplete: React.FC<PartyAutocompleteProps> = ({
                     </span>
                     {(item.data.contactPerson || item.data.mobileNumber) && (
                       <span className={cn(
-                        "text-[10px] font-medium truncate",
+                        "text-2xs font-medium truncate",
                         isHighlighted ? "text-blue-100" : "text-slate-400"
                       )}>
                         {item.data.contactPerson && `${item.data.contactPerson} • `}{item.data.mobileNumber}

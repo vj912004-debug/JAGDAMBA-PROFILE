@@ -34,13 +34,13 @@ export const Header: React.FC = () => {
           <div className="flex bg-white rounded-full p-0.5 shadow-sm">
             <button
               onClick={() => setLanguage('English')}
-              className={`px-2.5 py-1 text-[11px] font-semibold rounded-full transition-all ${language === 'English' ? 'bg-blue-600 text-white shadow-sm' : 'text-slate-600 hover:bg-slate-50'}`}
+              className={`px-2.5 py-1 text-xxs font-semibold rounded-full transition-all ${language === 'English' ? 'bg-blue-600 text-white shadow-sm' : 'text-slate-600 hover:bg-slate-50'}`}
             >
               EN
             </button>
             <button
               onClick={() => setLanguage('Gujarati')}
-              className={`px-2.5 py-1 text-[11px] font-semibold rounded-full transition-all ${language === 'Gujarati' ? 'bg-blue-600 text-white shadow-sm' : 'text-slate-600 hover:bg-slate-50'}`}
+              className={`px-2.5 py-1 text-xxs font-semibold rounded-full transition-all ${language === 'Gujarati' ? 'bg-blue-600 text-white shadow-sm' : 'text-slate-600 hover:bg-slate-50'}`}
             >
               ગુજ
             </button>
@@ -50,8 +50,8 @@ export const Header: React.FC = () => {
         {/* User Info & Logout */}
         <div className="flex items-center gap-2 bg-slate-100 px-2.5 py-1.5 rounded-lg border border-slate-200">
           <div className="hidden sm:flex flex-col items-end mr-1">
-            <span className="text-[11px] font-bold text-slate-800 leading-tight">{user?.displayName}</span>
-            <span className="text-[9px] font-semibold text-slate-500 uppercase tracking-tighter leading-tight">{user?.role}</span>
+            <span className="text-xxs font-bold text-slate-800 leading-tight">{user?.displayName}</span>
+            <span className="text-3xs font-semibold text-slate-500 uppercase tracking-tighter leading-tight">{user?.role}</span>
           </div>
           <div className="h-6 w-px bg-slate-300 mx-1 hidden sm:block"></div>
           <button

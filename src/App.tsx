@@ -31,7 +31,7 @@ const Portal = ({ onSelect }: { onSelect: (project: 'profile' | 'client') => voi
 
       <div className="max-w-5xl w-full text-center space-y-16 z-10">
         <div className="space-y-6">
-          <div className="inline-block p-1 px-4 bg-slate-900/80 border border-slate-800/80 rounded-full text-blue-400 text-[10px] font-bold uppercase tracking-[0.25em] shadow-[0_0_15px_rgba(37,99,235,0.05)]">
+          <div className="inline-block p-1 px-4 bg-slate-900/80 border border-slate-800/80 rounded-full text-blue-400 text-2xs font-bold uppercase tracking-[0.25em] shadow-[0_0_15px_rgba(37,99,235,0.05)]">
             Enterprise Management System
           </div>
           <h1 className="text-5xl md:text-7xl font-black text-transparent bg-clip-text bg-gradient-to-r from-slate-100 via-white to-slate-400 tracking-tight drop-shadow-[0_2px_10px_rgba(255,255,255,0.05)]">

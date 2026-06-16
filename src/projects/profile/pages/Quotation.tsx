@@ -3,6 +3,7 @@ import { Calculator, Plus, Trash2, Printer, RotateCcw, FileText, User, Calendar,
 import { useAppContext, type QuotationRecord, type QuotationItem, MATERIAL_GRADES } from '../store/AppContext';
 import toast from 'react-hot-toast';
 import { EditableSelect } from '../components/EditableSelect';
+import { upper } from '../utils/textCase';
 
 
 
@@ -52,9 +53,10 @@ export const Quotation: React.FC = () => {
   };
 
   const updateItem = (id: string, field: keyof QuotationItem, value: any) => {
+    const normalized = typeof value === 'string' && field !== 'shape' ? upper(value) : value;
     setItems(prev => prev.map((item: QuotationItem) => {
       if (item.id === id) {
-        const updated = { ...item, [field]: value };
+        const updated = { ...item, [field]: normalized };
         
         // Recalculate weight if dimensions change
         if (['shape', 'thickness', 'width', 'length', 'od', 'id_dim', 'nos'].includes(field)) {
@@ -207,7 +209,7 @@ export const Quotation: React.FC = () => {
         <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-800 overflow-hidden">
           <table className="w-full text-left border-collapse whitespace-nowrap">
             <thead>
-              <tr className="bg-slate-50 dark:bg-slate-800/50 text-[10px] uppercase font-black text-slate-500 dark:text-slate-400">
+              <tr className="bg-slate-50 dark:bg-slate-800/50 text-2xs uppercase font-black text-slate-500 dark:text-slate-400">
                 <th className="p-4">Quote No</th>
                 <th className="p-4">Party Name</th>
                 <th className="p-4">Date</th>
@@ -218,18 +220,18 @@ export const Quotation: React.FC = () => {
             </thead>
             <tbody className="divide-y divide-slate-50">
               {filteredQuotations.map((q: QuotationRecord) => (
-                <tr key={q.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/50 dark:bg-slate-800/50 transition-all">
+                <tr key={q.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-all">
                   <td className="p-4 font-mono font-bold text-blue-600 dark:text-blue-400">{q.quoteNo}</td>
                   <td className="p-4">
                     <p className="font-bold text-slate-800 dark:text-slate-100">{q.partyName}</p>
-                    <p className="text-[10px] text-slate-400">{q.mobileNo}</p>
+                    <p className="text-2xs text-slate-400">{q.mobileNo}</p>
                   </td>
                   <td className="p-4 text-sm text-slate-600 dark:text-slate-300">{q.date}</td>
                   <td className="p-4 text-sm text-slate-600 dark:text-slate-300">{q.items.length} Nos</td>
                   <td className="p-4 font-bold text-slate-800 dark:text-slate-100">₹{q.grandTotal.toLocaleString()}</td>
                   <td className="p-4 text-right space-x-2">
-                    <button onClick={() => loadQuotation(q)} className="text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/30 dark:bg-blue-900/30 px-2 py-1 rounded text-xs font-bold transition-all">Edit</button>
-                    <button onClick={() => deleteQuotation(q.id)} className="text-red-500 hover:bg-red-50 dark:hover:bg-red-900/30 dark:bg-red-900/30 px-2 py-1 rounded text-xs font-bold transition-all">Delete</button>
+                    <button onClick={() => loadQuotation(q)} className="text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/30 px-2 py-1 rounded text-xs font-bold transition-all">Edit</button>
+                    <button onClick={() => deleteQuotation(q.id)} className="text-red-500 hover:bg-red-50 dark:hover:bg-red-900/30 px-2 py-1 rounded text-xs font-bold transition-all">Delete</button>
                   </td>
                 </tr>
               ))}
@@ -257,10 +259,10 @@ export const Quotation: React.FC = () => {
           <p className="text-sm text-slate-500 dark:text-slate-400 mt-0.5">Quick weight & cost estimation for customers</p>
         </div>
         <div className="flex gap-2 w-full sm:w-auto">
-          <button onClick={() => setViewMode('list')} className="flex-1 sm:flex-none flex items-center justify-center gap-2 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 px-4 py-2 rounded-xl text-sm font-semibold hover:bg-slate-200 dark:bg-slate-700 transition-all">
+          <button onClick={() => setViewMode('list')} className="flex-1 sm:flex-none flex items-center justify-center gap-2 bg-slate-100 text-slate-600 dark:text-slate-300 px-4 py-2 rounded-xl text-sm font-semibold hover:bg-slate-200 dark:bg-slate-700 transition-all">
             <List className="w-4 h-4" /> Saved Quotes
           </button>
-          <button onClick={handleReset} className="flex-1 sm:flex-none flex items-center justify-center gap-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 px-4 py-2 rounded-xl text-sm font-semibold hover:bg-slate-50 dark:hover:bg-slate-800/50 dark:bg-slate-800/50 transition-all">
+          <button onClick={handleReset} className="flex-1 sm:flex-none flex items-center justify-center gap-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 px-4 py-2 rounded-xl text-sm font-semibold hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-all">
             <RotateCcw className="w-4 h-4" /> Reset
           </button>
           <button onClick={handleSave} className="flex-1 sm:flex-none flex items-center justify-center gap-2 bg-emerald-600 text-white px-5 py-2 rounded-xl text-sm font-semibold hover:bg-emerald-700 transition-all shadow-md">
@@ -283,46 +285,46 @@ export const Quotation: React.FC = () => {
             </h2>
             <div className="space-y-4">
               <div>
-                <label className="block text-[10px] font-bold text-slate-400 uppercase mb-1">Quote Number</label>
+                <label className="field-label mb-1">Quote Number</label>
                 <div className="relative">
                   <Hash className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400" />
-                  <input type="text" value={quoteNo} onChange={(e) => setQuoteNo(e.target.value)} className="w-full bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-lg pl-9 pr-3 py-2 text-sm font-mono focus:bg-white dark:bg-slate-900 focus:ring-2 focus:ring-blue-500 transition" />
+                  <input type="text" value={quoteNo} onChange={(e) => setQuoteNo(upper(e.target.value))} className="w-full bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-lg pl-9 pr-3 py-2 text-sm font-mono focus:bg-white dark:focus:bg-slate-900 focus:ring-2 focus:ring-blue-500 transition" />
                 </div>
               </div>
               <div>
-                <label className="block text-[10px] font-bold text-slate-400 uppercase mb-1">Date</label>
+                <label className="field-label mb-1">Date</label>
                 <div className="relative">
                   <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400" />
-                  <input type="date" value={date} onChange={(e) => setDate(e.target.value)} className="w-full bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-lg pl-9 pr-3 py-2 text-sm focus:bg-white dark:bg-slate-900 focus:ring-2 focus:ring-blue-500 transition" />
+                  <input type="date" value={date} onChange={(e) => setDate(e.target.value)} className="w-full bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-lg pl-9 pr-3 py-2 text-sm focus:bg-white dark:focus:bg-slate-900 focus:ring-2 focus:ring-blue-500 transition" />
                 </div>
               </div>
               <div>
-                <label className="block text-[10px] font-bold text-slate-400 uppercase mb-1">Customer Name</label>
-                <input type="text" value={partyName} onChange={(e) => setPartyName(e.target.value)} className="w-full bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-lg px-3 py-2 text-sm focus:bg-white dark:bg-slate-900 focus:ring-2 focus:ring-blue-500 transition" placeholder="Durgesh" />
+                <label className="field-label mb-1">Customer Name</label>
+                <input type="text" value={partyName} onChange={(e) => setPartyName(upper(e.target.value))} className="w-full bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-lg px-3 py-2 text-sm focus:bg-white dark:focus:bg-slate-900 focus:ring-2 focus:ring-blue-500 transition" placeholder="Durgesh" />
               </div>
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-[10px] font-bold text-slate-400 uppercase mb-1">Contact Person</label>
-                  <input type="text" value={contactPerson} onChange={(e) => setContactPerson(e.target.value)} className="w-full bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-lg px-3 py-2 text-sm focus:bg-white dark:bg-slate-900 focus:ring-2 focus:ring-blue-500 transition" placeholder="Vraj Patel" />
+                  <label className="field-label mb-1">Contact Person</label>
+                  <input type="text" value={contactPerson} onChange={(e) => setContactPerson(upper(e.target.value))} className="w-full bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-lg px-3 py-2 text-sm focus:bg-white dark:focus:bg-slate-900 focus:ring-2 focus:ring-blue-500 transition" placeholder="Vraj Patel" />
                 </div>
                 <div>
-                  <label className="block text-[10px] font-bold text-slate-400 uppercase mb-1">Mobile No</label>
-                  <input type="text" value={mobileNo} onChange={(e) => setMobileNo(e.target.value)} className="w-full bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-lg px-3 py-2 text-sm focus:bg-white dark:bg-slate-900 focus:ring-2 focus:ring-blue-500 transition" placeholder="7359604778" />
+                  <label className="field-label mb-1">Mobile No</label>
+                  <input type="text" value={mobileNo} onChange={(e) => setMobileNo(e.target.value)} className="w-full bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-lg px-3 py-2 text-sm focus:bg-white dark:focus:bg-slate-900 focus:ring-2 focus:ring-blue-500 transition no-uppercase" placeholder="7359604778" />
                 </div>
               </div>
               <div>
-                <label className="block text-[10px] font-bold text-slate-400 uppercase mb-1">Address</label>
-                <textarea rows={2} value={address} onChange={(e) => setAddress(e.target.value)} className="w-full bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-lg px-3 py-2 text-sm focus:bg-white dark:bg-slate-900 focus:ring-2 focus:ring-blue-500 transition" placeholder="Vadodara, Gujarat" />
+                <label className="field-label mb-1">Address</label>
+                <textarea rows={2} value={address} onChange={(e) => setAddress(upper(e.target.value))} className="w-full bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-lg px-3 py-2 text-sm focus:bg-white dark:focus:bg-slate-900 focus:ring-2 focus:ring-blue-500 transition" placeholder="Vadodara, Gujarat" />
               </div>
               <div>
-                <label className="block text-[10px] font-bold text-slate-400 uppercase mb-1">Valid Until</label>
-                <input type="date" value={validUntil} onChange={(e) => setValidUntil(e.target.value)} className="w-full bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-lg px-3 py-2 text-sm focus:bg-white dark:bg-slate-900 focus:ring-2 focus:ring-blue-500 transition" />
+                <label className="field-label mb-1">Valid Until</label>
+                <input type="date" value={validUntil} onChange={(e) => setValidUntil(e.target.value)} className="w-full bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-lg px-3 py-2 text-sm focus:bg-white dark:focus:bg-slate-900 focus:ring-2 focus:ring-blue-500 transition" />
               </div>
             </div>
           </div>
 
 
-          <div className="bg-gradient-to-br from-blue-600 to-blue-700 rounded-2xl p-6 text-white shadow-lg shadow-blue-100">
+          <div className="card-primary rounded-2xl p-6 text-white shadow-lg shadow-blue-100">
             <div className="flex items-center gap-3 mb-4">
               <div className="w-10 h-10 bg-white dark:bg-slate-900/20 rounded-xl flex items-center justify-center">
                 <FileText className="w-6 h-6" />
@@ -369,7 +371,7 @@ export const Quotation: React.FC = () => {
                 </div>
               </div>
               <div className="mt-8">
-                <p className="text-[10px] font-bold text-slate-400 uppercase mb-1">To:</p>
+                <p className="text-2xs font-bold text-slate-400 uppercase mb-1">To:</p>
                 <p className="text-lg font-bold text-slate-800 dark:text-slate-100 whitespace-pre-wrap">{partyName || 'Valued Customer'}</p>
               </div>
             </div>
@@ -387,7 +389,7 @@ export const Quotation: React.FC = () => {
             <div className="overflow-x-auto">
               <table className="w-full text-left border-collapse min-w-[1050px]">
                 <thead>
-                  <tr className="bg-slate-50 dark:bg-slate-800/50 text-[10px] uppercase font-black text-slate-500 dark:text-slate-400 print:bg-white dark:bg-slate-900 print:border-b-2 print:border-slate-300 dark:border-slate-600">
+                  <tr className="bg-slate-50 dark:bg-slate-800/50 text-2xs uppercase font-black text-slate-500 dark:text-slate-400 print:bg-white dark:print:bg-white print:border-b-2 print:border-slate-300 dark:border-slate-600">
                     <th className="p-4">Shape</th>
                     <th className="p-4">Grade</th>
                     <th className="p-4">Thk</th>
@@ -429,12 +431,12 @@ export const Quotation: React.FC = () => {
                         {item.shape === 'Ring' ? (
                           <div className="flex items-center gap-2">
                             <div className="flex flex-col">
-                              <span className="text-[8px] font-bold text-slate-400 uppercase">OD</span>
+                              <span className="caption-3 uppercase">OD</span>
                               <input type="number" value={item.od ?? ''} onChange={(e) => updateItem(item.id, 'od', e.target.value)} className="w-24 bg-slate-50 dark:bg-slate-800/50 rounded px-2 py-1 text-xs focus:ring-1 focus:ring-blue-500 outline-none print:bg-transparent print:font-bold" placeholder="OD" />
                             </div>
                             <span className="text-slate-300 mt-3">x</span>
                             <div className="flex flex-col">
-                              <span className="text-[8px] font-bold text-slate-400 uppercase">ID</span>
+                              <span className="caption-3 uppercase">ID</span>
                               <input type="number" value={item.id_dim ?? ''} onChange={(e) => updateItem(item.id, 'id_dim', e.target.value)} className="w-24 bg-slate-50 dark:bg-slate-800/50 rounded px-2 py-1 text-xs focus:ring-1 focus:ring-blue-500 outline-none print:bg-transparent print:font-bold" placeholder="ID" />
                             </div>
                           </div>
@@ -456,22 +458,22 @@ export const Quotation: React.FC = () => {
                         {item.shape === 'Ring' ? (
                           <div className="flex flex-col gap-1.5">
                             <div className="flex items-center gap-1">
-                              <span className="text-[9px] font-bold text-slate-400 w-5 uppercase">OD</span>
+                              <span className="text-3xs font-bold text-slate-400 w-5 uppercase">OD</span>
                               <input 
                                 type="number" 
                                 value={item.odRate ?? ''} 
                                 onChange={(e) => updateItem(item.id, 'odRate', e.target.value)} 
-                                className="w-full bg-blue-50/50 border border-blue-100 dark:border-blue-800 rounded px-2 py-0.5 text-xs font-bold text-blue-700 dark:text-blue-300 outline-none focus:bg-white dark:bg-slate-900 focus:ring-1 focus:ring-blue-500" 
+                                className="w-full bg-blue-50/50 border border-blue-100 dark:border-blue-800 rounded px-2 py-0.5 text-xs font-bold text-blue-700 dark:text-blue-300 outline-none focus:bg-white dark:focus:bg-slate-900 focus:ring-1 focus:ring-blue-500" 
                                 placeholder="OD Rate" 
                               />
                             </div>
                             <div className="flex items-center gap-1">
-                              <span className="text-[9px] font-bold text-slate-400 w-5 uppercase">ID</span>
+                              <span className="text-3xs font-bold text-slate-400 w-5 uppercase">ID</span>
                               <input 
                                 type="number" 
                                 value={item.idRate ?? ''} 
                                 onChange={(e) => updateItem(item.id, 'idRate', e.target.value)} 
-                                className="w-full bg-amber-50/50 dark:bg-amber-900/50 border border-amber-100 rounded px-2 py-0.5 text-xs font-bold text-amber-700 outline-none focus:bg-white dark:bg-slate-900 focus:ring-1 focus:ring-amber-500" 
+                                className="w-full bg-amber-50/50 dark:bg-amber-900/50 border border-amber-100 rounded px-2 py-0.5 text-xs font-bold text-amber-700 outline-none focus:bg-white dark:focus:bg-slate-900 focus:ring-1 focus:ring-amber-500" 
                                 placeholder="ID Rate" 
                               />
                             </div>
@@ -487,21 +489,21 @@ export const Quotation: React.FC = () => {
                         <span className="text-sm font-bold text-slate-800 dark:text-slate-100">₹{item.amount.toLocaleString()}</span>
                       </td>
                       <td className="p-3 text-center print:hidden">
-                        <button onClick={() => removeItem(item.id)} className="p-1.5 text-slate-300 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/30 dark:bg-red-900/30 rounded-lg transition-all opacity-0 group-hover:opacity-100">
+                        <button onClick={() => removeItem(item.id)} className="p-1.5 text-slate-300 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-lg transition-all opacity-0 group-hover:opacity-100">
                            <Trash2 className="w-4 h-4" />
                         </button>
                       </td>
                     </tr>
                   ))}
                 </tbody>
-                <tfoot className="bg-slate-50/50 dark:bg-slate-800/50 print:bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-100">
+                <tfoot className="bg-slate-50/50 dark:bg-slate-800/50 print:bg-white dark:print:bg-white text-slate-800 dark:text-slate-100">
                   <tr className="border-t border-slate-200 dark:border-slate-700">
-                    <td colSpan={8} className="p-3 text-right text-[10px] font-bold uppercase text-slate-400">Sub Total</td>
+                    <td colSpan={8} className="p-3 text-right text-2xs font-bold uppercase text-slate-400">Sub Total</td>
                     <td className="p-3 text-right font-bold">₹ {totalAmount.toLocaleString()}</td>
                     <td className="print:hidden"></td>
                   </tr>
                   <tr>
-                    <td colSpan={8} className="p-2 text-right text-[10px] font-bold uppercase text-slate-400">Loading & Unloading Charges</td>
+                    <td colSpan={8} className="p-2 text-right text-2xs font-bold uppercase text-slate-400">Loading & Unloading Charges</td>
                     <td className="p-2 text-right">
                       <input 
                         type="number" 
@@ -514,7 +516,7 @@ export const Quotation: React.FC = () => {
                     <td className="print:hidden"></td>
                   </tr>
                   <tr>
-                    <td colSpan={8} className="p-2 text-right text-[10px] font-bold uppercase text-slate-400">Transport Charges</td>
+                    <td colSpan={8} className="p-2 text-right text-2xs font-bold uppercase text-slate-400">Transport Charges</td>
                     <td className="p-2 text-right">
                       <input 
                         type="number" 
@@ -527,12 +529,12 @@ export const Quotation: React.FC = () => {
                     <td className="print:hidden"></td>
                   </tr>
                   <tr>
-                    <td colSpan={8} className="p-2 text-right text-[10px] font-bold uppercase text-slate-400 align-middle">
+                    <td colSpan={8} className="p-2 text-right text-2xs font-bold uppercase text-slate-400 align-middle">
                       GST 
                       <select 
                         value={gstRate} 
                         onChange={(e) => setGstRate(parseInt(e.target.value))} 
-                        className="ml-2 bg-transparent border-none text-[10px] font-bold focus:ring-0 outline-none cursor-pointer print:appearance-none"
+                        className="ml-2 bg-transparent border-none text-2xs font-bold focus:ring-0 outline-none cursor-pointer print:appearance-none"
                       >
                         <option value={0} className="bg-white dark:bg-slate-800">0%</option>
                         <option value={5} className="bg-white dark:bg-slate-800">5%</option>
@@ -544,7 +546,7 @@ export const Quotation: React.FC = () => {
                     <td className="p-2 text-right font-bold text-slate-600 dark:text-slate-300">₹ {Math.ceil((totalAmount + loadingCharges + transportCharges) * gstRate / 100).toLocaleString()}</td>
                     <td className="print:hidden"></td>
                   </tr>
-                  <tr className="bg-blue-50/50 print:bg-white dark:bg-slate-900">
+                  <tr className="bg-blue-50/50 print:bg-white dark:print:bg-white">
                     <td colSpan={8} className="p-4 text-right text-xs font-black uppercase text-blue-600 dark:text-blue-400 tracking-wider">Grand Total Amount</td>
                     <td className="p-4 text-right text-xl font-black text-slate-900 dark:text-slate-50 border-t-2 border-blue-600">
                       ₹ {Math.ceil((totalAmount + loadingCharges + transportCharges) * (1 + gstRate / 100)).toLocaleString()}
@@ -558,7 +560,7 @@ export const Quotation: React.FC = () => {
         </div>
       </div>
 
-      <div id="quotation-print-area" className="hidden print:block fixed inset-0 bg-white dark:bg-slate-900 p-0 m-0 z-[9999] overflow-visible">
+      <div id="quotation-print-area" className="hidden print:block fixed inset-0 bg-white dark:bg-slate-900 p-0 m-0 overflow-visible">
         <style dangerouslySetInnerHTML={{ __html: `
           @page { size: A4; margin: 15mm 15mm; }
           body { font-family: Arial, sans-serif; color: #000; background: #fff; font-size: 10pt; line-height: 1.4; }

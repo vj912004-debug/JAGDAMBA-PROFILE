@@ -155,10 +155,10 @@ export const PartyMasterPage: React.FC = () => {
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-100 dark:border-slate-800 shadow-sm transition-all duration-300">
         <div>
           <h1 className="text-2xl font-black tracking-tight text-slate-900 dark:text-white flex items-center gap-2">
-            <span className="bg-gradient-to-r from-blue-600 to-indigo-600 dark:from-blue-500 dark:to-indigo-500 text-transparent bg-clip-text">
+            <span className="bg-linear-to-r from-blue-600 to-indigo-600 dark:from-blue-500 dark:to-indigo-500 text-transparent bg-clip-text">
               {t('partyMaster')}
             </span>
-            <span className="text-xs px-2.5 py-0.5 rounded-full bg-blue-50 dark:bg-blue-950/50 text-blue-600 dark:text-blue-450 font-bold uppercase tracking-wider">
+            <span className="text-xs px-2.5 py-0.5 rounded-full bg-blue-50 dark:bg-blue-950/50 text-blue-600 dark:text-blue-400 font-bold uppercase tracking-wider">
               Tally Ledgers
             </span>
           </h1>
@@ -168,7 +168,7 @@ export const PartyMasterPage: React.FC = () => {
         </div>
         <button
           onClick={openAddDrawer}
-          className="flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-bold text-xs rounded-xl shadow-lg shadow-blue-500/10 hover:shadow-blue-500/20 active:scale-95 transition-all self-start md:self-auto uppercase tracking-wider"
+          className="flex items-center gap-2 px-4 py-2.5 bg-linear-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-bold text-xs rounded-xl shadow-lg shadow-blue-500/10 hover:shadow-blue-500/20 active:scale-95 transition-all self-start md:self-auto uppercase tracking-wider"
         >
           <Plus className="w-4 h-4" />
           Create Ledger Account
@@ -180,7 +180,7 @@ export const PartyMasterPage: React.FC = () => {
         {/* Search & Filter Panel */}
         <div className="md:col-span-2 flex flex-col sm:flex-row sm:items-center gap-4 bg-white dark:bg-slate-900 p-4 rounded-xl border border-slate-100 dark:border-slate-800 shadow-sm">
           <div className="relative flex-1 flex items-center">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 dark:text-slate-500 dark:text-slate-400" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 dark:text-slate-500" />
             <input
               type="text"
               placeholder="Search by Party Name, Person, Phone, GST..."
@@ -206,7 +206,7 @@ export const PartyMasterPage: React.FC = () => {
         {/* Global Stats Overview */}
         <div className="bg-white dark:bg-slate-900 p-4 rounded-xl border border-slate-100 dark:border-slate-800 shadow-sm flex items-center justify-between">
           <div className="space-y-1">
-            <span className="text-[10px] font-black text-slate-400 dark:text-slate-500 dark:text-slate-400 uppercase tracking-widest block">Total Registered Ledgers</span>
+            <span className="meta-10 block">Total Registered Ledgers</span>
             <span className="text-2xl font-black text-slate-900 dark:text-white block">{parties.length}</span>
           </div>
           <div className="p-3 bg-blue-50 dark:bg-blue-950/30 rounded-xl text-blue-600 dark:text-blue-400">
@@ -220,7 +220,7 @@ export const PartyMasterPage: React.FC = () => {
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse">
             <thead>
-              <tr className="bg-slate-50 dark:bg-slate-950 border-b border-slate-100 dark:border-slate-850 text-slate-400 dark:text-slate-500 dark:text-slate-400 font-black text-[10px] uppercase tracking-wider">
+              <tr className="bg-slate-50 dark:bg-slate-950 border-b border-slate-100 dark:border-slate-800 text-slate-400 dark:text-slate-500 font-black text-2xs uppercase tracking-wider">
                 <th className="px-6 py-4">Party Details</th>
                 <th className="px-6 py-4">Contact Info</th>
                 <th className="px-6 py-4">Billing & GST</th>
@@ -228,13 +228,13 @@ export const PartyMasterPage: React.FC = () => {
                 <th className="px-6 py-4 text-right">Actions</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-50 dark:divide-slate-850 text-slate-700 dark:text-slate-300">
+            <tbody className="divide-y divide-slate-50 dark:divide-slate-800 text-slate-700 dark:text-slate-300">
               {filteredParties.length === 0 ? (
                 <tr>
-                  <td colSpan={5} className="px-6 py-12 text-center text-slate-400 dark:text-slate-500 dark:text-slate-400">
-                    <Star className="w-10 h-10 mx-auto text-slate-200 dark:text-slate-800 dark:text-slate-100 mb-2" />
+                  <td colSpan={5} className="px-6 py-12 text-center text-slate-400 dark:text-slate-500">
+                    <Star className="w-10 h-10 mx-auto text-slate-200 dark:text-slate-100 mb-2" />
                     <p className="text-xs font-bold uppercase tracking-wider">No ledger matches found</p>
-                    <p className="text-[10px] mt-1 font-semibold">Try modifying your filters or create a new ledger account above.</p>
+                    <p className="text-2xs mt-1 font-semibold">Try modifying your filters or create a new ledger account above.</p>
                   </td>
                 </tr>
               ) : (
@@ -242,19 +242,19 @@ export const PartyMasterPage: React.FC = () => {
                   const stats = partyStats[p.partyName.trim().toUpperCase()] || { count: 0, totalVal: 0 };
                   
                   return (
-                    <tr key={p.id} className="hover:bg-slate-50/55 dark:hover:bg-slate-800/50 dark:bg-slate-800/55 dark:hover:bg-slate-900/30 transition-all">
+                    <tr key={p.id} className="hover:bg-slate-50/55 dark:bg-slate-800/55 dark:hover:bg-slate-900/30 transition-all">
                       {/* Name & Branch */}
                       <td className="px-6 py-5">
                         <div className="space-y-1">
-                          <span className="font-extrabold text-sm text-slate-900 dark:text-white block hover:text-blue-600 dark:text-blue-400 transition cursor-pointer" onClick={() => openEditDrawer(p)}>
+                          <span className="font-extrabold text-sm text-slate-900 dark:text-white block hover:text-blue-600 dark:hover:text-blue-400 transition cursor-pointer" onClick={() => openEditDrawer(p)}>
                             {p.partyName}
                           </span>
                           <div className="flex items-center gap-1.5">
-                            <span className="text-[9px] font-black uppercase tracking-wider px-1.5 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400">
+                            <span className="text-3xs font-black uppercase tracking-wider px-1.5 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400">
                               {p.location}
                             </span>
                             {p.paymentTerms && (
-                              <span className="text-[9px] font-black uppercase tracking-wider px-1.5 py-0.5 rounded bg-blue-50 dark:bg-blue-950/30 text-blue-600 dark:text-blue-400">
+                              <span className="text-3xs font-black uppercase tracking-wider px-1.5 py-0.5 rounded bg-blue-50 dark:bg-blue-950/30 text-blue-600 dark:text-blue-400">
                                 {p.paymentTerms}
                               </span>
                             )}
@@ -278,7 +278,7 @@ export const PartyMasterPage: React.FC = () => {
                             </span>
                           )}
                           {p.email && (
-                            <span className="font-medium text-slate-400 dark:text-slate-500 dark:text-slate-400 flex items-center gap-1.5 truncate max-w-xs">
+                            <span className="font-medium text-slate-400 dark:text-slate-500 flex items-center gap-1.5 truncate max-w-xs">
                               <Mail className="w-3.5 h-3.5 text-slate-400" />
                               {p.email}
                             </span>
@@ -292,17 +292,17 @@ export const PartyMasterPage: React.FC = () => {
                           {p.gstNumber && (
                             <span className="font-black text-slate-800 dark:text-slate-250 flex items-center gap-1.5 uppercase">
                               <CreditCard className="w-3.5 h-3.5 text-slate-400" />
-                              GST: <span className="text-blue-600 dark:text-blue-450">{p.gstNumber}</span>
+                              GST: <span className="text-blue-600 dark:text-blue-400">{p.gstNumber}</span>
                             </span>
                           )}
                           {p.deliveryAddress && (
-                            <span className="font-medium text-slate-400 dark:text-slate-500 dark:text-slate-400 flex gap-1.5 line-clamp-2" title="Delivery Address">
+                            <span className="font-medium text-slate-400 dark:text-slate-500 gap-1.5 line-clamp-2" title="Delivery Address">
                               <MapPin className="w-3.5 h-3.5 text-slate-400 shrink-0" />
                               {p.deliveryAddress}
                             </span>
                           )}
                           {p.supplierAddress && (
-                            <span className="font-medium text-slate-400 dark:text-slate-500 dark:text-slate-400 flex gap-1.5 line-clamp-2" title="Supplier Address">
+                            <span className="font-medium text-slate-400 dark:text-slate-500 gap-1.5 line-clamp-2" title="Supplier Address">
                               <MapPin className="w-3.5 h-3.5 text-slate-400 shrink-0" />
                               {p.supplierAddress} (Supplier)
                             </span>
@@ -313,12 +313,12 @@ export const PartyMasterPage: React.FC = () => {
                       {/* Orders Stats */}
                       <td className="px-6 py-5">
                         <div className="space-y-1">
-                          <span className="text-xs font-bold text-slate-800 dark:text-slate-200 block flex items-center gap-1">
+                          <span className="text-xs font-bold text-slate-800 dark:text-slate-200 flex items-center gap-1">
                             <FileText className="w-3.5 h-3.5 text-slate-400" />
                             {stats.count} Orders Placed
                           </span>
                           {stats.totalVal > 0 && (
-                            <span className="text-[10px] font-black tracking-wider text-emerald-600 dark:text-emerald-450 uppercase block">
+                            <span className="text-2xs font-black tracking-wider text-emerald-600 dark:text-emerald-400 uppercase block">
                               Volume: ₹{stats.totalVal.toLocaleString('en-IN')}
                             </span>
                           )}
@@ -331,14 +331,14 @@ export const PartyMasterPage: React.FC = () => {
                           <button
                             onClick={() => openEditDrawer(p)}
                             title="Edit Ledger Details"
-                            className="p-1.5 text-slate-600 dark:text-slate-400 bg-slate-50 dark:bg-slate-800/50 hover:bg-slate-100 dark:hover:bg-slate-800 dark:bg-slate-950 dark:hover:bg-slate-850 border border-slate-100 dark:border-slate-850 hover:text-blue-600 dark:text-blue-400 dark:hover:text-blue-450 rounded-lg transition-all"
+                            className="p-1.5 text-slate-600 dark:text-slate-400 bg-slate-50 hover:bg-slate-100 dark:bg-slate-950 dark:hover:bg-slate-800 border border-slate-100 dark:border-slate-800 hover:text-blue-600 dark:hover:text-blue-400 rounded-lg transition-all"
                           >
                             <Edit2 className="w-4 h-4" />
                           </button>
                           <button
                             onClick={() => handleDelete(p.id, p.partyName)}
                             title="Delete Ledger Account"
-                            className="p-1.5 text-slate-600 dark:text-slate-400 bg-slate-50 dark:bg-slate-800/50 hover:bg-slate-100 dark:hover:bg-slate-800 dark:bg-slate-950 dark:hover:bg-slate-850 border border-slate-100 dark:border-slate-850 hover:text-red-600 dark:text-red-400 dark:hover:text-red-450 rounded-lg transition-all"
+                            className="p-1.5 text-slate-600 bg-slate-50 hover:bg-slate-100 dark:bg-slate-950 dark:hover:bg-slate-800 border border-slate-100 dark:border-slate-800 hover:text-red-600 dark:text-red-400 dark:hover:text-red-400 rounded-lg transition-all"
                           >
                             <Trash2 className="w-4 h-4" />
                           </button>
@@ -356,21 +356,21 @@ export const PartyMasterPage: React.FC = () => {
       {/* Drawer Overlay & Content */}
       {isDrawerOpen && (
         <div className="fixed inset-0 bg-slate-900/60 dark:bg-slate-950/80 backdrop-blur-xs z-50 flex justify-end animate-in fade-in duration-200">
-          <div className="w-full max-w-lg bg-white dark:bg-slate-950 border-l border-slate-100 dark:border-slate-900 shadow-2xl h-full flex flex-col transition-all duration-300 animate-in slide-in-from-right duration-300">
+          <div className="w-full max-w-lg bg-white dark:bg-slate-950 border-l border-slate-100 dark:border-slate-900 shadow-2xl h-full flex flex-col transition-all animate-in slide-in-from-right duration-300">
             {/* Drawer Header */}
             <div className="px-6 py-5 bg-slate-50 dark:bg-slate-900/50 border-b border-slate-100 dark:border-slate-900 flex items-center justify-between">
               <div>
-                <h2 className="text-md font-bold text-slate-900 dark:text-white flex items-center gap-1.5 uppercase">
+                <h2 className="text-base font-bold text-slate-900 dark:text-white flex items-center gap-1.5 uppercase">
                   <Star className="w-4 h-4 text-blue-500 fill-current" />
                   {editingParty ? 'Edit Party Ledger' : 'Create Party Ledger'}
                 </h2>
-                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-0.5">
+                <p className="text-2xs font-bold text-slate-400 uppercase tracking-widest mt-0.5">
                   Tally Prime style ledger registry
                 </p>
               </div>
               <button
                 onClick={() => setIsDrawerOpen(false)}
-                className="p-1.5 hover:bg-slate-100 dark:hover:bg-slate-800 dark:bg-slate-800 dark:hover:bg-slate-900 text-slate-400 dark:text-slate-500 dark:text-slate-400 rounded-lg transition-colors"
+                className="p-1.5 hover:bg-slate-100 dark:bg-slate-800 dark:hover:bg-slate-900 text-slate-400 dark:text-slate-500 rounded-lg transition-colors"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -380,7 +380,7 @@ export const PartyMasterPage: React.FC = () => {
             <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto p-6 space-y-5 text-left">
               {/* Party Name */}
               <div className="space-y-1.5">
-                <label className="block text-xs font-bold text-slate-400 uppercase tracking-widest">Party / Customer Name *</label>
+                <label className="field-label-sm tracking-widest">Party / Customer Name *</label>
                 <input
                   type="text"
                   required
@@ -393,7 +393,7 @@ export const PartyMasterPage: React.FC = () => {
 
               {/* Branch / Location */}
               <div className="space-y-1.5">
-                <label className="block text-xs font-bold text-slate-400 uppercase tracking-widest">Branch / Location *</label>
+                <label className="field-label-sm tracking-widest">Branch / Location *</label>
                 <EditableSelect
                   value={location}
                   onChange={(val) => setLocation(val)}
@@ -404,7 +404,7 @@ export const PartyMasterPage: React.FC = () => {
               {/* Contact Person & Mobile */}
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-1.5">
-                  <label className="block text-xs font-bold text-slate-400 uppercase tracking-widest">Contact Person</label>
+                  <label className="field-label-sm tracking-widest">Contact Person</label>
                   <input
                     type="text"
                     value={contactPerson}
@@ -414,7 +414,7 @@ export const PartyMasterPage: React.FC = () => {
                   />
                 </div>
                 <div className="space-y-1.5">
-                  <label className="block text-xs font-bold text-slate-400 uppercase tracking-widest">Mobile Number</label>
+                  <label className="field-label-sm tracking-widest">Mobile Number</label>
                   <input
                     type="tel"
                     value={mobileNumber}
@@ -428,7 +428,7 @@ export const PartyMasterPage: React.FC = () => {
               {/* Email & GST Number */}
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-1.5">
-                  <label className="block text-xs font-bold text-slate-400 uppercase tracking-widest">GSTIN Number</label>
+                  <label className="field-label-sm tracking-widest">GSTIN Number</label>
                   <input
                     type="text"
                     value={gstNumber}
@@ -438,7 +438,7 @@ export const PartyMasterPage: React.FC = () => {
                   />
                 </div>
                 <div className="space-y-1.5">
-                  <label className="block text-xs font-bold text-slate-400 uppercase tracking-widest">Payment Terms</label>
+                  <label className="field-label-sm tracking-widest">Payment Terms</label>
                   <select
                     value={paymentTerms}
                     onChange={(e) => setPaymentTerms(e.target.value)}
@@ -457,7 +457,7 @@ export const PartyMasterPage: React.FC = () => {
               {/* Email Address & Reference */}
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-1.5">
-                  <label className="block text-xs font-bold text-slate-400 uppercase tracking-widest">Email Address</label>
+                  <label className="field-label-sm tracking-widest">Email Address</label>
                   <input
                     type="email"
                     value={email}
@@ -467,7 +467,7 @@ export const PartyMasterPage: React.FC = () => {
                   />
                 </div>
                 <div className="space-y-1.5">
-                  <label className="block text-xs font-bold text-slate-400 uppercase tracking-widest">Reference</label>
+                  <label className="field-label-sm tracking-widest">Reference</label>
                   <input
                     type="text"
                     value={reference}
@@ -482,7 +482,7 @@ export const PartyMasterPage: React.FC = () => {
 
               {/* Supplier Address */}
               <div className="space-y-1.5">
-                <label className="block text-xs font-bold text-slate-400 uppercase tracking-widest">Supplier Address</label>
+                <label className="field-label-sm tracking-widest">Supplier Address</label>
                 <textarea
                   value={supplierAddress}
                   onChange={(e) => setSupplierAddress(e.target.value.toUpperCase())}
@@ -494,7 +494,7 @@ export const PartyMasterPage: React.FC = () => {
 
               {/* Delivery Address */}
               <div className="space-y-1.5">
-                <label className="block text-xs font-bold text-slate-400 uppercase tracking-widest">Default Delivery Address</label>
+                <label className="field-label-sm tracking-widest">Default Delivery Address</label>
                 <textarea
                   value={deliveryAddress}
                   onChange={(e) => setDeliveryAddress(e.target.value.toUpperCase())}
@@ -509,13 +509,13 @@ export const PartyMasterPage: React.FC = () => {
                 <button
                   type="button"
                   onClick={() => setIsDrawerOpen(false)}
-                  className="px-4 py-2 text-xs font-bold text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 dark:bg-slate-800 dark:hover:bg-slate-900 rounded-lg transition-all"
+                  className="px-4 py-2 text-xs font-bold text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:bg-slate-800 dark:hover:bg-slate-900 rounded-lg transition-all"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="px-5 py-2 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-bold text-xs rounded-lg shadow-md shadow-blue-500/10 hover:shadow-blue-500/20 active:scale-95 transition-all uppercase tracking-wider"
+                  className="px-5 py-2 bg-linear-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-bold text-xs rounded-lg shadow-md shadow-blue-500/10 hover:shadow-blue-500/20 active:scale-95 transition-all uppercase tracking-wider"
                 >
                   {editingParty ? 'Save Changes' : 'Create Ledger'}
                 </button>

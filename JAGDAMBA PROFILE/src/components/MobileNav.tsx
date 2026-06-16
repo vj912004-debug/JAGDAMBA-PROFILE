@@ -35,7 +35,7 @@ export const MobileNav: React.FC = () => {
         <div className="p-5 border-b border-slate-100 flex items-center justify-between">
           <div>
             <h2 className="text-lg font-bold text-slate-800">Menu</h2>
-            <p className="text-[10px] text-slate-400 font-medium">Jagdamba Profile ERP</p>
+            <p className="text-2xs text-slate-400 font-medium">Jagdamba Profile ERP</p>
           </div>
           <button onClick={() => setIsOpen(false)} className="text-slate-400 hover:text-slate-700 p-2 rounded-lg hover:bg-slate-100 transition-colors">
             <X className="w-5 h-5" />
@@ -48,7 +48,7 @@ export const MobileNav: React.FC = () => {
 
             return (
               <div key={section.title} className="space-y-2">
-                <h3 className="px-3 text-[10px] font-extrabold text-slate-400 uppercase tracking-[0.15em] mb-1">
+                <h3 className="px-3 text-2xs font-extrabold text-slate-400 uppercase tracking-[0.15em] mb-1">
                   {section.title}
                 </h3>
                 <div className="space-y-1">

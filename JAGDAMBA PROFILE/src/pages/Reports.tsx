@@ -137,7 +137,7 @@ export const Reports: React.FC = () => {
             <div className="overflow-x-auto">
               <table className="w-full text-left border-collapse whitespace-nowrap">
                 <thead><tr className="bg-slate-50 border-b border-slate-100">
-                  {['Order','Date','Party','Type','Material','Qty','Stage'].map(h => <th key={h} className="p-3 text-[10px] font-bold tracking-wider text-slate-500 uppercase">{h}</th>)}
+                  {['Order','Date','Party','Type','Material','Qty','Stage'].map(h => <th key={h} className="p-3 text-2xs font-bold tracking-wider text-slate-500 uppercase">{h}</th>)}
                 </tr></thead>
                 <tbody className="divide-y divide-slate-100">
                   {filtered.map(o => (
@@ -148,7 +148,7 @@ export const Reports: React.FC = () => {
                       <td className="p-3 text-sm text-slate-600">{o.items[0]?.cuttingType || '-'}</td>
                       <td className="p-3 text-sm text-slate-600">{o.items[0]?.materialGrade || o.items[0]?.materialType} {o.items[0]?.thickness}</td>
                       <td className="p-3 text-sm text-slate-600">{o.items.reduce((s,i) => s+i.quantity, 0)}</td>
-                      <td className="p-3"><span className="text-[10px] font-bold bg-slate-100 text-slate-700 px-2 py-1 rounded-full">{o.stage}</span></td>
+                      <td className="p-3"><span className="text-2xs font-bold bg-slate-100 text-slate-700 px-2 py-1 rounded-full">{o.stage}</span></td>
                     </tr>
                   ))}
                 </tbody>
@@ -182,7 +182,7 @@ export const Reports: React.FC = () => {
                 <div className="overflow-x-auto">
                   <table className="w-full text-left border-collapse">
                     <thead><tr className="bg-slate-50 border-b border-slate-100">
-                      {['Order','Date','Cutting Type','Qty','Amount (₹)','Stage'].map(h => <th key={h} className="p-3 text-[10px] font-bold tracking-wider text-slate-500 uppercase">{h}</th>)}
+                      {['Order','Date','Cutting Type','Qty','Amount (₹)','Stage'].map(h => <th key={h} className="p-3 text-2xs font-bold tracking-wider text-slate-500 uppercase">{h}</th>)}
                     </tr></thead>
                     <tbody className="divide-y divide-slate-100">
                       {partyOrders.map(o => (
@@ -192,7 +192,7 @@ export const Reports: React.FC = () => {
                           <td className="p-3 text-sm text-slate-600">{o.items[0]?.cuttingType}</td>
                           <td className="p-3 text-sm text-slate-600">{o.items.reduce((s,i)=>s+i.quantity,0)}</td>
                           <td className="p-3 text-sm font-bold text-slate-700">₹{o.items.reduce((s,i)=>s+i.amount,0).toLocaleString()}</td>
-                          <td className="p-3"><span className="text-[10px] font-bold bg-slate-100 text-slate-700 px-2 py-1 rounded-full">{o.stage}</span></td>
+                          <td className="p-3"><span className="text-2xs font-bold bg-slate-100 text-slate-700 px-2 py-1 rounded-full">{o.stage}</span></td>
                         </tr>
                       ))}
                     </tbody>
@@ -206,15 +206,15 @@ export const Reports: React.FC = () => {
                 <div className="p-5">
                   <div className="grid grid-cols-3 gap-3 mb-6">
                     <div className="bg-slate-50 p-3 rounded-xl border border-slate-100">
-                      <p className="text-[10px] text-slate-500 uppercase font-bold">Total Billed</p>
+                      <p className="text-2xs text-slate-500 uppercase font-bold">Total Billed</p>
                       <p className="text-lg font-bold text-slate-800">₹{partyChallans.reduce((s,c)=>s+c.totalAmount,0).toLocaleString()}</p>
                     </div>
                     <div className="bg-emerald-50 p-3 rounded-xl border border-emerald-100">
-                      <p className="text-[10px] text-emerald-600 uppercase font-bold">Total Paid</p>
+                      <p className="text-2xs text-emerald-600 uppercase font-bold">Total Paid</p>
                       <p className="text-lg font-bold text-emerald-700">₹{partyChallans.reduce((s,c)=>s+(c.amountPaid || 0),0).toLocaleString()}</p>
                     </div>
                     <div className="bg-red-50 p-3 rounded-xl border border-red-100">
-                      <p className="text-[10px] text-red-600 uppercase font-bold">Pending</p>
+                      <p className="text-2xs text-red-600 uppercase font-bold">Pending</p>
                       <p className="text-lg font-bold text-red-700">₹{partyChallans.reduce((s,c)=>s+(c.balanceAmount ?? (c.totalAmount - (c.amountPaid || 0))),0).toLocaleString()}</p>
                     </div>
                   </div>
@@ -235,12 +235,12 @@ export const Reports: React.FC = () => {
                           </button>
                           <div>
                             <p className="text-sm font-bold text-slate-700">{c.challanNo}</p>
-                            <p className="text-[10px] text-slate-500">{c.challanDate}</p>
+                            <p className="text-2xs text-slate-500">{c.challanDate}</p>
                           </div>
                         </div>
                         <div className="text-right">
                           <p className="text-sm font-bold text-slate-800">₹{c.totalAmount.toLocaleString()}</p>
-                          <p className="text-[10px] text-red-500 font-bold">Bal: ₹{(c.balanceAmount ?? (c.totalAmount - (c.amountPaid || 0))).toLocaleString()}</p>
+                          <p className="text-2xs text-red-500 font-bold">Bal: ₹{(c.balanceAmount ?? (c.totalAmount - (c.amountPaid || 0))).toLocaleString()}</p>
                         </div>
                       </div>
                     ))}
@@ -271,7 +271,7 @@ export const Reports: React.FC = () => {
                       <span className="w-2 h-2 bg-indigo-500 rounded-full"></span>
                       {shape}
                     </h3>
-                    <span className="text-[10px] font-bold bg-indigo-50 text-indigo-600 px-2 py-0.5 rounded-full">
+                    <span className="text-2xs font-bold bg-indigo-50 text-indigo-600 px-2 py-0.5 rounded-full">
                       {shapeOrders.length} Orders
                     </span>
                   </div>
@@ -286,10 +286,10 @@ export const Reports: React.FC = () => {
                     </div>
                     
                     <div className="pt-3 border-t border-slate-50">
-                      <h4 className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">Recent Orders</h4>
+                      <h4 className="text-2xs font-bold text-slate-400 uppercase tracking-wider mb-2">Recent Orders</h4>
                       <div className="space-y-1.5">
                         {shapeOrders.slice(0, 3).map(o => (
-                          <div key={o.id} className="flex justify-between text-[11px]">
+                          <div key={o.id} className="flex justify-between text-xxs">
                             <span className="text-slate-600 font-mono">{o.orderNo}</span>
                             <span className="text-slate-400">{o.partyName.slice(0, 15)}...</span>
                           </div>
@@ -322,10 +322,10 @@ export const Reports: React.FC = () => {
               <table className="w-full text-left border-collapse whitespace-nowrap">
                 <thead>
                   <tr className="bg-slate-50 border-b border-slate-100">
-                    <th className="p-3 text-[10px] font-bold tracking-wider text-slate-500 uppercase">Cutting Shape</th>
-                    <th className="p-3 text-[10px] font-bold tracking-wider text-slate-500 uppercase text-center">No. of Orders</th>
-                    <th className="p-3 text-[10px] font-bold tracking-wider text-slate-500 uppercase text-center">Total Quantity</th>
-                    <th className="p-3 text-[10px] font-bold tracking-wider text-slate-500 uppercase text-right">Total Amount (₹)</th>
+                    <th className="p-3 text-2xs font-bold tracking-wider text-slate-500 uppercase">Cutting Shape</th>
+                    <th className="p-3 text-2xs font-bold tracking-wider text-slate-500 uppercase text-center">No. of Orders</th>
+                    <th className="p-3 text-2xs font-bold tracking-wider text-slate-500 uppercase text-center">Total Quantity</th>
+                    <th className="p-3 text-2xs font-bold tracking-wider text-slate-500 uppercase text-right">Total Amount (₹)</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100">
@@ -384,13 +384,13 @@ export const Reports: React.FC = () => {
               <table className="w-full text-left border-collapse whitespace-nowrap">
                 <thead>
                   <tr className="bg-slate-50 border-b border-slate-100">
-                    <th className="p-3 text-[10px] font-bold tracking-wider text-slate-500 uppercase">Challan No</th>
-                    <th className="p-3 text-[10px] font-bold tracking-wider text-slate-500 uppercase">Date</th>
-                    <th className="p-3 text-[10px] font-bold tracking-wider text-slate-500 uppercase">Party Name</th>
-                    <th className="p-3 text-[10px] font-bold tracking-wider text-slate-500 uppercase">Order No</th>
-                    <th className="p-3 text-[10px] font-bold tracking-wider text-slate-500 uppercase text-right">Amount (₹)</th>
-                    <th className="p-3 text-[10px] font-bold tracking-wider text-slate-500 uppercase text-right">Balance (₹)</th>
-                    <th className="p-3 text-[10px] font-bold tracking-wider text-slate-500 uppercase text-center">PDF</th>
+                    <th className="p-3 text-2xs font-bold tracking-wider text-slate-500 uppercase">Challan No</th>
+                    <th className="p-3 text-2xs font-bold tracking-wider text-slate-500 uppercase">Date</th>
+                    <th className="p-3 text-2xs font-bold tracking-wider text-slate-500 uppercase">Party Name</th>
+                    <th className="p-3 text-2xs font-bold tracking-wider text-slate-500 uppercase">Order No</th>
+                    <th className="p-3 text-2xs font-bold tracking-wider text-slate-500 uppercase text-right">Amount (₹)</th>
+                    <th className="p-3 text-2xs font-bold tracking-wider text-slate-500 uppercase text-right">Balance (₹)</th>
+                    <th className="p-3 text-2xs font-bold tracking-wider text-slate-500 uppercase text-center">PDF</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100">
@@ -441,7 +441,7 @@ export const Reports: React.FC = () => {
               return (
                 <div key={ct} className="bg-white p-4 rounded-xl shadow-sm border border-slate-100 text-center">
                   <h3 className="text-2xl font-bold text-slate-800">{count}</h3>
-                  <p className="text-[10px] font-semibold text-slate-500 uppercase">{ct}</p>
+                  <p className="text-2xs font-semibold text-slate-500 uppercase">{ct}</p>
                 </div>
               );
             })}
@@ -454,7 +454,7 @@ export const Reports: React.FC = () => {
             <div className="overflow-x-auto">
               <table className="w-full text-left border-collapse">
                 <thead><tr className="bg-slate-50 border-b border-slate-100">
-                  {['Thickness','Orders','Total Qty','Cutting Types'].map(h => <th key={h} className="p-3 text-[10px] font-bold tracking-wider text-slate-500 uppercase">{h}</th>)}
+                  {['Thickness','Orders','Total Qty','Cutting Types'].map(h => <th key={h} className="p-3 text-2xs font-bold tracking-wider text-slate-500 uppercase">{h}</th>)}
                 </tr></thead>
                 <tbody className="divide-y divide-slate-100">
                   {Array.from(new Set(filtered.flatMap(o => o.items.map(i => i.thickness)).filter(Boolean))).sort().map(th => {
@@ -466,7 +466,7 @@ export const Reports: React.FC = () => {
                         <td className="p-3 text-sm font-bold text-slate-800">{th}</td>
                         <td className="p-3 text-sm text-slate-600">{matchOrders.length}</td>
                         <td className="p-3 text-sm text-slate-600">{totalQty}</td>
-                        <td className="p-3">{types.map(t => <span key={t} className="inline-block bg-slate-100 text-slate-700 text-[10px] font-bold px-1.5 py-0.5 rounded mr-1 mb-1">{t}</span>)}</td>
+                        <td className="p-3">{types.map(t => <span key={t} className="inline-block bg-slate-100 text-slate-700 text-2xs font-bold px-1.5 py-0.5 rounded mr-1 mb-1">{t}</span>)}</td>
                       </tr>
                     );
                   })}
@@ -523,11 +523,11 @@ export const Reports: React.FC = () => {
                     <div className="p-4 space-y-4">
                       <div className="grid grid-cols-2 gap-3">
                         <div className="bg-emerald-50 p-3 rounded-xl border border-emerald-100">
-                          <p className="text-[10px] text-emerald-600 uppercase font-bold text-center">Completed</p>
+                          <p className="text-2xs text-emerald-600 uppercase font-bold text-center">Completed</p>
                           <p className="text-xl font-bold text-emerald-700 text-center">{completedItems.length}</p>
                         </div>
                         <div className="bg-amber-50 p-3 rounded-xl border border-amber-100">
-                          <p className="text-[10px] text-amber-600 uppercase font-bold text-center">In Progress</p>
+                          <p className="text-2xs text-amber-600 uppercase font-bold text-center">In Progress</p>
                           <p className="text-xl font-bold text-amber-700 text-center">{pendingItems.length}</p>
                         </div>
                       </div>
@@ -612,12 +612,12 @@ export const Reports: React.FC = () => {
                   <table className="w-full text-left border-collapse whitespace-nowrap">
                     <thead>
                       <tr className="bg-slate-50 border-b border-slate-100">
-                        <th className="p-3 text-[10px] font-bold tracking-wider text-slate-500 uppercase">Order No</th>
-                        <th className="p-3 text-[10px] font-bold tracking-wider text-slate-500 uppercase">Party</th>
-                        <th className="p-3 text-[10px] font-bold tracking-wider text-slate-500 uppercase">Description</th>
-                        <th className="p-3 text-[10px] font-bold tracking-wider text-slate-500 uppercase">Thk</th>
-                        <th className="p-3 text-[10px] font-bold tracking-wider text-slate-500 uppercase text-center">Qty</th>
-                        <th className="p-3 text-[10px] font-bold tracking-wider text-slate-500 uppercase text-center">Status</th>
+                        <th className="p-3 text-2xs font-bold tracking-wider text-slate-500 uppercase">Order No</th>
+                        <th className="p-3 text-2xs font-bold tracking-wider text-slate-500 uppercase">Party</th>
+                        <th className="p-3 text-2xs font-bold tracking-wider text-slate-500 uppercase">Description</th>
+                        <th className="p-3 text-2xs font-bold tracking-wider text-slate-500 uppercase">Thk</th>
+                        <th className="p-3 text-2xs font-bold tracking-wider text-slate-500 uppercase text-center">Qty</th>
+                        <th className="p-3 text-2xs font-bold tracking-wider text-slate-500 uppercase text-center">Status</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-slate-100">
@@ -630,7 +630,7 @@ export const Reports: React.FC = () => {
                             <td className="p-3 text-sm text-slate-600">{item.thickness}</td>
                             <td className="p-3 text-sm text-slate-600 text-center">{item.quantity}</td>
                             <td className="p-3 text-center">
-                              <span className={`text-[10px] font-bold px-2 py-1 rounded-full uppercase ${item.itemStatus === 'Completed' ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700'}`}>
+                              <span className={`text-2xs font-bold px-2 py-1 rounded-full uppercase ${item.itemStatus === 'Completed' ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700'}`}>
                                 {item.itemStatus || 'Pending'}
                               </span>
                             </td>
@@ -684,12 +684,12 @@ export const Reports: React.FC = () => {
               <table className="w-full text-left border-collapse whitespace-nowrap">
                 <thead>
                   <tr className="bg-slate-50 border-b border-slate-100">
-                    <th className="p-3 text-[10px] font-bold tracking-wider text-slate-500 uppercase">Order No</th>
-                    <th className="p-3 text-[10px] font-bold tracking-wider text-slate-500 uppercase">Order Date</th>
-                    <th className="p-3 text-[10px] font-bold tracking-wider text-slate-500 uppercase">Party Name</th>
-                    <th className="p-3 text-[10px] font-bold tracking-wider text-slate-500 uppercase">Current Stage</th>
-                    <th className="p-3 text-[10px] font-bold tracking-wider text-slate-500 uppercase text-center">Days Pending</th>
-                    <th className="p-3 text-[10px] font-bold tracking-wider text-slate-500 uppercase text-center">Urgent</th>
+                    <th className="p-3 text-2xs font-bold tracking-wider text-slate-500 uppercase">Order No</th>
+                    <th className="p-3 text-2xs font-bold tracking-wider text-slate-500 uppercase">Order Date</th>
+                    <th className="p-3 text-2xs font-bold tracking-wider text-slate-500 uppercase">Party Name</th>
+                    <th className="p-3 text-2xs font-bold tracking-wider text-slate-500 uppercase">Current Stage</th>
+                    <th className="p-3 text-2xs font-bold tracking-wider text-slate-500 uppercase text-center">Days Pending</th>
+                    <th className="p-3 text-2xs font-bold tracking-wider text-slate-500 uppercase text-center">Urgent</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100">
@@ -708,7 +708,7 @@ export const Reports: React.FC = () => {
                           <td className="p-3 text-sm text-slate-600">{o.orderDate}</td>
                           <td className="p-3 text-sm font-medium text-slate-800">{o.partyName}</td>
                           <td className="p-3">
-                            <span className="text-[10px] font-bold bg-blue-50 text-blue-700 px-2 py-1 rounded-full border border-blue-100">
+                            <span className="text-2xs font-bold bg-blue-50 text-blue-700 px-2 py-1 rounded-full border border-blue-100">
                               {o.stage}
                             </span>
                           </td>
@@ -717,9 +717,9 @@ export const Reports: React.FC = () => {
                           </td>
                           <td className="p-3 text-center">
                             {o.urgent ? (
-                              <span className="bg-red-100 text-red-600 text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider">Yes</span>
+                              <span className="bg-red-100 text-red-600 text-2xs font-bold px-2 py-0.5 rounded-full uppercase tracking-wider">Yes</span>
                             ) : (
-                              <span className="text-slate-300 text-[10px] font-bold px-2 py-0.5">No</span>
+                              <span className="text-slate-300 text-2xs font-bold px-2 py-0.5">No</span>
                             )}
                           </td>
                         </tr>
@@ -759,7 +759,7 @@ export const Reports: React.FC = () => {
             <div className="overflow-x-auto">
               <table className="w-full text-left border-collapse whitespace-nowrap">
                 <thead><tr className="bg-slate-50 border-b border-slate-100">
-                  {['Order','Party','Type','Thickness','Qty','Due Date','Stage'].map(h => <th key={h} className="p-3 text-[10px] font-bold tracking-wider text-slate-500 uppercase">{h}</th>)}
+                  {['Order','Party','Type','Thickness','Qty','Due Date','Stage'].map(h => <th key={h} className="p-3 text-2xs font-bold tracking-wider text-slate-500 uppercase">{h}</th>)}
                 </tr></thead>
                 <tbody className="divide-y divide-slate-100">
                   {filtered.sort((a,b) => ALL_STAGES.indexOf(a.stage) - ALL_STAGES.indexOf(b.stage)).map(o => (
@@ -770,7 +770,7 @@ export const Reports: React.FC = () => {
                       <td className="p-3 text-sm text-slate-600">{o.items[0]?.thickness}</td>
                       <td className="p-3 text-sm text-slate-600">{o.items.reduce((s,i)=>s+i.quantity,0)}</td>
                       <td className="p-3 text-sm text-slate-600">{o.deliveryDate || '-'}</td>
-                      <td className="p-3"><span className="text-[10px] font-bold bg-slate-100 text-slate-700 px-2 py-1 rounded-full">{o.stage}</span></td>
+                      <td className="p-3"><span className="text-2xs font-bold bg-slate-100 text-slate-700 px-2 py-1 rounded-full">{o.stage}</span></td>
                     </tr>
                   ))}
                 </tbody>
@@ -808,7 +808,7 @@ export const Reports: React.FC = () => {
             <div className="overflow-x-auto">
               <table className="w-full text-left border-collapse">
                 <thead><tr className="bg-slate-50 border-b border-slate-100">
-                  {['Plate ID','Source','Order','Used (Kg)','Scrap (Kg)','Scrap Owner'].map(h => <th key={h} className="p-3 text-[10px] font-bold tracking-wider text-slate-500 uppercase">{h}</th>)}
+                  {['Plate ID','Source','Order','Used (Kg)','Scrap (Kg)','Scrap Owner'].map(h => <th key={h} className="p-3 text-2xs font-bold tracking-wider text-slate-500 uppercase">{h}</th>)}
                 </tr></thead>
                 <tbody className="divide-y divide-slate-100">
                   {usages.map((u, i) => {
@@ -816,7 +816,7 @@ export const Reports: React.FC = () => {
                     return (
                       <tr key={i} className="hover:bg-slate-50/50">
                         <td className="p-3 text-sm font-bold text-slate-800 font-mono">{u.plateId}</td>
-                        <td className="p-3"><span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${plate?.source === 'Customer' ? 'bg-purple-100 text-purple-700' : 'bg-blue-100 text-blue-700'}`}>{plate?.source || '-'}</span></td>
+                        <td className="p-3"><span className={`text-2xs font-bold px-2 py-0.5 rounded-full ${plate?.source === 'Customer' ? 'bg-purple-100 text-purple-700' : 'bg-blue-100 text-blue-700'}`}>{plate?.source || '-'}</span></td>
                         <td className="p-3 text-sm font-mono text-slate-700">{u.orderNo}</td>
                         <td className="p-3 text-sm text-slate-600">{u.usedWeight}</td>
                         <td className="p-3 text-sm text-red-600 font-medium">{u.scrapQuantity}</td>
@@ -837,7 +837,7 @@ export const Reports: React.FC = () => {
               <div className="overflow-x-auto">
                 <table className="w-full text-left border-collapse">
                   <thead><tr className="bg-slate-50 border-b border-slate-100">
-                    {['Plate ID','Grade','Thickness','Initial (Kg)','Balance (Kg)'].map(h => <th key={h} className="p-3 text-[10px] font-bold tracking-wider text-slate-500 uppercase">{h}</th>)}
+                    {['Plate ID','Grade','Thickness','Initial (Kg)','Balance (Kg)'].map(h => <th key={h} className="p-3 text-2xs font-bold tracking-wider text-slate-500 uppercase">{h}</th>)}
                   </tr></thead>
                   <tbody className="divide-y divide-slate-100">
                     {customerPlates.map(p => {

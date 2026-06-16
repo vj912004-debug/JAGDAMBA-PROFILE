@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useAppContext } from '../store/AppContext';
-import { ShieldAlert, Info, AlertCircle, Search, Clock, User, Filter, Trash2 } from 'lucide-react';
+import { ShieldAlert, Info, AlertCircle, Search } from 'lucide-react';
 import { clsx } from 'clsx';
 
 export const AlertCenter: React.FC = () => {
@@ -93,12 +93,12 @@ export const AlertCenter: React.FC = () => {
           <table className="w-full text-left border-collapse">
             <thead>
               <tr className="bg-slate-50 dark:bg-slate-800/50 border-b border-slate-100 dark:border-slate-800">
-                <th className="p-4 text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider w-16 text-center">Type</th>
-                <th className="p-4 text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Time</th>
-                <th className="p-4 text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">User</th>
-                <th className="p-4 text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Action</th>
-                <th className="p-4 text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Details</th>
-                <th className="p-4 text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Order</th>
+                <th className="p-4 text-2xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider w-16 text-center">Type</th>
+                <th className="p-4 text-2xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Time</th>
+                <th className="p-4 text-2xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">User</th>
+                <th className="p-4 text-2xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Action</th>
+                <th className="p-4 text-2xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Details</th>
+                <th className="p-4 text-2xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Order</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
@@ -112,7 +112,7 @@ export const AlertCenter: React.FC = () => {
                   </td>
                 </tr>
               ) : filteredLogs.map(log => (
-                <tr key={log.id} className={clsx("hover:bg-slate-50 dark:hover:bg-slate-800/50 dark:bg-slate-800/50 transition-colors", log.type === 'alert' && "bg-red-50/30 dark:bg-red-900/30")}>
+                <tr key={log.id} className={clsx("hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors", log.type === 'alert' && "bg-red-50/30 dark:bg-red-900/30")}>
                   <td className="p-4 text-center">
                     <div className="flex justify-center">
                       {log.type === 'alert' && <ShieldAlert className="w-5 h-5 text-red-600 dark:text-red-400 animate-pulse" />}
@@ -123,7 +123,7 @@ export const AlertCenter: React.FC = () => {
                   <td className="p-4">
                     <div className="flex flex-col">
                       <span className="text-sm font-bold text-slate-700 dark:text-slate-200">{new Date(log.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
-                      <span className="text-[10px] text-slate-400">{new Date(log.timestamp).toLocaleDateString()}</span>
+                      <span className="text-2xs text-slate-400">{new Date(log.timestamp).toLocaleDateString()}</span>
                     </div>
                   </td>
                   <td className="p-4">
@@ -133,7 +133,7 @@ export const AlertCenter: React.FC = () => {
                       </div>
                       <div className="flex flex-col">
                         <span className="text-sm font-bold text-slate-800 dark:text-slate-100">{log.user}</span>
-                        <span className="text-[10px] text-slate-400 uppercase tracking-wider font-bold">{log.role}</span>
+                        <span className="text-2xs text-slate-400 uppercase tracking-wider font-bold">{log.role}</span>
                       </div>
                     </div>
                   </td>
@@ -178,7 +178,7 @@ const StatCard: React.FC<{ label: string; value: number; icon: any; color: 'blue
       <Icon className="w-6 h-6" />
     </div>
     <div>
-      <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{label}</p>
+      <p className="text-2xs font-bold text-slate-400 uppercase tracking-widest">{label}</p>
       <p className="text-2xl font-black text-slate-800 dark:text-slate-100 leading-none mt-1">{value}</p>
     </div>
   </div>

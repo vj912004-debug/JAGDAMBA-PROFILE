@@ -290,10 +290,10 @@ export const OrderEntry: React.FC = () => {
             <input type="date" value={customerPODate} onChange={(e) => setCustomerPODate(e.target.value)} className="w-full bg-white border border-slate-200 text-slate-800 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 transition" />
           </div>
           <div>
-            <label className="block text-xs font-semibold text-slate-500 mb-1 uppercase tracking-wider flex items-center justify-between">
+            <label className="text-xs font-semibold text-slate-500 mb-1 uppercase tracking-wider flex items-center justify-between">
               <span>Party Name *</span>
               {partyName && parties.some(p => p.partyName === partyName) && (
-                <span className="text-[10px] text-blue-500 font-bold lowercase normal-case tracking-normal">✨ Linked to Master</span>
+                <span className="text-2xs text-blue-500 font-bold normal-case tracking-normal">✨ Linked to Master</span>
               )}
             </label>
             <PartyAutocomplete 
@@ -365,7 +365,7 @@ export const OrderEntry: React.FC = () => {
               onChange={(v) => setGstType(v.toUpperCase())} 
               options={['GST 18%', 'GST 12%', 'GST 5%', 'GST 0%', 'IGST 18%', 'IGST 12%']} 
               placeholder="Select GST Type"
-              className="w-full bg-white border border-slate-200 text-slate-800 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 transition font-bold text-blue-600"
+              className="w-full bg-white border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 transition font-bold text-blue-600"
             />
           </div>
           <div>
@@ -458,20 +458,20 @@ export const OrderEntry: React.FC = () => {
           <table className="w-full text-left border-collapse whitespace-nowrap">
             <thead>
               <tr className="bg-slate-50 border-b border-slate-100">
-                <th className="p-2.5 text-[10px] font-bold tracking-wider text-slate-500 uppercase">Cutting Type</th>
-                <th className="p-2.5 text-[10px] font-bold tracking-wider text-slate-500 uppercase">Material</th>
-                <th className="p-2.5 text-[10px] font-bold tracking-wider text-slate-500 uppercase">Grade</th>
-                <th className="p-2.5 text-[10px] font-bold tracking-wider text-slate-500 uppercase">Thickness</th>
-                <th className="p-2.5 text-[10px] font-bold tracking-wider text-slate-500 uppercase">Dimensions</th>
-                <th className="p-2.5 text-[10px] font-bold tracking-wider text-slate-500 uppercase">Drawing No</th>
-                <th className="p-2.5 text-[10px] font-bold tracking-wider text-slate-500 uppercase">Part Name</th>
-                <th className="p-2.5 text-[10px] font-bold tracking-wider text-slate-500 uppercase">Unit</th>
-                <th className="p-2.5 text-[10px] font-bold tracking-wider text-slate-500 uppercase">Qty (Nos)</th>
-                <th className="p-2.5 text-[10px] font-bold tracking-wider text-slate-500 uppercase">Weight (Kg)</th>
-                <th className="p-2.5 text-[10px] font-bold tracking-wider text-slate-500 uppercase">Rate (₹)</th>
-                <th className="p-2.5 text-[10px] font-bold tracking-wider text-slate-500 uppercase">Amount (₹)</th>
-                <th className="p-2.5 text-[10px] font-bold tracking-wider text-slate-500 uppercase">Scrap</th>
-                <th className="p-2.5 text-[10px] font-bold tracking-wider text-slate-500 uppercase">File</th>
+                <th className="p-2.5 text-2xs font-bold tracking-wider text-slate-500 uppercase">Cutting Type</th>
+                <th className="p-2.5 text-2xs font-bold tracking-wider text-slate-500 uppercase">Material</th>
+                <th className="p-2.5 text-2xs font-bold tracking-wider text-slate-500 uppercase">Grade</th>
+                <th className="p-2.5 text-2xs font-bold tracking-wider text-slate-500 uppercase">Thickness</th>
+                <th className="p-2.5 text-2xs font-bold tracking-wider text-slate-500 uppercase">Dimensions</th>
+                <th className="p-2.5 text-2xs font-bold tracking-wider text-slate-500 uppercase">Drawing No</th>
+                <th className="p-2.5 text-2xs font-bold tracking-wider text-slate-500 uppercase">Part Name</th>
+                <th className="p-2.5 text-2xs font-bold tracking-wider text-slate-500 uppercase">Unit</th>
+                <th className="p-2.5 text-2xs font-bold tracking-wider text-slate-500 uppercase">Qty (Nos)</th>
+                <th className="p-2.5 text-2xs font-bold tracking-wider text-slate-500 uppercase">Weight (Kg)</th>
+                <th className="p-2.5 text-2xs font-bold tracking-wider text-slate-500 uppercase">Rate (₹)</th>
+                <th className="p-2.5 text-2xs font-bold tracking-wider text-slate-500 uppercase">Amount (₹)</th>
+                <th className="p-2.5 text-2xs font-bold tracking-wider text-slate-500 uppercase">Scrap</th>
+                <th className="p-2.5 text-2xs font-bold tracking-wider text-slate-500 uppercase">File</th>
                 <th className="p-2.5 w-10"></th>
               </tr>
             </thead>
@@ -580,10 +580,10 @@ export const OrderEntry: React.FC = () => {
                     {line.fileName ? (
                       <div className="flex items-center gap-1 text-emerald-600 bg-emerald-50 px-1.5 py-1 rounded-lg border border-emerald-100 w-max">
                         <File className="w-3 h-3" />
-                        <span className="text-[10px] font-medium truncate max-w-[50px]" title={line.fileName}>{line.fileName}</span>
+                        <span className="text-2xs font-medium truncate max-w-[50px]" title={line.fileName}>{line.fileName}</span>
                       </div>
                     ) : (
-                      <button onClick={() => handleFileUpload(line.id)} className="flex items-center gap-1 text-slate-500 hover:text-blue-600 hover:bg-blue-50 px-1.5 py-1 rounded-lg border border-slate-200 hover:border-blue-200 transition-colors text-[10px] font-medium w-max">
+                      <button onClick={() => handleFileUpload(line.id)} className="flex items-center gap-1 text-slate-500 hover:text-blue-600 hover:bg-blue-50 px-1.5 py-1 rounded-lg border border-slate-200 hover:border-blue-200 transition-colors text-2xs font-medium w-max">
                         <Upload className="w-3 h-3" /> File
                       </button>
                     )}

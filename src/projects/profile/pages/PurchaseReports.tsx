@@ -144,7 +144,7 @@ export const PurchaseReports: React.FC = () => {
               className="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl pl-10 pr-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
           </div>
-          <button onClick={handleExport} className="flex items-center gap-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 px-4 py-2 rounded-xl text-sm font-semibold hover:bg-slate-50 dark:hover:bg-slate-800/50 dark:bg-slate-800/50 transition-all">
+          <button onClick={handleExport} className="flex items-center gap-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 px-4 py-2 rounded-xl text-sm font-semibold hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-all">
             <Download className="w-4 h-4" /> CSV
           </button>
           <button 
@@ -195,7 +195,7 @@ export const PurchaseReports: React.FC = () => {
                     : po.items[0]?.grade || 'N/A';
                   return (
                     <React.Fragment key={po.id}>
-                      <tr className="hover:bg-slate-50 dark:hover:bg-slate-800/50 dark:bg-slate-800/50 transition-colors">
+                      <tr className="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
                       <td className="p-4 font-mono text-sm text-blue-600 dark:text-blue-400 font-semibold">{po.poNumber}</td>
                       <td className="p-4 text-sm text-slate-600 dark:text-slate-300">{po.date}</td>
                       <td className="p-4 text-sm font-medium text-slate-800 dark:text-slate-100">{po.supplierName}</td>
@@ -208,7 +208,7 @@ export const PurchaseReports: React.FC = () => {
                       <td className="p-4">
                         <div className="flex flex-col gap-1">
                           <span className={clsx(
-                            "px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider w-max",
+                            "px-2.5 py-1 rounded-full text-2xs font-bold uppercase tracking-wider w-max",
                             po.status === 'Complete' ? "bg-emerald-100 text-emerald-700 dark:text-emerald-400 border border-emerald-200" :
                             po.status === 'Partial' ? "bg-blue-100 dark:bg-blue-900/50 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-700" :
                             "bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700"
@@ -216,12 +216,12 @@ export const PurchaseReports: React.FC = () => {
                             {po.status}
                           </span>
                           {po.status === 'Partial' && (
-                            <span className="text-[10px] text-blue-600 dark:text-blue-400 font-bold ml-1">
+                            <span className="text-2xs text-blue-600 dark:text-blue-400 font-bold ml-1">
                               ({pending} Nos Pending)
                             </span>
                           )}
                           {po.status === 'Pending' && (
-                            <span className="text-[10px] text-slate-500 dark:text-slate-400 font-bold ml-1">
+                            <span className="text-2xs text-slate-500 dark:text-slate-400 font-bold ml-1">
                               ({totalNos} Nos Pending)
                             </span>
                           )}
@@ -231,7 +231,7 @@ export const PurchaseReports: React.FC = () => {
                         <div className="flex items-center justify-center gap-1">
                           <button 
                             onClick={() => setPreviewPO(po)}
-                            className="p-1.5 text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/30 dark:bg-blue-900/30 rounded-lg transition-colors"
+                            className="p-1.5 text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded-lg transition-colors"
                             title="Preview & Print"
                           >
                             <Eye className="w-4 h-4" />
@@ -283,11 +283,11 @@ export const PurchaseReports: React.FC = () => {
                               <table className="w-full text-left border-collapse">
                                 <thead className="bg-amber-50 dark:bg-amber-900/30">
                                   <tr>
-                                    <th className="p-2.5 text-[10px] font-bold text-amber-800 dark:text-amber-200 uppercase">Date</th>
-                                    <th className="p-2.5 text-[10px] font-bold text-amber-800 dark:text-amber-200 uppercase text-right">Qty Received</th>
-                                    <th className="p-2.5 text-[10px] font-bold text-amber-800 dark:text-amber-200 uppercase text-right">Qty Pending</th>
-                                    <th className="p-2.5 text-[10px] font-bold text-amber-800 dark:text-amber-200 uppercase">Received Items</th>
-                                    <th className="p-2.5 text-[10px] font-bold text-amber-800 dark:text-amber-200 uppercase">Remark</th>
+                                    <th className="p-2.5 text-2xs font-bold text-amber-800 dark:text-amber-200 uppercase">Date</th>
+                                    <th className="p-2.5 text-2xs font-bold text-amber-800 dark:text-amber-200 uppercase text-right">Qty Received</th>
+                                    <th className="p-2.5 text-2xs font-bold text-amber-800 dark:text-amber-200 uppercase text-right">Qty Pending</th>
+                                    <th className="p-2.5 text-2xs font-bold text-amber-800 dark:text-amber-200 uppercase">Received Items</th>
+                                    <th className="p-2.5 text-2xs font-bold text-amber-800 dark:text-amber-200 uppercase">Remark</th>
                                   </tr>
                                 </thead>
                                 <tbody className="divide-y divide-amber-50">
@@ -324,9 +324,9 @@ export const PurchaseReports: React.FC = () => {
                                                 const itemPendingAfterPr = Math.max(0, (poItem.nos || 0) - totalItemReceivedUpToPr);
 
                                                 return (
-                                                  <div key={ri.itemId} className="flex flex-col gap-0.5 text-[10px] bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-800 rounded px-1.5 py-1">
+                                                  <div key={ri.itemId} className="flex flex-col gap-0.5 text-2xs bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-800 rounded px-1.5 py-1">
                                                     <span className="font-semibold text-slate-600 dark:text-slate-300">{poItem.grade} ({poItem.thickness}mm)</span>
-                                                    <div className="flex justify-between gap-4 text-[9px] mt-0.5">
+                                                    <div className="flex justify-between gap-4 text-3xs mt-0.5">
                                                       <span className="text-emerald-600 dark:text-emerald-400 font-bold">Recd: {ri.receivedQty} Nos</span>
                                                       <span className={clsx("font-bold", itemPendingAfterPr > 0 ? "text-blue-600 dark:text-blue-400" : "text-slate-400")}>
                                                         Pend: {itemPendingAfterPr} Nos
@@ -337,7 +337,7 @@ export const PurchaseReports: React.FC = () => {
                                               })}
                                             </div>
                                           ) : (
-                                            <span className="text-slate-400 italic text-[10px]">Flat receipt</span>
+                                            <span className="text-slate-400 italic text-2xs">Flat receipt</span>
                                           )}
                                         </td>
                                         <td className="p-2.5 text-xs text-slate-500 dark:text-slate-400 italic">{pr.remark || '-'}</td>
@@ -373,7 +373,7 @@ export const PurchaseReports: React.FC = () => {
               </thead>
               <tbody className="divide-y divide-slate-100">
                 {supplierWise.map(([supplier, data]) => (
-                  <tr key={supplier} className="hover:bg-slate-50 dark:hover:bg-slate-800/50 dark:bg-slate-800/50 transition-colors">
+                  <tr key={supplier} className="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
                     <td className="p-4 text-sm font-medium text-slate-800 dark:text-slate-100">{supplier}</td>
                     <td className="p-4 text-sm text-slate-600 dark:text-slate-300 text-center">{data.count}</td>
                     <td className="p-4 text-sm text-slate-800 dark:text-slate-100 text-right font-medium">{data.ordered.toFixed(0)}</td>
@@ -399,7 +399,7 @@ export const PurchaseReports: React.FC = () => {
               </thead>
               <tbody className="divide-y divide-slate-100">
                 {itemWise.map(([item, data]) => (
-                  <tr key={item} className="hover:bg-slate-50 dark:hover:bg-slate-800/50 dark:bg-slate-800/50 transition-colors">
+                  <tr key={item} className="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
                     <td className="p-4 text-sm font-medium text-slate-800 dark:text-slate-100">{item}</td>
                     <td className="p-4 text-sm text-slate-800 dark:text-slate-100 text-right font-medium">{data.ordered}</td>
                     <td className="p-4 text-sm text-emerald-600 dark:text-emerald-400 text-right font-medium">{data.received}</td>
@@ -475,7 +475,7 @@ export const PurchaseReports: React.FC = () => {
                 </button>
                 <button 
                   onClick={() => setPreviewPO(null)} 
-                  className="p-2 text-slate-400 hover:text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 dark:bg-slate-800 rounded-xl transition-all"
+                  className="p-2 text-slate-400 hover:text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:bg-slate-800 rounded-xl transition-all"
                 >
                   <X className="w-6 h-6" />
                 </button>
@@ -505,7 +505,7 @@ const TabButton: React.FC<TabButtonProps> = ({ active, onClick, icon: Icon, labe
     onClick={onClick}
     className={clsx(
       "flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold transition-all duration-200",
-      active ? "bg-white dark:bg-slate-900 text-blue-700 dark:text-blue-300 shadow-sm border border-slate-200 dark:border-slate-700" : "text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:text-slate-100"
+      active ? "bg-white dark:bg-slate-900 text-blue-700 dark:text-blue-300 shadow-sm border border-slate-200 dark:border-slate-700" : "text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-100"
     )}
   >
     <Icon className="w-4 h-4" />

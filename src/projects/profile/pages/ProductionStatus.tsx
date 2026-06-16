@@ -19,7 +19,7 @@ const STAGE_COLORS: Record<Stage, { border: string; bg: string; text: string; do
 };
 
 export const ProductionStatus: React.FC = () => {
-  const { t, role, orders, setOrders, dispatches, setDispatches, branch } = useAppContext();
+  const { t, role, orders, setOrders, branch } = useAppContext();
   const [search, setSearch] = useState('');
   const [viewMode, setViewMode] = useState<'kanban' | 'list'>('kanban');
   const [expandedOrder, setExpandedOrder] = useState<string | null>(null);
@@ -83,7 +83,7 @@ export const ProductionStatus: React.FC = () => {
         </div>
         <div className="flex flex-wrap gap-2 w-full lg:w-auto items-center">
           {branch && branch !== 'All' && (
-            <div className="text-[10px] font-bold text-amber-600 bg-amber-50 dark:bg-amber-900/30 px-2 py-1 rounded-lg border border-amber-100 flex items-center gap-1">
+            <div className="text-2xs font-bold text-amber-600 bg-amber-50 dark:bg-amber-900/30 px-2 py-1 rounded-lg border border-amber-100 flex items-center gap-1">
               <MapPin className="w-3 h-3" /> Filtered by {branch}
             </div>
           )}
@@ -106,8 +106,8 @@ export const ProductionStatus: React.FC = () => {
             {ALL_STAGES.map(s => <option key={s} value={s}>{s}</option>)}
           </select>
           <div className="flex bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl overflow-hidden">
-            <button onClick={() => setViewMode('kanban')} className={`px-3 py-2 text-xs font-semibold transition-colors ${viewMode === 'kanban' ? 'bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300' : 'text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/50 dark:bg-slate-800/50'}`}>Kanban</button>
-            <button onClick={() => setViewMode('list')} className={`px-3 py-2 text-xs font-semibold transition-colors ${viewMode === 'list' ? 'bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300' : 'text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/50 dark:bg-slate-800/50'}`}>List</button>
+            <button onClick={() => setViewMode('kanban')} className={`px-3 py-2 text-xs font-semibold transition-colors ${viewMode === 'kanban' ? 'bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300' : 'text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/50'}`}>Kanban</button>
+            <button onClick={() => setViewMode('list')} className={`px-3 py-2 text-xs font-semibold transition-colors ${viewMode === 'list' ? 'bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300' : 'text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/50'}`}>List</button>
           </div>
         </div>
       </div>
@@ -125,7 +125,7 @@ export const ProductionStatus: React.FC = () => {
                     <span className={`w-2 h-2 rounded-full ${colors.dot}`}></span>
                     {stage}
                   </span>
-                  <span className="bg-white dark:bg-slate-900 text-slate-500 dark:text-slate-400 text-[10px] py-0.5 px-2 rounded-full shadow-sm font-bold">
+                  <span className="bg-white dark:bg-slate-900 text-slate-500 dark:text-slate-400 text-2xs py-0.5 px-2 rounded-full shadow-sm font-bold">
                     {stageOrders.length}
                   </span>
                 </h2>
@@ -133,22 +133,22 @@ export const ProductionStatus: React.FC = () => {
                   {stageOrders.map(order => (
                     <div key={order.id} className={`p-3 rounded-xl border-l-[3px] shadow-sm bg-white dark:bg-slate-900 hover:shadow-md transition-all ${order.urgent && stage !== 'Ready' && stage !== 'Dispatch Done' ? 'border-red-500' : colors.border}`}>
                       <div className="flex justify-between items-start mb-1.5">
-                        <span className="text-[10px] font-bold text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-slate-800 px-1.5 py-0.5 rounded font-mono">{order.orderNo}</span>
+                        <span className="text-2xs font-bold text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-slate-800 px-1.5 py-0.5 rounded font-mono">{order.orderNo}</span>
                         <div className="flex gap-1">
                           {order.urgent && stage !== 'Ready' && stage !== 'Dispatch Done' && (
-                            <span className="flex items-center text-[10px] font-bold text-red-600 dark:text-red-400 gap-0.5 bg-red-100 px-1.5 py-0.5 rounded-full">
+                            <span className="flex items-center text-2xs font-bold text-red-600 dark:text-red-400 gap-0.5 bg-red-100 px-1.5 py-0.5 rounded-full">
                               <AlertCircle className="w-2.5 h-2.5" /> Urgent
                             </span>
                           )}
                           {stage === 'Ready' && (
-                            <span className="flex items-center text-[10px] font-bold text-emerald-600 dark:text-emerald-400 gap-0.5 bg-emerald-100 px-1.5 py-0.5 rounded-full">
+                            <span className="flex items-center text-2xs font-bold text-emerald-600 dark:text-emerald-400 gap-0.5 bg-emerald-100 px-1.5 py-0.5 rounded-full">
                               <CheckCircle2 className="w-2.5 h-2.5" /> Ready
                             </span>
                           )}
                         </div>
                       </div>
                       <h3 className="font-bold text-slate-800 dark:text-slate-100 text-sm mb-1">{order.partyName}</h3>
-                      <div className="text-[11px] text-slate-600 dark:text-slate-300 space-y-0.5 mb-2">
+                      <div className="text-xxs text-slate-600 dark:text-slate-300 space-y-0.5 mb-2">
                         {order.items.length > 0 && (
                           <>
                             <p>Type: <span className="font-medium text-slate-800 dark:text-slate-100">{order.items[0].cuttingType}</span></p>
@@ -169,14 +169,14 @@ export const ProductionStatus: React.FC = () => {
                           <select
                             value={order.stage}
                             onChange={(e) => moveOrder(order.id, e.target.value as Stage)}
-                            className="flex-1 text-[10px] bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg p-1.5 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                            className="flex-1 text-2xs bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg p-1.5 focus:outline-none focus:ring-1 focus:ring-blue-500"
                           >
                             {ALL_STAGES.map(s => <option key={s} value={s}>{s}</option>)}
                           </select>
                           <button onClick={() => advanceStage(order)} title="Advance Stage" className="p-1.5 text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/30 hover:bg-blue-100 dark:hover:bg-blue-900/50 rounded-lg border border-blue-100 dark:border-blue-800 transition-colors">
                             <FastForward className="w-3.5 h-3.5" />
                           </button>
-                          <button onClick={() => generateOrderEntryPDF(order)} title="Print Order" className="p-1.5 text-slate-600 dark:text-slate-300 bg-slate-50 dark:bg-slate-800/50 hover:bg-slate-100 dark:hover:bg-slate-800 dark:bg-slate-800 rounded-lg border border-slate-100 dark:border-slate-800 transition-colors">
+                          <button onClick={() => generateOrderEntryPDF(order)} title="Print Order" className="p-1.5 text-slate-600 dark:text-slate-300 bg-slate-50 hover:bg-slate-100 dark:bg-slate-800 rounded-lg border border-slate-100 dark:border-slate-800 transition-colors">
                             <Printer className="w-3.5 h-3.5" />
                           </button>
                         </div>
@@ -202,14 +202,14 @@ export const ProductionStatus: React.FC = () => {
             <table className="w-full text-left border-collapse whitespace-nowrap">
               <thead>
                 <tr className="bg-slate-50 dark:bg-slate-800/50 border-b border-slate-100 dark:border-slate-800">
-                  <th className="p-3 text-[10px] font-bold tracking-wider text-slate-500 dark:text-slate-400 uppercase">Order No</th>
-                  <th className="p-3 text-[10px] font-bold tracking-wider text-slate-500 dark:text-slate-400 uppercase">Party</th>
-                  <th className="p-3 text-[10px] font-bold tracking-wider text-slate-500 dark:text-slate-400 uppercase">Items</th>
-                  <th className="p-3 text-[10px] font-bold tracking-wider text-slate-500 dark:text-slate-400 uppercase">Material</th>
-                  <th className="p-3 text-[10px] font-bold tracking-wider text-slate-500 dark:text-slate-400 uppercase">Qty</th>
-                  <th className="p-3 text-[10px] font-bold tracking-wider text-slate-500 dark:text-slate-400 uppercase">Due Date</th>
-                  <th className="p-3 text-[10px] font-bold tracking-wider text-slate-500 dark:text-slate-400 uppercase">Status</th>
-                  {canEditStatus && <th className="p-3 text-[10px] font-bold tracking-wider text-slate-500 dark:text-slate-400 uppercase">Action</th>}
+                  <th className="p-3 table-head-cell">Order No</th>
+                  <th className="p-3 table-head-cell">Party</th>
+                  <th className="p-3 table-head-cell">Items</th>
+                  <th className="p-3 table-head-cell">Material</th>
+                  <th className="p-3 table-head-cell">Qty</th>
+                  <th className="p-3 table-head-cell">Due Date</th>
+                  <th className="p-3 table-head-cell">Status</th>
+                  {canEditStatus && <th className="p-3 table-head-cell">Action</th>}
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100">
@@ -217,7 +217,7 @@ export const ProductionStatus: React.FC = () => {
                   const colors = STAGE_COLORS[order.stage];
                   return (
                     <React.Fragment key={order.id}>
-                      <tr className="hover:bg-slate-50/50 dark:hover:bg-slate-800/50 dark:bg-slate-800/50 transition-colors cursor-pointer" onClick={() => setExpandedOrder(expandedOrder === order.id ? null : order.id)}>
+                      <tr className="hover:bg-slate-50/50 dark:hover:bg-slate-800/50 transition-colors cursor-pointer" onClick={() => setExpandedOrder(expandedOrder === order.id ? null : order.id)}>
                         <td className="p-3 text-sm font-bold text-slate-700 dark:text-slate-200 font-mono">
                           <div className="flex items-center gap-2">
                             {order.urgent && <span className="w-1.5 h-1.5 rounded-full bg-red-500 pulse-dot"></span>}
@@ -230,7 +230,7 @@ export const ProductionStatus: React.FC = () => {
                         <td className="p-3 text-sm text-slate-600 dark:text-slate-300">{totalQty(order)}</td>
                         <td className="p-3 text-sm text-slate-600 dark:text-slate-300">{order.deliveryDate ? new Date(order.deliveryDate).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: '2-digit' }) : '-'}</td>
                         <td className="p-3">
-                          <span className={`inline-flex items-center gap-1.5 px-2 py-1 rounded-full text-[10px] font-bold ${colors.bg} ${colors.text}`}>
+                          <span className={`inline-flex items-center gap-1.5 px-2 py-1 rounded-full text-2xs font-bold ${colors.bg} ${colors.text}`}>
                             <span className={`w-1.5 h-1.5 rounded-full ${colors.dot}`}></span>
                             {order.stage}
                           </span>
@@ -241,7 +241,7 @@ export const ProductionStatus: React.FC = () => {
                               <button onClick={(e) => { e.stopPropagation(); advanceStage(order); }} title="Advance" className="p-1.5 text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/30 hover:bg-blue-100 dark:hover:bg-blue-900/50 rounded-lg border border-blue-100 dark:border-blue-800 transition-colors">
                                 <FastForward className="w-3.5 h-3.5" />
                               </button>
-                              <button onClick={(e) => { e.stopPropagation(); generateOrderEntryPDF(order); }} title="Print" className="p-1.5 text-slate-600 dark:text-slate-300 bg-slate-50 dark:bg-slate-800/50 hover:bg-slate-100 dark:hover:bg-slate-800 dark:bg-slate-800 rounded-lg border border-slate-100 dark:border-slate-800 transition-colors">
+                              <button onClick={(e) => { e.stopPropagation(); generateOrderEntryPDF(order); }} title="Print" className="p-1.5 text-slate-600 dark:text-slate-300 bg-slate-50 hover:bg-slate-100 dark:bg-slate-800 rounded-lg border border-slate-100 dark:border-slate-800 transition-colors">
                                 <Printer className="w-3.5 h-3.5" />
                               </button>
                             </div>

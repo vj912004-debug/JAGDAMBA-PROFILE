@@ -83,7 +83,7 @@ export const ProductionStatus: React.FC = () => {
         </div>
         <div className="flex flex-wrap gap-2 w-full lg:w-auto items-center">
           {branch && branch !== 'All' && (
-            <div className="text-[10px] font-bold text-amber-600 bg-amber-50 px-2 py-1 rounded-lg border border-amber-100 flex items-center gap-1">
+            <div className="text-2xs font-bold text-amber-600 bg-amber-50 px-2 py-1 rounded-lg border border-amber-100 flex items-center gap-1">
               <MapPin className="w-3 h-3" /> Filtered by {branch}
             </div>
           )}
@@ -125,7 +125,7 @@ export const ProductionStatus: React.FC = () => {
                     <span className={`w-2 h-2 rounded-full ${colors.dot}`}></span>
                     {stage}
                   </span>
-                  <span className="bg-white text-slate-500 text-[10px] py-0.5 px-2 rounded-full shadow-sm font-bold">
+                  <span className="bg-white text-slate-500 text-2xs py-0.5 px-2 rounded-full shadow-sm font-bold">
                     {stageOrders.length}
                   </span>
                 </h2>
@@ -133,22 +133,22 @@ export const ProductionStatus: React.FC = () => {
                   {stageOrders.map(order => (
                     <div key={order.id} className={`p-3 rounded-xl border-l-[3px] shadow-sm bg-white hover:shadow-md transition-all ${order.urgent && stage !== 'Ready' && stage !== 'Dispatch Done' ? 'border-red-500' : colors.border}`}>
                       <div className="flex justify-between items-start mb-1.5">
-                        <span className="text-[10px] font-bold text-slate-500 bg-slate-100 px-1.5 py-0.5 rounded font-mono">{order.orderNo}</span>
+                        <span className="text-2xs font-bold text-slate-500 bg-slate-100 px-1.5 py-0.5 rounded font-mono">{order.orderNo}</span>
                         <div className="flex gap-1">
                           {order.urgent && stage !== 'Ready' && stage !== 'Dispatch Done' && (
-                            <span className="flex items-center text-[10px] font-bold text-red-600 gap-0.5 bg-red-100 px-1.5 py-0.5 rounded-full">
+                            <span className="flex items-center text-2xs font-bold text-red-600 gap-0.5 bg-red-100 px-1.5 py-0.5 rounded-full">
                               <AlertCircle className="w-2.5 h-2.5" /> Urgent
                             </span>
                           )}
                           {stage === 'Ready' && (
-                            <span className="flex items-center text-[10px] font-bold text-emerald-600 gap-0.5 bg-emerald-100 px-1.5 py-0.5 rounded-full">
+                            <span className="flex items-center text-2xs font-bold text-emerald-600 gap-0.5 bg-emerald-100 px-1.5 py-0.5 rounded-full">
                               <CheckCircle2 className="w-2.5 h-2.5" /> Ready
                             </span>
                           )}
                         </div>
                       </div>
                       <h3 className="font-bold text-slate-800 text-sm mb-1">{order.partyName}</h3>
-                      <div className="text-[11px] text-slate-600 space-y-0.5 mb-2">
+                      <div className="text-xxs text-slate-600 space-y-0.5 mb-2">
                         {order.items.length > 0 && (
                           <>
                             <p>Type: <span className="font-medium text-slate-800">{order.items[0].cuttingType}</span></p>
@@ -169,7 +169,7 @@ export const ProductionStatus: React.FC = () => {
                           <select
                             value={order.stage}
                             onChange={(e) => moveOrder(order.id, e.target.value as Stage)}
-                            className="flex-1 text-[10px] bg-white border border-slate-200 rounded-lg p-1.5 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                            className="flex-1 text-2xs bg-white border border-slate-200 rounded-lg p-1.5 focus:outline-none focus:ring-1 focus:ring-blue-500"
                           >
                             {ALL_STAGES.map(s => <option key={s} value={s}>{s}</option>)}
                           </select>
@@ -202,14 +202,14 @@ export const ProductionStatus: React.FC = () => {
             <table className="w-full text-left border-collapse whitespace-nowrap">
               <thead>
                 <tr className="bg-slate-50 border-b border-slate-100">
-                  <th className="p-3 text-[10px] font-bold tracking-wider text-slate-500 uppercase">Order No</th>
-                  <th className="p-3 text-[10px] font-bold tracking-wider text-slate-500 uppercase">Party</th>
-                  <th className="p-3 text-[10px] font-bold tracking-wider text-slate-500 uppercase">Items</th>
-                  <th className="p-3 text-[10px] font-bold tracking-wider text-slate-500 uppercase">Material</th>
-                  <th className="p-3 text-[10px] font-bold tracking-wider text-slate-500 uppercase">Qty</th>
-                  <th className="p-3 text-[10px] font-bold tracking-wider text-slate-500 uppercase">Due Date</th>
-                  <th className="p-3 text-[10px] font-bold tracking-wider text-slate-500 uppercase">Status</th>
-                  {canEditStatus && <th className="p-3 text-[10px] font-bold tracking-wider text-slate-500 uppercase">Action</th>}
+                  <th className="p-3 text-2xs font-bold tracking-wider text-slate-500 uppercase">Order No</th>
+                  <th className="p-3 text-2xs font-bold tracking-wider text-slate-500 uppercase">Party</th>
+                  <th className="p-3 text-2xs font-bold tracking-wider text-slate-500 uppercase">Items</th>
+                  <th className="p-3 text-2xs font-bold tracking-wider text-slate-500 uppercase">Material</th>
+                  <th className="p-3 text-2xs font-bold tracking-wider text-slate-500 uppercase">Qty</th>
+                  <th className="p-3 text-2xs font-bold tracking-wider text-slate-500 uppercase">Due Date</th>
+                  <th className="p-3 text-2xs font-bold tracking-wider text-slate-500 uppercase">Status</th>
+                  {canEditStatus && <th className="p-3 text-2xs font-bold tracking-wider text-slate-500 uppercase">Action</th>}
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100">
@@ -230,7 +230,7 @@ export const ProductionStatus: React.FC = () => {
                         <td className="p-3 text-sm text-slate-600">{totalQty(order)}</td>
                         <td className="p-3 text-sm text-slate-600">{order.deliveryDate ? new Date(order.deliveryDate).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: '2-digit' }) : '-'}</td>
                         <td className="p-3">
-                          <span className={`inline-flex items-center gap-1.5 px-2 py-1 rounded-full text-[10px] font-bold ${colors.bg} ${colors.text}`}>
+                          <span className={`inline-flex items-center gap-1.5 px-2 py-1 rounded-full text-2xs font-bold ${colors.bg} ${colors.text}`}>
                             <span className={`w-1.5 h-1.5 rounded-full ${colors.dot}`}></span>
                             {order.stage}
                           </span>

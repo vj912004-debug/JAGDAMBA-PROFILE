@@ -2,6 +2,7 @@ import React, { useState, useMemo, useEffect } from 'react';
 import { ClipboardCheck, Search, AlertCircle } from 'lucide-react';
 import { useAppContext, type PurchaseReceipt, type PurchaseOrder } from '../store/AppContext';
 import toast from 'react-hot-toast';
+import { upper } from '../utils/textCase';
 
 export const MaterialReceipt: React.FC = () => {
   const { t, purchaseOrders, setPurchaseOrders, purchaseReceipts, setPurchaseReceipts, role } = useAppContext();
@@ -171,18 +172,18 @@ export const MaterialReceipt: React.FC = () => {
                     </div>
                     <div>
                       <label className="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1.5 uppercase tracking-wider">Bill No</label>
-                      <input type="text" value={billNo} onChange={(e) => setBillNo(e.target.value)} className="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-100 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Enter Bill No" />
+                      <input type="text" value={billNo} onChange={(e) => setBillNo(upper(e.target.value))} className="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-100 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Enter Bill No" />
                     </div>
                   </div>
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
                       <label className="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1.5 uppercase tracking-wider">Transporter Name</label>
-                      <input type="text" value={transporterName} onChange={(e) => setTransporterName(e.target.value)} className="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-100 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Enter Transporter Name" />
+                      <input type="text" value={transporterName} onChange={(e) => setTransporterName(upper(e.target.value))} className="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-100 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Enter Transporter Name" />
                     </div>
                     <div>
                       <label className="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1.5 uppercase tracking-wider">Vehicle No</label>
-                      <input type="text" value={vehicleNo} onChange={(e) => setVehicleNo(e.target.value)} className="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-100 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="GJ-06-XX-XXXX" />
+                      <input type="text" value={vehicleNo} onChange={(e) => setVehicleNo(upper(e.target.value))} className="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-100 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="GJ-06-XX-XXXX" />
                     </div>
                   </div>
 
@@ -195,7 +196,7 @@ export const MaterialReceipt: React.FC = () => {
                         className={`flex-1 py-2.5 rounded-lg border text-sm font-bold transition-all duration-300 ${
                           tcAvailable === 'Yes'
                             ? 'bg-emerald-600 border-emerald-600 text-white shadow-md shadow-emerald-100'
-                            : 'bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800/50 dark:bg-slate-800/50'
+                            : 'bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800/50'
                         }`}
                       >
                         Yes
@@ -206,7 +207,7 @@ export const MaterialReceipt: React.FC = () => {
                         className={`flex-1 py-2.5 rounded-lg border text-sm font-bold transition-all duration-300 ${
                           tcAvailable === 'No'
                             ? 'bg-rose-600 border-rose-600 text-white shadow-md shadow-rose-100'
-                            : 'bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800/50 dark:bg-slate-800/50'
+                            : 'bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800/50'
                         }`}
                       >
                         No
@@ -215,7 +216,7 @@ export const MaterialReceipt: React.FC = () => {
                   </div>
 
                   <div className="space-y-1.5">
-                    <label className="block text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Item Details & Received Quantities *</label>
+                    <label className="field-label-sm">Item Details & Received Quantities *</label>
                     <div className="border border-slate-100 dark:border-slate-800 rounded-xl overflow-hidden bg-slate-50/20 dark:bg-slate-800/20">
                       <table className="w-full text-left border-collapse text-xs">
                         <thead>
@@ -234,11 +235,11 @@ export const MaterialReceipt: React.FC = () => {
                             const curQty = itemQuantities[item.id] ?? 0;
 
                             return (
-                              <tr key={item.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/50 dark:bg-slate-800/50 transition-colors">
+                              <tr key={item.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/50 transition-colors">
                                 <td className="p-3 font-medium text-slate-700 dark:text-slate-200">
                                   <div className="flex flex-col">
                                     <span className="font-bold text-slate-800 dark:text-slate-100">{item.grade}</span>
-                                    <span className="text-slate-400 text-[10px]">{item.thickness}mm • {item.width}x{item.length}mm</span>
+                                    <span className="text-slate-400 text-2xs">{item.thickness}mm • {item.width}x{item.length}mm</span>
                                   </div>
                                 </td>
                                 <td className="p-3 text-center font-semibold text-slate-600 dark:text-slate-300">{item.nos} Nos</td>
@@ -257,7 +258,7 @@ export const MaterialReceipt: React.FC = () => {
                                         [item.id]: val
                                       }));
                                     }}
-                                    className="w-20 bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-lg px-2 py-1 text-center font-bold text-slate-700 dark:text-slate-200 focus:bg-white dark:bg-slate-900 focus:ring-2 focus:ring-blue-500 outline-none"
+                                    className="w-20 bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-lg px-2 py-1 text-center font-bold text-slate-700 dark:text-slate-200 focus:bg-white dark:focus:bg-slate-900 focus:ring-2 focus:ring-blue-500 outline-none"
                                     placeholder="0"
                                   />
                                 </td>
@@ -274,7 +275,7 @@ export const MaterialReceipt: React.FC = () => {
                     <input 
                       type="text" 
                       value={remark} 
-                      onChange={(e) => setRemark(e.target.value)} 
+                      onChange={(e) => setRemark(upper(e.target.value))} 
                       className="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-100 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                       placeholder="Heat No, Vehicle No, etc."
                     />
@@ -333,7 +334,7 @@ export const MaterialReceipt: React.FC = () => {
                 )}
 
                 <div className="pt-2">
-                  <div className="text-[10px] uppercase font-bold text-slate-400 mb-1">Details</div>
+                  <div className="text-2xs uppercase font-bold text-slate-400 mb-1">Details</div>
                   <div className="text-xs text-slate-600 dark:text-slate-300 space-y-1">
                     <p><strong>Supplier:</strong> {selectedPO.supplierName}</p>
                     <p><strong>Items:</strong> {selectedPO.items.map(i => i.grade).join(', ')}</p>

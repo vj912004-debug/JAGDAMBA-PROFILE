@@ -238,7 +238,7 @@ export const MaterialReceipt: React.FC = () => {
                 )}
 
                 <div className="pt-2">
-                  <div className="text-[10px] uppercase font-bold text-slate-400 mb-1">Details</div>
+                  <div className="text-2xs uppercase font-bold text-slate-400 mb-1">Details</div>
                   <div className="text-xs text-slate-600 space-y-1">
                     <p><strong>Supplier:</strong> {selectedPO.supplierName}</p>
                     <p><strong>Items:</strong> {selectedPO.items.map(i => i.grade).join(', ')}</p>

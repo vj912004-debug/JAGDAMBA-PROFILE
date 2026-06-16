@@ -227,16 +227,16 @@ export const PlateTracking: React.FC = () => {
           <table className="w-full text-left border-collapse whitespace-nowrap">
             <thead>
               <tr className="bg-slate-50 border-b border-slate-100">
-                <th className="p-3 text-[10px] font-bold tracking-wider text-slate-500 uppercase">Plate ID</th>
-                <th className="p-3 text-[10px] font-bold tracking-wider text-slate-500 uppercase">Grade / Thickness</th>
-                <th className="p-3 text-[10px] font-bold tracking-wider text-slate-500 uppercase">Size</th>
-                <th className="p-3 text-[10px] font-bold tracking-wider text-slate-500 uppercase">Heat/TC No</th>
-                <th className="p-3 text-[10px] font-bold tracking-wider text-slate-500 uppercase">Source</th>
-                <th className="p-3 text-[10px] font-bold tracking-wider text-slate-500 uppercase">Initial (Kg)</th>
-                <th className="p-3 text-[10px] font-bold tracking-wider text-slate-500 uppercase">Used (Kg)</th>
-                <th className="p-3 text-[10px] font-bold tracking-wider text-slate-500 uppercase text-red-600">Scrap (Kg)</th>
-                <th className="p-3 text-[10px] font-bold tracking-wider text-slate-500 uppercase text-emerald-600">Balance (Kg)</th>
-                <th className="p-3 text-[10px] font-bold tracking-wider text-slate-500 uppercase">Orders</th>
+                <th className="p-3 text-2xs font-bold tracking-wider text-slate-500 uppercase">Plate ID</th>
+                <th className="p-3 text-2xs font-bold tracking-wider text-slate-500 uppercase">Grade / Thickness</th>
+                <th className="p-3 text-2xs font-bold tracking-wider text-slate-500 uppercase">Size</th>
+                <th className="p-3 text-2xs font-bold tracking-wider text-slate-500 uppercase">Heat/TC No</th>
+                <th className="p-3 text-2xs font-bold tracking-wider text-slate-500 uppercase">Source</th>
+                <th className="p-3 text-2xs font-bold tracking-wider text-slate-500 uppercase">Initial (Kg)</th>
+                <th className="p-3 text-2xs font-bold tracking-wider text-slate-500 uppercase">Used (Kg)</th>
+                <th className="p-3 text-2xs font-bold tracking-wider uppercase text-red-600">Scrap (Kg)</th>
+                <th className="p-3 text-2xs font-bold tracking-wider uppercase text-emerald-600">Balance (Kg)</th>
+                <th className="p-3 text-2xs font-bold tracking-wider text-slate-500 uppercase">Orders</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
@@ -250,7 +250,7 @@ export const PlateTracking: React.FC = () => {
                     <td className="p-3 text-sm text-slate-600">{plate.size || '-'}</td>
                     <td className="p-3 text-sm text-slate-600 font-mono">{plate.heatNumber || '-'}</td>
                     <td className="p-3">
-                      <span className={`px-2 py-0.5 text-[10px] font-bold rounded-full ${plate.source === 'Customer' ? 'bg-purple-100 text-purple-700' : 'bg-blue-100 text-blue-700'}`}>
+                      <span className={`px-2 py-0.5 text-2xs font-bold rounded-full ${plate.source === 'Customer' ? 'bg-purple-100 text-purple-700' : 'bg-blue-100 text-blue-700'}`}>
                         {plate.source}
                       </span>
                     </td>
@@ -267,7 +267,7 @@ export const PlateTracking: React.FC = () => {
                     </td>
                     <td className="p-3 text-sm text-slate-600">
                       {stats.usageRecords.map(u => (
-                        <span key={u.id} className="inline-block bg-slate-100 text-slate-700 text-[10px] font-bold px-1.5 py-0.5 rounded mr-1">{u.orderNo}</span>
+                        <span key={u.id} className="inline-block bg-slate-100 text-slate-700 text-2xs font-bold px-1.5 py-0.5 rounded mr-1">{u.orderNo}</span>
                       ))}
                       {stats.usageCount === 0 && <span className="text-slate-400 text-xs">Unused</span>}
                     </td>

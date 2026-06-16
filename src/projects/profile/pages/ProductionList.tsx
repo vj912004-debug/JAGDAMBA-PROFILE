@@ -100,14 +100,14 @@ export const ProductionList: React.FC = () => {
       {/* Worker Summary Cards */}
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 overflow-x-auto pb-2">
         {Object.entries(workerSummary).map(([worker, stats]) => (
-          <div key={worker} className={`p-3 rounded-xl border transition-all ${workerFilter === worker ? 'bg-blue-600 border-blue-600 text-white shadow-md' : 'bg-white dark:bg-slate-900 border-slate-100 dark:border-slate-800 text-slate-600 dark:text-slate-300 hover:border-blue-200 dark:border-blue-700'}`} onClick={() => setWorkerFilter(worker === workerFilter ? 'All' : worker)}>
+          <div key={worker} className={`p-3 rounded-xl border transition-all ${workerFilter === worker ? 'bg-blue-600 border-blue-600 text-white shadow-md' : 'bg-white dark:bg-slate-900 border-slate-100 dark:border-slate-800 text-slate-600 dark:text-slate-300 hover:border-blue-200 dark:hover:border-blue-700'}`} onClick={() => setWorkerFilter(worker === workerFilter ? 'All' : worker)}>
             <div className="flex justify-between items-start mb-1">
-              <span className="text-[10px] font-bold uppercase tracking-wider opacity-80">{worker}</span>
+              <span className="text-2xs font-bold uppercase tracking-wider opacity-80">{worker}</span>
               <User className={`w-3 h-3 ${workerFilter === worker ? 'text-blue-100' : 'text-slate-400'}`} />
             </div>
             <div className="flex items-end justify-between">
               <span className="text-lg font-bold">{stats.completed}/{stats.total}</span>
-              <span className="text-[10px] font-medium opacity-80">{Math.round((stats.completed / stats.total) * 100)}%</span>
+              <span className="text-2xs font-medium opacity-80">{Math.round((stats.completed / stats.total) * 100)}%</span>
             </div>
             <div className="w-full bg-black/10 h-1 rounded-full mt-2 overflow-hidden">
               <div className={`h-full ${workerFilter === worker ? 'bg-white dark:bg-slate-900' : 'bg-blue-500'}`} style={{ width: `${(stats.completed / stats.total) * 100}%` }}></div>
@@ -121,14 +121,14 @@ export const ProductionList: React.FC = () => {
           <table className="w-full text-left border-collapse whitespace-nowrap">
             <thead>
               <tr className="bg-slate-50 dark:bg-slate-800/50 border-b border-slate-100 dark:border-slate-800">
-                <th className="p-4 text-[10px] font-bold tracking-wider text-slate-500 dark:text-slate-400 uppercase">Order / Customer</th>
-                <th className="p-4 text-[10px] font-bold tracking-wider text-slate-500 dark:text-slate-400 uppercase">Item Details</th>
-                <th className="p-4 text-[10px] font-bold tracking-wider text-slate-500 dark:text-slate-400 uppercase">Specifications</th>
-                <th className="p-4 text-[10px] font-bold tracking-wider text-slate-500 dark:text-slate-400 uppercase text-center">Completed / Total Qty</th>
-                <th className="p-4 text-[10px] font-bold tracking-wider text-slate-500 dark:text-slate-400 uppercase">Assigned Worker</th>
-                <th className="p-4 text-[10px] font-bold tracking-wider text-slate-500 dark:text-slate-400 uppercase text-center">{t('itemStatus')}</th>
-                <th className="p-4 text-[10px] font-bold tracking-wider text-slate-500 dark:text-slate-400 uppercase text-center">Docs</th>
-                {canEdit && <th className="p-4 text-[10px] font-bold tracking-wider text-slate-500 dark:text-slate-400 uppercase text-center">Update Completed</th>}
+                <th className="p-4 table-head-cell">Order / Customer</th>
+                <th className="p-4 table-head-cell">Item Details</th>
+                <th className="p-4 table-head-cell">Specifications</th>
+                <th className="p-4 table-head-cell text-center">Completed / Total Qty</th>
+                <th className="p-4 table-head-cell">Assigned Worker</th>
+                <th className="p-4 table-head-cell text-center">{t('itemStatus')}</th>
+                <th className="p-4 table-head-cell text-center">Docs</th>
+                {canEdit && <th className="p-4 table-head-cell text-center">Update Completed</th>}
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
@@ -150,21 +150,21 @@ export const ProductionList: React.FC = () => {
                   <td className="p-4">
                     <div className="flex flex-col">
                       <span className="text-sm font-medium text-slate-800 dark:text-slate-100">{item.partName || 'No Part Name'}</span>
-                      <span className="text-[10px] text-slate-400 font-mono">{item.drawingNumber}</span>
+                      <span className="text-2xs text-slate-400 font-mono">{item.drawingNumber}</span>
                     </div>
                   </td>
                   <td className="p-4">
                     <div className="flex flex-wrap gap-1">
-                      <span className="text-[10px] bg-slate-100 dark:bg-slate-800 px-1.5 py-0.5 rounded text-slate-600 dark:text-slate-300">{item.cuttingType}</span>
-                      <span className="text-[10px] bg-blue-50 dark:bg-blue-900/30 px-1.5 py-0.5 rounded text-blue-600 dark:text-blue-400">{item.materialGrade}</span>
-                      <span className="text-[10px] bg-slate-100 dark:bg-slate-800 px-1.5 py-0.5 rounded text-slate-600 dark:text-slate-300">{item.thickness}{item.thickness && !item.thickness.toLowerCase().includes('mm') ? 'mm' : ''}</span>
+                      <span className="text-2xs bg-slate-100 dark:bg-slate-800 px-1.5 py-0.5 rounded text-slate-600 dark:text-slate-300">{item.cuttingType}</span>
+                      <span className="text-2xs bg-blue-50 dark:bg-blue-900/30 px-1.5 py-0.5 rounded text-blue-600 dark:text-blue-400">{item.materialGrade}</span>
+                      <span className="text-2xs bg-slate-100 dark:bg-slate-800 px-1.5 py-0.5 rounded text-slate-600 dark:text-slate-300">{item.thickness}{item.thickness && !item.thickness.toLowerCase().includes('mm') ? 'mm' : ''}</span>
                       {item.cuttingType === 'Circle' && (item.outerDiameter || item.innerDiameter) && (
-                        <span className="text-[10px] bg-indigo-50 px-1.5 py-0.5 rounded text-indigo-600 font-bold">
+                        <span className="text-2xs bg-indigo-50 px-1.5 py-0.5 rounded text-indigo-600 font-bold">
                           OD:{item.outerDiameter || '-'} ID:{item.innerDiameter || '-'}
                         </span>
                       )}
                       {item.cuttingType === 'Square' && (item.length || item.width) && (
-                        <span className="text-[10px] bg-indigo-50 px-1.5 py-0.5 rounded text-indigo-600 font-bold">
+                        <span className="text-2xs bg-indigo-50 px-1.5 py-0.5 rounded text-indigo-600 font-bold">
                           {item.length || '-'}x{item.width || '-'}
                         </span>
                       )}
@@ -175,7 +175,7 @@ export const ProductionList: React.FC = () => {
                       <span className="text-sm font-bold text-slate-700 dark:text-slate-200">
                         {item.completedQty || 0} / {item.quantity}
                       </span>
-                      <span className="text-[9px] text-slate-400">{item.unitType}</span>
+                      <span className="text-3xs text-slate-400">{item.unitType}</span>
                       <div className="w-12 bg-slate-100 dark:bg-slate-800 h-1 rounded-full mt-1 overflow-hidden">
                         <div className="h-full bg-emerald-500" style={{ width: `${((item.completedQty || 0) / item.quantity) * 100}%` }}></div>
                       </div>
@@ -203,7 +203,7 @@ export const ProductionList: React.FC = () => {
                     </div>
                   </td>
                   <td className="p-4 text-center">
-                    <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider
+                    <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-2xs font-bold uppercase tracking-wider
                       ${(item.itemStatus || 'Pending') === 'Completed' ? 'bg-emerald-50 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 border border-emerald-100 dark:border-emerald-800' : 
                         (item.itemStatus || 'Pending') === 'In Progress' ? 'bg-amber-50 dark:bg-amber-900/30 text-amber-700 border border-amber-100' : 
                         'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700'}`}>
@@ -213,7 +213,7 @@ export const ProductionList: React.FC = () => {
                       {item.itemStatus || 'Pending'}
                     </span>
                     {item.completedAt && (
-                      <div className="text-[9px] text-slate-400 mt-1">
+                      <div className="text-3xs text-slate-400 mt-1">
                         Done: {new Date(item.completedAt).toLocaleDateString()}
                       </div>
                     )}
@@ -294,7 +294,7 @@ export const ProductionList: React.FC = () => {
               </div>
               <button 
                 onClick={() => setSelectedOrder(null)}
-                className="p-1.5 text-slate-400 hover:text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 dark:bg-slate-800 rounded-lg transition-colors"
+                className="p-1.5 text-slate-400 hover:text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:bg-slate-800 rounded-lg transition-colors"
               >
                 <AlertCircle className="w-5 h-5 rotate-45" />
               </button>
@@ -304,25 +304,25 @@ export const ProductionList: React.FC = () => {
               <table className="w-full text-left border-collapse whitespace-nowrap">
                 <thead>
                   <tr className="bg-slate-50 dark:bg-slate-800/50 border-b border-slate-100 dark:border-slate-800">
-                    <th className="p-3 text-[10px] font-bold tracking-wider text-slate-500 dark:text-slate-400 uppercase">Item Details</th>
-                    <th className="p-3 text-[10px] font-bold tracking-wider text-slate-500 dark:text-slate-400 uppercase text-center">Thick</th>
-                    <th className="p-3 text-[10px] font-bold tracking-wider text-slate-500 dark:text-slate-400 uppercase text-center">Width / OD</th>
-                    <th className="p-3 text-[10px] font-bold tracking-wider text-slate-500 dark:text-slate-400 uppercase text-center">Length / ID</th>
-                    <th className="p-3 text-[10px] font-bold tracking-wider text-slate-500 dark:text-slate-400 uppercase text-center">Total Nos</th>
-                    <th className="p-3 text-[10px] font-bold tracking-wider text-slate-500 dark:text-slate-400 uppercase text-center">Done</th>
-                    <th className="p-3 text-[10px] font-bold tracking-wider text-slate-500 dark:text-slate-400 uppercase text-center">Grade</th>
-                    <th className="p-3 text-[10px] font-bold tracking-wider text-slate-500 dark:text-slate-400 uppercase">Worker</th>
-                    <th className="p-3 text-[10px] font-bold tracking-wider text-slate-500 dark:text-slate-400 uppercase text-center">Status</th>
-                    {canEdit && <th className="p-3 text-[10px] font-bold tracking-wider text-slate-500 dark:text-slate-400 uppercase text-center">Update</th>}
+                    <th className="p-3 table-head-cell">Item Details</th>
+                    <th className="p-3 table-head-cell text-center">Thick</th>
+                    <th className="p-3 table-head-cell text-center">Width / OD</th>
+                    <th className="p-3 table-head-cell text-center">Length / ID</th>
+                    <th className="p-3 table-head-cell text-center">Total Nos</th>
+                    <th className="p-3 table-head-cell text-center">Done</th>
+                    <th className="p-3 table-head-cell text-center">Grade</th>
+                    <th className="p-3 table-head-cell">Worker</th>
+                    <th className="p-3 table-head-cell text-center">Status</th>
+                    {canEdit && <th className="p-3 table-head-cell text-center">Update</th>}
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100">
                   {selectedOrder.items.map((item: any) => (
-                    <tr key={item.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/50 dark:bg-slate-800/50 transition-colors">
+                    <tr key={item.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
                       <td className="p-3">
                         <div className="flex flex-col">
                           <span className="text-xs font-bold text-slate-800 dark:text-slate-100">{item.partName || 'No Part Name'}</span>
-                          <span className="text-[10px] text-slate-400 font-mono">{item.drawingNumber}</span>
+                          <span className="text-2xs text-slate-400 font-mono">{item.drawingNumber}</span>
                         </div>
                       </td>
                       <td className="p-3 text-center">
@@ -345,7 +345,7 @@ export const ProductionList: React.FC = () => {
                         </span>
                       </td>
                       <td className="p-3 text-center">
-                        <span className="text-[10px] bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 px-1.5 py-0.5 rounded font-bold">
+                        <span className="text-2xs bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 px-1.5 py-0.5 rounded font-bold">
                           {item.materialGrade}
                         </span>
                       </td>
@@ -368,7 +368,7 @@ export const ProductionList: React.FC = () => {
                         )}
                       </td>
                       <td className="p-3 text-center">
-                        <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-wider
+                        <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-3xs font-bold uppercase tracking-wider
                           ${(item.itemStatus || 'Pending') === 'Completed' ? 'bg-emerald-50 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 border border-emerald-100 dark:border-emerald-800' : 
                             (item.itemStatus || 'Pending') === 'In Progress' ? 'bg-amber-50 dark:bg-amber-900/30 text-amber-700 border border-amber-100' : 
                             'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700'}`}>

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { List } from 'lucide-react';
+import { upper } from '../utils/textCase';
 
 interface EditableSelectProps {
   value: string;
@@ -69,7 +70,7 @@ export const EditableSelect: React.FC<EditableSelectProps> = ({
           type="text"
           list={datalistId}
           value={value}
-          onChange={(e) => onChange(e.target.value)}
+          onChange={(e) => onChange(upper(e.target.value))}
           placeholder={placeholder || "Type manually..."}
           className={`${enhancedClassName} pr-8 focus:ring-2 focus:ring-blue-500 outline-none transition-all`}
           autoFocus
@@ -82,7 +83,7 @@ export const EditableSelect: React.FC<EditableSelectProps> = ({
         <button
           type="button"
           onClick={handleBackToList}
-          className="absolute right-2 text-slate-400 hover:text-blue-600 dark:text-blue-400 transition-colors p-1 rounded-md hover:bg-slate-100 dark:hover:bg-slate-800 dark:bg-slate-800"
+          className="absolute right-2 text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors p-1 rounded-md hover:bg-slate-100 dark:bg-slate-800"
           title="Switch back to list"
         >
           <List className="w-3 h-3" />

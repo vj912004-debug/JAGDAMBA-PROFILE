@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { useAppContext, type PartyMaster } from '../store/AppContext';
 import { Search, Plus, Sparkles, Building2 } from 'lucide-react';
 import { cn } from './Sidebar';
+import { upper } from '../utils/textCase';
 
 interface PartyAutocompleteProps {
   value: string;
@@ -158,7 +159,7 @@ export const PartyAutocomplete: React.FC<PartyAutocompleteProps> = ({
           type="text"
           value={inputValue}
           onChange={(e) => {
-            const val = e.target.value;
+            const val = upper(e.target.value);
             setInputValue(val);
             onChange(val);
             setIsOpen(true);
@@ -171,17 +172,17 @@ export const PartyAutocomplete: React.FC<PartyAutocompleteProps> = ({
             className
           )}
         />
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 dark:text-slate-500 dark:text-slate-400" />
+        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 dark:text-slate-500" />
       </div>
 
       {isOpen && dropdownItems.length > 0 && (
         <div className="absolute left-0 right-0 mt-1.5 max-h-60 overflow-y-auto z-50 bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl shadow-xl divide-y divide-slate-100 dark:divide-slate-900 transition-all animate-in fade-in slide-in-from-top-1.5 duration-100">
           <div className="px-3 py-1.5 bg-slate-50 dark:bg-slate-900/50 flex items-center justify-between">
-            <span className="text-[10px] font-black text-slate-400 dark:text-slate-500 dark:text-slate-400 uppercase tracking-widest flex items-center gap-1.5">
+            <span className="meta-10 flex items-center gap-1.5">
               <Building2 className="w-3.5 h-3.5" />
               List of Ledgers (Tally Prime)
             </span>
-            <span className="text-[9px] font-medium text-slate-400 dark:text-slate-650 tracking-wider">
+            <span className="caption-2 tracking-wider">
               Arrows/Enter to select
             </span>
           </div>
@@ -200,24 +201,24 @@ export const PartyAutocomplete: React.FC<PartyAutocompleteProps> = ({
                       "w-full text-left px-3.5 py-2.5 rounded-lg text-xs font-semibold flex flex-col gap-0.5 transition-all outline-none",
                       isHighlighted 
                         ? "bg-blue-600 text-white shadow-md shadow-blue-100 dark:shadow-none" 
-                        : "text-slate-700 dark:text-slate-350 hover:bg-slate-50 dark:hover:bg-slate-800/50 dark:bg-slate-800/50 dark:hover:bg-slate-900"
+                        : "text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:bg-slate-800/50 dark:hover:bg-slate-900"
                     )}
                   >
                     <span className="font-bold flex items-center justify-between">
                       {item.data.partyName}
                       <span className={cn(
-                        "text-[9px] px-1.5 py-0.5 rounded-md",
+                        "text-3xs px-1.5 py-0.5 rounded-md",
                         isHighlighted 
                           ? "bg-blue-500 text-white" 
-                          : "bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-450"
+                          : "bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400"
                       )}>
                         {item.data.location}
                       </span>
                     </span>
                     {(item.data.contactPerson || item.data.mobileNumber) && (
                       <span className={cn(
-                        "text-[10px] font-medium truncate",
-                        isHighlighted ? "text-blue-100" : "text-slate-400 dark:text-slate-550"
+                        "text-2xs font-medium truncate",
+                        isHighlighted ? "text-blue-100" : "text-slate-400 dark:text-slate-500"
                       )}>
                         {item.data.contactPerson && `${item.data.contactPerson} • `}{item.data.mobileNumber}
                       </span>
@@ -234,7 +235,7 @@ export const PartyAutocomplete: React.FC<PartyAutocompleteProps> = ({
                       "w-full text-left px-3.5 py-3 rounded-lg text-xs font-bold flex items-center justify-between transition-all outline-none",
                       isHighlighted 
                         ? "bg-emerald-600 text-white shadow-md shadow-emerald-100 dark:shadow-none" 
-                        : "text-emerald-600 dark:text-emerald-450 bg-emerald-50/50 dark:bg-emerald-900/50 dark:bg-emerald-950/10 hover:bg-emerald-50 dark:bg-emerald-900/30 dark:hover:bg-emerald-950/20"
+                        : "text-emerald-600 dark:text-emerald-400 bg-emerald-50/50 dark:bg-emerald-950/10 hover:bg-emerald-50 dark:hover:bg-emerald-950/20"
                     )}
                   >
                     <span className="flex items-center gap-2">

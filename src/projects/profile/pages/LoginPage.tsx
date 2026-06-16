@@ -64,25 +64,25 @@ export const LoginPage: React.FC = () => {
       <div className="relative w-full max-w-md z-10">
         {/* Logo & Header */}
         <div className="text-center mb-8 relative">
-          <h1 className="text-4xl font-black tracking-tight mb-2 text-transparent bg-clip-text bg-gradient-to-r from-slate-100 via-white to-slate-400 drop-shadow-[0_2px_10px_rgba(255,255,255,0.05)]">
+          <h1 className="text-4xl font-black tracking-tight mb-2 text-transparent bg-clip-text bg-linear-to-r from-slate-100 via-white to-slate-400 drop-shadow-[0_2px_10px_rgba(255,255,255,0.05)]">
             JAGDAMBA PROFILE
           </h1>
           <div className="flex items-center justify-center gap-3">
-            <span className="h-[1px] w-8 bg-gradient-to-r from-transparent to-blue-500/50"></span>
-            <p className="text-[10px] font-bold text-blue-400 uppercase tracking-[0.35em]">
+            <span className="h-[1px] w-8 bg-linear-to-r from-transparent to-blue-500/50"></span>
+            <p className="text-2xs font-bold text-blue-400 uppercase tracking-[0.35em]">
               Steel Cutting ERP
             </p>
-            <span className="h-[1px] w-8 bg-gradient-to-l from-transparent to-blue-500/50"></span>
+            <span className="h-[1px] w-8 bg-linear-to-l from-transparent to-blue-500/50"></span>
           </div>
         </div>
 
         {/* Login Card */}
         <div className="bg-slate-900/40 backdrop-blur-xl rounded-3xl p-8 border border-slate-800/80 shadow-2xl relative group overflow-hidden transition-all duration-500 hover:border-slate-700/80">
           {/* Futuristic card highlight line at the top */}
-          <div className="absolute inset-x-0 top-0 h-[1px] bg-gradient-to-r from-transparent via-blue-500/50 to-transparent"></div>
+          <div className="absolute inset-x-0 top-0 h-[1px] bg-linear-to-r from-transparent via-blue-500/50 to-transparent"></div>
 
           <div className="text-center mb-8">
-            <div className="w-16 h-16 bg-slate-950/80 rounded-2xl flex items-center justify-center mx-auto mb-4 border border-slate-800 shadow-inner shadow-blue-500/5 group-hover:border-blue-500/30 transition-colors duration-300">
+            <div className="w-16 h-16 bg-slate-950/80 rounded-2xl flex items-center justify-center mx-auto mb-4 border border-slate-800 shadow-blue-500/5 group-hover:border-blue-500/30 transition-colors duration-300">
               <Lock className="w-6 h-6 text-blue-400 drop-shadow-[0_0_8px_rgba(96,165,250,0.4)]" />
             </div>
             <h2 className="text-xl font-extrabold text-white tracking-wide">Sign In</h2>
@@ -91,7 +91,7 @@ export const LoginPage: React.FC = () => {
 
           <form onSubmit={handleSubmit} className="space-y-5">
             <div>
-              <label className="block text-[10px] font-bold text-slate-400 mb-2 uppercase tracking-widest">Username</label>
+              <label className="block text-2xs font-bold text-slate-400 mb-2 uppercase tracking-widest">Username</label>
               <div className="relative group/input">
                 <User className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500 dark:text-slate-400 group-focus-within/input:text-blue-400 transition-colors duration-300" />
                 <input
@@ -106,7 +106,7 @@ export const LoginPage: React.FC = () => {
             </div>
 
             <div>
-              <label className="block text-[10px] font-bold text-slate-400 mb-2 uppercase tracking-widest">Password</label>
+              <label className="block text-2xs font-bold text-slate-400 mb-2 uppercase tracking-widest">Password</label>
               <div className="relative group/input">
                 <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500 dark:text-slate-400 group-focus-within/input:text-blue-400 transition-colors duration-300" />
                 <input
@@ -131,7 +131,7 @@ export const LoginPage: React.FC = () => {
             <button
               type="submit"
               disabled={loading || !username || !password}
-              className="w-full relative overflow-hidden bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 active:from-blue-700 active:to-indigo-700 text-white py-3.5 rounded-xl font-bold text-sm shadow-[0_0_20px_rgba(37,99,235,0.15)] hover:shadow-[0_0_25px_rgba(37,99,235,0.3)] transition-all duration-300 disabled:opacity-40 disabled:cursor-not-allowed disabled:shadow-none"
+              className="w-full relative overflow-hidden bg-linear-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 active:from-blue-700 active:to-indigo-700 text-white py-3.5 rounded-xl font-bold text-sm shadow-[0_0_20px_rgba(37,99,235,0.15)] hover:shadow-[0_0_25px_rgba(37,99,235,0.3)] transition-all duration-300 disabled:opacity-40 disabled:cursor-not-allowed disabled:shadow-none"
             >
               {loading ? (
                 <div className="flex items-center justify-center gap-2">
