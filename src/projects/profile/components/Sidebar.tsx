@@ -4,7 +4,7 @@ import { Link, useLocation } from 'react-router-dom';
 import { 
   LayoutDashboard, FilePlus, Kanban, Box, Truck, 
   FileSearch, FileText, ScrollText, ShoppingBag, ClipboardCheck, 
-  PieChart, LayoutList, Briefcase, Settings2, ShieldAlert,
+  PieChart, LayoutList, Settings2, ShieldAlert,
   ArrowLeft, Calculator, Scissors, Users
 } from 'lucide-react';
 import { clsx } from 'clsx';
@@ -94,9 +94,11 @@ export const Sidebar: React.FC = () => {
           Back to Portal
         </button>
         <div className="flex flex-col items-center gap-1">
-          <div className="w-10 h-10 bg-blue-600 rounded-xl flex items-center justify-center mb-1 shadow-lg shadow-blue-100 dark:shadow-none">
-            <Briefcase className="text-white w-6 h-6" />
-          </div>
+          <img
+            src="/logo.png"
+            alt="Jagdamba Profile"
+            className="w-16 h-16 object-contain mb-1"
+          />
           <h1 className="text-lg font-black bg-linear-to-r from-blue-700 to-sky-500 bg-clip-text text-transparent tracking-tighter">
             JAGDAMBA PROFILE
           </h1>
