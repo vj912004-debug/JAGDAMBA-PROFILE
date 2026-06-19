@@ -208,7 +208,7 @@ export const ChallanPage: React.FC = () => {
                         onClick={() => {
                           const order = orders.find(o => o.orderNo === item.orderNo);
                           generateChallanPDF(item, order, parties, dispatches);
-                          toast.success(`Downloading ${item.challanNo}`);
+                          toast.success(`Downloading Original & Duplicate PDFs for ${item.challanNo}`);
                         }}
                         className="p-1.5 text-teal-600 hover:bg-teal-50 rounded-lg transition-colors"
                         title="Download PDF"
