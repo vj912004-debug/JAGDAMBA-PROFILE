@@ -277,12 +277,12 @@ export const PurchaseOrderPrint: React.FC<PurchaseOrderPrintProps> = ({
                                 <tr>
                                     <td className="lbl">Transport</td>
                                     <td className="cln">:</td>
-                                    <td className="val">{blank || !data.transportCharge ? 'EXTRA' : '₹ ' + fmt(data.transportCharge)}</td>
+                                    <td className="val">{blank ? '' : (data.transportTerm || (!data.transportCharge ? 'EXTRA' : '₹ ' + fmt(data.transportCharge)))}</td>
                                 </tr>
                                 <tr>
                                     <td className="lbl">Loading</td>
                                     <td className="cln">:</td>
-                                    <td className="val">{blank || !data.loadingCharge ? 'EXTRA' : '₹ ' + fmt(data.loadingCharge)}</td>
+                                    <td className="val">{blank ? '' : (data.loadingTerm || (!data.loadingCharge ? 'EXTRA' : '₹ ' + fmt(data.loadingCharge)))}</td>
                                 </tr>
                             </tbody>
                         </table>

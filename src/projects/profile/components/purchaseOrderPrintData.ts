@@ -87,6 +87,8 @@ export interface PurchaseOrderPrintData {
   totalKg: number;
   loadingCharge: number;
   transportCharge: number;
+  transportTerm: string;
+  loadingTerm: string;
   subTotal: number;
   gstRate: number;
   gstAmount: number;
@@ -155,6 +157,8 @@ export function buildPurchaseOrderPrintData(
     totalKg: po.totalKg || 0,
     loadingCharge,
     transportCharge,
+    transportTerm: po.transport || '',
+    loadingTerm: po.loading || '',
     subTotal,
     gstRate,
     gstAmount,
