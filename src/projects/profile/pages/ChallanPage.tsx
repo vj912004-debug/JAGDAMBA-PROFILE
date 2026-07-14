@@ -6,7 +6,7 @@ import toast from 'react-hot-toast';
 import { ChallanPrint } from '../components/ChallanPrint';
 
 export const ChallanPage: React.FC = () => {
-  const { t, role, challans, setChallans, orders, dispatches, nextChallanNo, parties } = useAppContext();
+  const { t, role, challans, setChallans, orders, dispatches, nextChallanNo, parties, persistErpNow } = useAppContext();
   const [showCreate, setShowCreate] = useState(false);
   const [previewChallan, setPreviewChallan] = useState<{ challan: ChallanRecord, order?: Order } | null>(null);
 
@@ -22,7 +22,7 @@ export const ChallanPage: React.FC = () => {
   const gstAmount = taxableAmount * (gstRate / 100);
   const totalAmount = taxableAmount + gstAmount;
 
-  const handleCreate = () => {
+  const handleCreate = async () => {
     if (!selectedDispatchId) { toast.error('Select a dispatch record'); return; }
     if (taxableAmount <= 0) { toast.error('Taxable amount must be > 0'); return; }
 
@@ -41,24 +41,41 @@ export const ChallanPage: React.FC = () => {
       status: 'Pending',
     };
 
-    setChallans(prev => [...prev, newChallan]);
-    setShowCreate(false);
-    setSelectedDispatchId(''); setTaxableAmount(0); setDueDate('');
-    toast.success(`Challan ${newChallan.challanNo} created`);
+    const next = [...challans, newChallan];
+    setChallans(next);
+    try {
+      await persistErpNow({ challans: next });
+      setShowCreate(false);
+      setSelectedDispatchId(''); setTaxableAmount(0); setDueDate('');
+      toast.success(`Challan ${newChallan.challanNo} created`);
+    } catch {
+      toast.error('Saved locally but server sync failed — retry Save');
+    }
   };
 
 
-  const toggleStatus = (id: string) => {
+  const toggleStatus = async (id: string) => {
     if (!canEdit) { toast.error('Only Admin or Accounts can update status'); return; }
-    setChallans(prev => prev.map(c => c.id === id ? { ...c, status: c.status === 'Pending' ? 'Done' : 'Pending' } : c));
-    toast.success('Status updated');
+    const next = challans.map(c => c.id === id ? { ...c, status: c.status === 'Pending' ? 'Done' as const : 'Pending' as const } : c);
+    setChallans(next);
+    try {
+      await persistErpNow({ challans: next });
+      toast.success('Status updated');
+    } catch {
+      toast.error('Updated locally but server sync failed');
+    }
   };
 
-  const handleDelete = (id: string) => {
+  const handleDelete = async (id: string) => {
     if (!canEdit) { toast.error('Only Admin or Accounts can delete challans'); return; }
-    if (window.confirm('Are you sure you want to delete this challan?')) {
-      setChallans(prev => prev.filter(c => c.id !== id));
+    if (!window.confirm('Are you sure you want to delete this challan?')) return;
+    const next = challans.filter(c => c.id !== id);
+    setChallans(next);
+    try {
+      await persistErpNow({ challans: next });
       toast.success('Challan deleted');
+    } catch {
+      toast.error('Deleted locally but server sync failed');
     }
   };
 

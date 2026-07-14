@@ -1,5 +1,4 @@
-﻿import { LOGO_PRINT_BASE64 } from './logoPrintBase64';
-import jsPDF from 'jspdf';
+﻿import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import html2canvas from 'html2canvas-pro';
 import type { Order, PurchaseOrder } from '../store/AppContext';
@@ -9,6 +8,428 @@ import type { Order, PurchaseOrder } from '../store/AppContext';
  */
 const sanitizeFilename = (name: string): string => {
   return name.replace(/[\\/:*?"<>|]/g, '_').replace(/\s+/g, '_');
+};
+
+/** A4 at 96dpi — html2canvas resolves mm inconsistently; px is reliable. */
+export const A4_WIDTH_PX = Math.round((210 * 96) / 25.4);
+export const A4_HEIGHT_PX = Math.round((297 * 96) / 25.4);
+/** AM/NS MTC template — A4 landscape content area (285 × 198 mm). */
+export const ANMS_MTC_WIDTH_PX = Math.round((285 * 96) / 25.4);
+export const ANMS_MTC_HEIGHT_PX = Math.round((198 * 96) / 25.4);
+
+export type A4PdfFitMode = 'fit-page' | 'fit-width';
+
+/** Keep capture hosts off-screen — visible hosts flash over the UI during PDF download. */
+export function hiddenPrintHostStyle(widthPx: number, heightPx?: number, overflow: 'hidden' | 'visible' = 'hidden'): string {
+  return [
+    'position:fixed',
+    'left:-10000px',
+    'top:0',
+    `width:${widthPx}px`,
+    heightPx ? `height:${heightPx}px` : 'height:auto',
+    `overflow:${overflow}`,
+    'opacity:1',
+    'pointer-events:none',
+    'z-index:-1',
+    'background:#fff',
+  ].join(';');
+}
+
+function pinPoCaptureSize(root: HTMLElement, page: HTMLElement | null, widthPx: number) {
+  root.style.width = `${widthPx}px`;
+  root.style.maxWidth = `${widthPx}px`;
+  root.style.minWidth = `${widthPx}px`;
+  root.style.margin = '0';
+  root.style.padding = '0';
+  root.style.overflow = 'visible';
+  root.style.transform = 'none';
+  if (page) {
+    page.style.width = `${widthPx}px`;
+    page.style.maxWidth = `${widthPx}px`;
+    page.style.minWidth = `${widthPx}px`;
+    page.style.margin = '0';
+    page.style.overflow = 'visible';
+    page.style.height = 'auto';
+    page.style.minHeight = '0';
+    page.style.maxHeight = 'none';
+    page.style.transform = 'none';
+    page.style.transformOrigin = 'top left';
+    page.style.boxSizing = 'border-box';
+  }
+}
+
+function mountPrintClone(element: HTMLElement, widthPx = A4_WIDTH_PX): { wrapper: HTMLDivElement; clone: HTMLElement } {
+  const wrapper = document.createElement('div');
+  wrapper.style.cssText = hiddenPrintHostStyle(widthPx, undefined, 'visible');
+  const clone = element.cloneNode(true) as HTMLElement;
+  const page = clone.querySelector('.page-container, .po-page') as HTMLElement | null;
+  pinPoCaptureSize(clone, page, widthPx);
+  wrapper.appendChild(clone);
+  document.body.appendChild(wrapper);
+  return { wrapper, clone };
+}
+
+async function waitForPrintFonts(timeoutMs = 2500): Promise<void> {
+  try {
+    await Promise.race([
+      document.fonts.ready,
+      new Promise((resolve) => setTimeout(resolve, timeoutMs)),
+    ]);
+  } catch {
+    /* ignore */
+  }
+  await new Promise((resolve) => setTimeout(resolve, 150));
+}
+
+function resolveCaptureTarget(clone: HTMLElement): HTMLElement {
+  return clone;
+}
+
+async function capturePrintCanvas(clone: HTMLElement, widthPx = A4_WIDTH_PX) {
+  await waitForPrintFonts();
+  const target = resolveCaptureTarget(clone);
+  const page = clone.querySelector('.page-container, .po-page') as HTMLElement | null;
+  pinPoCaptureSize(clone, page, widthPx);
+
+  clone.style.overflow = 'visible';
+  clone.style.height = 'auto';
+  clone.style.maxHeight = 'none';
+
+  if (page) {
+    page.style.overflow = 'visible';
+    page.style.height = 'auto';
+    page.style.minHeight = '0';
+    page.style.maxHeight = 'none';
+    page.style.boxSizing = 'border-box';
+  }
+
+  const content = clone.querySelector('.content-wrapper, .po-content') as HTMLElement | null;
+  if (content) {
+    content.style.overflow = 'visible';
+    content.style.height = 'auto';
+  }
+
+  const width = Math.max(target.scrollWidth, target.offsetWidth, widthPx);
+  const height = target.scrollHeight;
+  return html2canvas(target, {
+    scale: 2,
+    useCORS: true,
+    logging: false,
+    backgroundColor: '#ffffff',
+    width,
+    windowWidth: width,
+    height,
+    windowHeight: height,
+  });
+}
+
+import { fitPoSheetBody } from './fitPoPrintLayout';
+
+function fitPoBodyToSheet(page: HTMLElement): void {
+  fitPoSheetBody(page);
+}
+
+function preparePoPdfCapture(root: HTMLElement, widthPx: number): HTMLElement {
+  root.style.width = `${widthPx}px`;
+  root.style.minWidth = `${widthPx}px`;
+  root.style.maxWidth = `${widthPx}px`;
+  root.style.height = `${A4_HEIGHT_PX}px`;
+  root.style.minHeight = `${A4_HEIGHT_PX}px`;
+  root.style.maxHeight = `${A4_HEIGHT_PX}px`;
+  root.style.margin = '0';
+  root.style.padding = '0';
+  root.style.overflow = 'hidden';
+  root.style.background = '#ffffff';
+  root.style.boxSizing = 'border-box';
+
+  const page = root.querySelector('.po-sheet, .page-container, .po-page') as HTMLElement | null;
+  if (page) {
+    page.style.boxSizing = 'border-box';
+    page.style.overflow = 'hidden';
+    page.style.boxShadow = 'none';
+    fitPoBodyToSheet(page);
+  }
+
+  void root.offsetHeight;
+  return root;
+}
+
+/** Capture PO at exact A4 dimensions — matches official HTML template. */
+export async function capturePoOnePageA4(element: HTMLElement, widthPx = A4_WIDTH_PX): Promise<HTMLCanvasElement> {
+  await waitForPrintFonts();
+  const page = preparePoPdfCapture(element, widthPx);
+
+  return html2canvas(page, {
+    scale: 2,
+    useCORS: true,
+    logging: false,
+    backgroundColor: '#ffffff',
+    width: widthPx,
+    windowWidth: widthPx,
+    height: A4_HEIGHT_PX,
+    windowHeight: A4_HEIGHT_PX,
+    scrollX: 0,
+    scrollY: 0,
+    x: 0,
+    y: 0,
+    imageTimeout: 15000,
+    onclone: (doc) => {
+      const area = (doc.getElementById(element.id) || doc.querySelector('[id$="pdf-capture-area"], #po-pdf-capture-area')) as HTMLElement | null;
+      if (area) {
+        area.style.width = `${widthPx}px`;
+        area.style.height = `${A4_HEIGHT_PX}px`;
+        area.style.overflow = 'hidden';
+        area.style.background = '#ffffff';
+        area.style.boxSizing = 'border-box';
+      }
+      const clonedPage = area?.querySelector('.po-sheet, .page-container, .po-page') as HTMLElement | null;
+      if (clonedPage) {
+        clonedPage.style.overflow = 'hidden';
+        clonedPage.style.boxSizing = 'border-box';
+        clonedPage.style.boxShadow = 'none';
+        fitPoBodyToSheet(clonedPage);
+      }
+      doc.querySelectorAll('style, link[rel="stylesheet"]').forEach((node) => {
+        if (node instanceof HTMLElement) {
+          node.setAttribute('media', 'all');
+        }
+      });
+    },
+  });
+}
+
+function canvasToPoOnePageA4Pdf(canvas: HTMLCanvasElement): jsPDF {
+  const pdf = new jsPDF('p', 'mm', 'a4');
+  const pageWidth = pdf.internal.pageSize.getWidth();
+  const pageHeight = pdf.internal.pageSize.getHeight();
+  const imgData = canvas.toDataURL('image/png');
+
+  pdf.addImage(imgData, 'PNG', 0, 0, pageWidth, pageHeight);
+  return pdf;
+}
+
+export async function downloadPoOnePagePdf(element: HTMLElement, filename: string) {
+  const canvas = await capturePoOnePageA4(element);
+  canvasToPoOnePageA4Pdf(canvas).save(`${sanitizeFilename(filename)}.pdf`);
+}
+
+export async function getPoOnePagePdfBase64(element: HTMLElement): Promise<string | null> {
+  try {
+    const canvas = await capturePoOnePageA4(element);
+    return canvasToPoOnePageA4Pdf(canvas).output('datauristring');
+  } catch (err: unknown) {
+    console.error('PO PDF base64 generation error:', err);
+    return null;
+  }
+}
+
+function pinAnmsMtcCaptureSize(root: HTMLElement, page: HTMLElement | null, widthPx: number, heightPx: number) {
+  root.style.width = `${widthPx}px`;
+  root.style.maxWidth = `${widthPx}px`;
+  root.style.minWidth = `${widthPx}px`;
+  root.style.margin = '0';
+  root.style.padding = '0';
+  root.style.overflow = 'visible';
+  root.style.background = '#fff';
+  if (page) {
+    page.style.width = `${widthPx}px`;
+    page.style.maxWidth = `${widthPx}px`;
+    page.style.minWidth = `${widthPx}px`;
+    page.style.minHeight = `${heightPx}px`;
+    page.style.height = 'auto';
+    page.style.margin = '0';
+    page.style.boxShadow = 'none';
+    page.style.boxSizing = 'border-box';
+  }
+}
+
+/** Capture AM/NS Mill Test Certificate at landscape template size. */
+export async function captureAnmsMtcLandscape(element: HTMLElement): Promise<HTMLCanvasElement> {
+  const { wrapper, clone } = mountPrintClone(element, ANMS_MTC_WIDTH_PX);
+  const page = clone.querySelector('.page') as HTMLElement | null;
+  pinAnmsMtcCaptureSize(clone, page, ANMS_MTC_WIDTH_PX, ANMS_MTC_HEIGHT_PX);
+  try {
+    await waitForPrintFonts();
+    const target = page ?? clone;
+    const width = Math.max(target.scrollWidth, target.offsetWidth, ANMS_MTC_WIDTH_PX);
+    const height = Math.max(target.scrollHeight, ANMS_MTC_HEIGHT_PX);
+    return html2canvas(target, {
+      scale: 2,
+      useCORS: true,
+      logging: false,
+      backgroundColor: '#ffffff',
+      width,
+      windowWidth: width,
+      height,
+      windowHeight: height,
+    });
+  } finally {
+    document.body.removeChild(wrapper);
+  }
+}
+
+function canvasToLandscapeA4Pdf(canvas: HTMLCanvasElement): jsPDF {
+  const pdf = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a4' });
+  const pageWidth = pdf.internal.pageSize.getWidth();
+  const pageHeight = pdf.internal.pageSize.getHeight();
+  const imgData = canvas.toDataURL('image/png');
+  const naturalHeight = (canvas.height * pageWidth) / canvas.width;
+  const scale = Math.min(1, pageHeight / naturalHeight);
+  pdf.addImage(imgData, 'PNG', 0, 0, pageWidth * scale, naturalHeight * scale);
+  return pdf;
+}
+
+export async function downloadAnmsMtcLandscapePdf(element: HTMLElement, filename: string) {
+  const canvas = await captureAnmsMtcLandscape(element);
+  canvasToLandscapeA4Pdf(canvas).save(`${sanitizeFilename(filename)}.pdf`);
+}
+
+export async function getAnmsMtcLandscapePdfBase64(element: HTMLElement): Promise<string | null> {
+  try {
+    const canvas = await captureAnmsMtcLandscape(element);
+    return canvasToLandscapeA4Pdf(canvas).output('datauristring');
+  } catch (err: unknown) {
+    console.error('ANMS MTC PDF base64 generation error:', err);
+    return null;
+  }
+}
+
+/** Scale content to fit one A4 page at full width, then capture full height. */
+async function capturePrintCanvasOnePageA4(clone: HTMLElement, widthPx = A4_WIDTH_PX): Promise<HTMLCanvasElement> {
+  return capturePoOnePageA4(clone, widthPx);
+}
+
+/** Fit entire canvas on one page (may shrink width when content is tall). */
+function canvasToFitPagePdf(canvas: HTMLCanvasElement): jsPDF {
+  const imgData = canvas.toDataURL('image/png');
+  const pdf = new jsPDF('p', 'mm', 'a4');
+  const pageWidth = pdf.internal.pageSize.getWidth();
+  const pageHeight = pdf.internal.pageSize.getHeight();
+  const naturalHeight = (canvas.height * pageWidth) / canvas.width;
+  const scale = Math.min(1, pageHeight / naturalHeight);
+  pdf.addImage(imgData, 'PNG', 0, 0, pageWidth * scale, naturalHeight * scale);
+  return pdf;
+}
+
+/** Full A4 width; extra height continues on following pages. */
+function canvasToFullWidthA4Pdf(canvas: HTMLCanvasElement): jsPDF {
+  const imgData = canvas.toDataURL('image/png');
+  const pdf = new jsPDF('p', 'mm', 'a4');
+  const pageWidth = pdf.internal.pageSize.getWidth();
+  const pageHeight = pdf.internal.pageSize.getHeight();
+  const imgWidth = pageWidth;
+  const imgHeight = (canvas.height * imgWidth) / canvas.width;
+
+  let heightLeft = imgHeight;
+  let position = 0;
+
+  pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+  heightLeft -= pageHeight;
+
+  while (heightLeft > 0) {
+    position -= pageHeight;
+    pdf.addPage();
+    pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+    heightLeft -= pageHeight;
+  }
+
+  return pdf;
+}
+
+function canvasToA4Pdf(canvas: HTMLCanvasElement, fit: A4PdfFitMode): jsPDF {
+  return fit === 'fit-width' ? canvasToFullWidthA4Pdf(canvas) : canvasToFitPagePdf(canvas);
+}
+
+/**
+ * Capture a DOM element and fit it on a single A4 page (no page split).
+ * Tall content is scaled down — width may shrink. Use downloadFullWidthA4PDF for PO-style docs.
+ */
+export const downloadSinglePagePDF = async (elementId: string, filename: string) => {
+  try {
+    const element = document.getElementById(elementId);
+    if (!element) {
+      console.error(`Element with id ${elementId} not found`);
+      alert(`Error: Element ${elementId} not found`);
+      return;
+    }
+
+    const { wrapper, clone } = mountPrintClone(element);
+    try {
+      const canvas = await capturePrintCanvas(clone);
+      canvasToA4Pdf(canvas, 'fit-page').save(`${sanitizeFilename(filename)}.pdf`);
+    } finally {
+      document.body.removeChild(wrapper);
+    }
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : String(err);
+    console.error('PDF Generation Error:', err);
+    alert('Error generating PDF: ' + message);
+  }
+};
+
+/**
+ * Capture at full A4 width; scale down uniformly to fit exactly one page (no page split).
+ */
+export const downloadOnePageA4PDFFromElement = async (element: HTMLElement, filename: string) => {
+  if (element.querySelector('.page-container, .po-page')) {
+    await downloadPoOnePagePdf(element, filename);
+    return;
+  }
+  const { wrapper, clone } = mountPrintClone(element);
+  try {
+    const canvas = await capturePrintCanvasOnePageA4(clone);
+    canvasToPoOnePageA4Pdf(canvas).save(`${sanitizeFilename(filename)}.pdf`);
+  } finally {
+    document.body.removeChild(wrapper);
+  }
+};
+
+export const getOnePageA4PdfBase64FromElement = async (element: HTMLElement): Promise<string | null> => {
+  if (element.querySelector('.page-container, .po-page')) {
+    return getPoOnePagePdfBase64(element);
+  }
+  const { wrapper, clone } = mountPrintClone(element);
+  try {
+    const canvas = await capturePrintCanvasOnePageA4(clone);
+    return canvasToPoOnePageA4Pdf(canvas).output('datauristring');
+  } catch (err: unknown) {
+    console.error('PDF base64 generation error:', err);
+    return null;
+  } finally {
+    document.body.removeChild(wrapper);
+  }
+};
+
+/**
+ * Capture a DOM element at full A4 width (210mm). Tall content spans multiple pages.
+ */
+export const downloadFullWidthA4PDFFromElement = async (element: HTMLElement, filename: string) => {
+  const { wrapper, clone } = mountPrintClone(element);
+  try {
+    const canvas = await capturePrintCanvas(clone);
+    canvasToA4Pdf(canvas, 'fit-width').save(`${sanitizeFilename(filename)}.pdf`);
+  } finally {
+    document.body.removeChild(wrapper);
+  }
+};
+
+/**
+ * Capture a DOM element at full A4 width (210mm). Tall content spans multiple pages.
+ */
+export const downloadFullWidthA4PDF = async (elementId: string, filename: string) => {
+  try {
+    const element = document.getElementById(elementId);
+    if (!element) {
+      console.error(`Element with id ${elementId} not found`);
+      alert(`Error: Element ${elementId} not found`);
+      return;
+    }
+    await downloadFullWidthA4PDFFromElement(element, filename);
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : String(err);
+    console.error('PDF Generation Error:', err);
+    alert('Error generating PDF: ' + message);
+  }
 };
 
 /**
@@ -31,6 +452,20 @@ export const downloadPDF = async (elementId: string, filename: string) => {
 
     try {
       await new Promise((resolve) => setTimeout(resolve, 150));
+
+      const page = clone.querySelector('.page-container, .po-page') as HTMLElement | null;
+      if (page) {
+        page.style.overflow = 'visible';
+        page.style.height = 'auto';
+        page.style.minHeight = '0';
+        page.style.maxHeight = 'none';
+        page.style.boxSizing = 'border-box';
+      }
+      const content = clone.querySelector('.content-wrapper, .po-content') as HTMLElement | null;
+      if (content) {
+        content.style.overflow = 'visible';
+        content.style.height = 'auto';
+      }
 
       const canvas = await html2canvas(clone, {
         scale: 2,
@@ -68,6 +503,45 @@ export const downloadPDF = async (elementId: string, filename: string) => {
     console.error("PDF Generation Error:", err);
     alert("Error generating PDF: " + (err.message || String(err)));
   }
+};
+
+/**
+ * Capture a DOM element (via visible clone) and return single-page PDF as data URI.
+ * Uses the same clone approach as downloadSinglePagePDF so hidden/print-only elements work.
+ */
+export const getSinglePagePdfBase64 = async (elementId: string): Promise<string | null> => {
+  const element = document.getElementById(elementId);
+  if (!element) return null;
+
+  const { wrapper, clone } = mountPrintClone(element);
+  try {
+    const canvas = await capturePrintCanvas(clone);
+    return canvasToA4Pdf(canvas, 'fit-page').output('datauristring');
+  } catch (err: unknown) {
+    console.error('PDF base64 generation error:', err);
+    return null;
+  } finally {
+    document.body.removeChild(wrapper);
+  }
+};
+
+export const getFullWidthA4PdfBase64FromElement = async (element: HTMLElement): Promise<string | null> => {
+  const { wrapper, clone } = mountPrintClone(element);
+  try {
+    const canvas = await capturePrintCanvas(clone);
+    return canvasToA4Pdf(canvas, 'fit-width').output('datauristring');
+  } catch (err: unknown) {
+    console.error('PDF base64 generation error:', err);
+    return null;
+  } finally {
+    document.body.removeChild(wrapper);
+  }
+};
+
+export const getFullWidthA4PdfBase64 = async (elementId: string): Promise<string | null> => {
+  const element = document.getElementById(elementId);
+  if (!element) return null;
+  return getFullWidthA4PdfBase64FromElement(element);
 };
 
 /**
@@ -407,222 +881,10 @@ export const generateTCPDFBase64 = (tc: any): string => {
   return doc.output('datauristring');
 };
 
-const formatPODate = (dateStr: string) => {
-  if (!dateStr) return '';
-  if (dateStr.includes('/')) return dateStr;
-  const [y, m, d] = dateStr.split('-');
-  if (y && m && d) return `${d}/${m}/${y}`;
-  return dateStr;
-};
-
-const fmtPO = (n: number) => (n ? n.toLocaleString('en-IN') : '');
-
-const PO_MARGIN = 7;
-const PO_HEAD: [number, number, number] = [0, 0, 0];
-const PO_ORANGE: [number, number, number] = [242, 101, 34];
-const PO_BLUE: [number, number, number] = [10, 30, 74];
-
-function buildPurchaseOrderPDFDoc(po: PurchaseOrder): jsPDF {
-  const doc = new jsPDF('p', 'mm', 'a4');
-  const pw = doc.internal.pageSize.getWidth();
-  const inner = pw - PO_MARGIN * 2 - 4;
-  const half = inner / 2;
-  const third = inner / 3;
-
-  doc.setDrawColor(0);
-  doc.setLineWidth(0.6);
-  doc.rect(PO_MARGIN, PO_MARGIN, pw - PO_MARGIN * 2, doc.internal.pageSize.getHeight() - PO_MARGIN * 2);
-
-  try {
-    doc.addImage(LOGO_PRINT_BASE64, 'JPEG', PO_MARGIN + 3, PO_MARGIN + 4, 20, 20);
-  } catch { /* logo optional */ }
-
-  const cx = pw / 2;
-  doc.setFont('helvetica', 'bold');
-  doc.setFontSize(24);
-  doc.setTextColor(...PO_BLUE);
-  doc.text('Jagdamba Profile', cx, PO_MARGIN + 14, { align: 'center' });
-
-  doc.setFont('helvetica', 'normal');
-  doc.setFontSize(10);
-  doc.setTextColor(...PO_ORANGE);
-  doc.text('504/1A, GIDC Makarpura, Vadodara -390010.', cx, PO_MARGIN + 21, { align: 'center' });
-  doc.text('GST No: 24AJGPP9863R1Z5', cx, PO_MARGIN + 26, { align: 'center' });
-  doc.text('Mo: 9824917250, 9824025001, 8799617254', cx, PO_MARGIN + 31, { align: 'center' });
-  doc.setTextColor(0, 0, 0);
-  doc.text('Email: jagdambaprofile@gmail.com', pw - PO_MARGIN - 3, PO_MARGIN + 31, { align: 'right' });
-
-  let y = PO_MARGIN + 36;
-  const ml = PO_MARGIN + 2;
-
-  autoTable(doc, {
-    startY: y,
-    margin: { left: ml, right: ml },
-    body: [['PURCHASE ORDER']],
-    theme: 'plain',
-    styles: { fillColor: PO_HEAD, textColor: [255, 255, 255], fontStyle: 'bold', halign: 'center', fontSize: 12, cellPadding: 3 },
-  });
-  y = (doc as jsPDF & { lastAutoTable: { finalY: number } }).lastAutoTable.finalY;
-
-  autoTable(doc, {
-    startY: y,
-    margin: { left: ml, right: ml },
-    head: [['SUPPLIER DETAILS', 'PURCHASE ORDER DETAILS']],
-    body: [
-      [`Party Name: ${po.supplierName || ''}`, `PO No: ${po.poNumber || ''}`],
-      [`Address: ${po.supplierAddress || ''}`, `PO Date: ${formatPODate(po.date)}`],
-      [`GST Number: ${po.supplierGST || ''}`, `Payment Terms: ${po.paymentTerms || ''}`],
-      [`Mobile Number: ${po.supplierMobile || ''}`, `Make: ${po.make || ''}`],
-      [`Email ID: ${po.supplierEmail || ''}`, `UT Level: ${po.utLevel || ''}     TC: ${po.tc || ''}`],
-    ],
-    theme: 'grid',
-    headStyles: { fillColor: PO_HEAD, textColor: [255, 255, 255], fontStyle: 'bold', halign: 'left' },
-    styles: { fontSize: 9, cellPadding: 2.5, lineColor: [0, 0, 0], lineWidth: 0.1 },
-    columnStyles: { 0: { cellWidth: half }, 1: { cellWidth: half } },
-  });
-  y = (doc as jsPDF & { lastAutoTable: { finalY: number } }).lastAutoTable.finalY;
-
-  autoTable(doc, {
-    startY: y,
-    margin: { left: ml, right: ml },
-    head: [['VEHICLE TRANSPORT DETAILS', '', '']],
-    body: [[
-      `Vehicle Number: ${po.transportNumber || ''}`,
-      `Driver Mobile No: ${po.driverMobile || ''}`,
-      `Transport Name: ${po.transportName || ''}`,
-    ]],
-    theme: 'grid',
-    headStyles: { fillColor: PO_HEAD, textColor: [255, 255, 255], fontStyle: 'bold', halign: 'left' },
-    styles: { fontSize: 9, cellPadding: 2.5, lineColor: [0, 0, 0], lineWidth: 0.1 },
-    columnStyles: { 0: { cellWidth: third }, 1: { cellWidth: third }, 2: { cellWidth: third } },
-  });
-  y = (doc as jsPDF & { lastAutoTable: { finalY: number } }).lastAutoTable.finalY;
-
-  const items = po.items || [];
-  const itemBody: (string | { content: string; rowSpan?: number; colSpan?: number; styles?: Record<string, unknown> })[][] = items.map((item, idx) => [
-    String(idx + 1),
-    item.grade || '',
-    item.thickness || '',
-    item.width || '',
-    item.length || '',
-    String(item.nos || ''),
-    item.kg ? fmtPO(item.kg) : '',
-    item.rate ? fmtPO(item.rate) : '',
-    item.amount ? fmtPO(item.amount) : '',
-  ]);
-  while (itemBody.length < 10) {
-    itemBody.push(['', '', '', '', '', '', '', '', '']);
-  }
-
-  const basicAmount = po.totalAmount || 0;
-  const gstAmount = Math.round(basicAmount * 0.18);
-  const finalAmount = basicAmount + gstAmount;
-  const totalKgLabel = po.totalKg ? `TOTAL KG\n${fmtPO(po.totalKg)}` : 'TOTAL KG';
-
-  itemBody.push([
-    { content: totalKgLabel, rowSpan: 3, colSpan: 7, styles: { halign: 'center', valign: 'middle', fontStyle: 'bold', minCellHeight: 24 } },
-    { content: 'BASIC AMOUNT', styles: { fontStyle: 'bold' } },
-    { content: basicAmount ? fmtPO(basicAmount) : '', styles: { halign: 'right' } },
-  ] as (string | { content: string; rowSpan?: number; colSpan?: number; styles?: Record<string, unknown> })[]);
-  itemBody.push([
-    { content: 'GST @ 18%', styles: { fontStyle: 'bold' } },
-    { content: gstAmount ? fmtPO(gstAmount) : '', styles: { halign: 'right' } },
-  ]);
-  itemBody.push([
-    { content: 'FINAL AMOUNT', styles: { fontStyle: 'bold' } },
-    { content: finalAmount ? fmtPO(finalAmount) : '', styles: { halign: 'right' } },
-  ]);
-
-  autoTable(doc, {
-    startY: y,
-    margin: { left: ml, right: ml },
-    head: [['Sr No', 'Grade', 'Thickness', 'Width', 'Length', 'Nos', 'Kg', 'Rate', 'Amount']],
-    body: itemBody,
-    theme: 'grid',
-    headStyles: { fillColor: PO_HEAD, textColor: [255, 255, 255], fontStyle: 'bold', halign: 'center', fontSize: 8 },
-    styles: { fontSize: 8, cellPadding: 2, lineColor: [0, 0, 0], lineWidth: 0.1, minCellHeight: 8 },
-    columnStyles: {
-      0: { cellWidth: 12, halign: 'center' },
-      5: { halign: 'center' },
-      6: { halign: 'right' },
-      7: { halign: 'right' },
-      8: { halign: 'right' },
-    },
-  });
-  y = (doc as jsPDF & { lastAutoTable: { finalY: number } }).lastAutoTable.finalY;
-
-  autoTable(doc, {
-    startY: y,
-    margin: { left: ml, right: ml },
-    body: [['COMMERCIAL / QUALITY DETAILS'], [`Note: ${po.note || ''}`]],
-    theme: 'grid',
-    styles: { fontSize: 9, cellPadding: 2.5, lineColor: [0, 0, 0], lineWidth: 0.1 },
-    didParseCell: (data) => {
-      if (data.row.index === 0) {
-        data.cell.styles.fillColor = PO_HEAD;
-        data.cell.styles.textColor = [255, 255, 255];
-        data.cell.styles.fontStyle = 'bold';
-      }
-      if (data.row.index === 1) {
-        data.cell.styles.minCellHeight = 14;
-      }
-    },
-  });
-  y = (doc as jsPDF & { lastAutoTable: { finalY: number } }).lastAutoTable.finalY;
-
-  const terms =
-    '1. Material should be supplied strictly as per above size, grade and specification.\n' +
-    '2. Test Certificate / MTC report wherever applicable.\n' +
-    '3. Material should be free from heavy rust, lamination, oil, paint and major surface defects.\n' +
-    '4. Final weight, rate and payment will be as per mutually agreed terms.\n' +
-    '5. Delivery schedule and transport details must be confirmed before dispatch.';
-
-  autoTable(doc, {
-    startY: y,
-    margin: { left: ml, right: ml },
-    body: [['GENERAL TERMS AND CONDITIONS'], [terms]],
-    theme: 'grid',
-    styles: { fontSize: 8, cellPadding: 2.5, lineColor: [0, 0, 0], lineWidth: 0.1 },
-    didParseCell: (data) => {
-      if (data.row.index === 0) {
-        data.cell.styles.fillColor = PO_HEAD;
-        data.cell.styles.textColor = [255, 255, 255];
-        data.cell.styles.fontStyle = 'bold';
-      }
-      if (data.row.index === 1) {
-        data.cell.styles.minCellHeight = 28;
-      }
-    },
-  });
-  y = (doc as jsPDF & { lastAutoTable: { finalY: number } }).lastAutoTable.finalY;
-
-  autoTable(doc, {
-    startY: y,
-    margin: { left: ml, right: ml },
-    body: [['Prepared By', 'Checked By', 'For Jagdamba Profile\n\nAuthorized Signatory']],
-    theme: 'grid',
-    styles: { fontSize: 9, cellPadding: 4, minCellHeight: 22, halign: 'center', valign: 'top', fontStyle: 'bold', lineColor: [0, 0, 0], lineWidth: 0.1 },
-    columnStyles: {
-      0: { cellWidth: third },
-      1: { cellWidth: third },
-      2: { cellWidth: third, textColor: PO_BLUE },
-    },
-  });
-
-  return doc;
-}
-
-/** Download Purchase Order PDF matching official PO format */
-export const generatePurchaseOrderPDF = (po: PurchaseOrder) => {
-  const doc = buildPurchaseOrderPDFDoc(po);
-  doc.save(`${sanitizeFilename(po.poNumber.replace(/\//g, '-'))}.pdf`);
-};
-
-/** Base64 PDF for WhatsApp / email attachments */
-export const getPurchaseOrderPdfBase64 = (po: PurchaseOrder): string => {
-  const doc = buildPurchaseOrderPDFDoc(po);
-  const dataUri = doc.output('datauristring');
-  return dataUri.split(',')[1] ?? '';
-};
-
+export {
+  generatePurchaseOrderPDF,
+  generateBlankPurchaseOrderPDF,
+  downloadPurchaseOrderPDF,
+  getPurchaseOrderPdfBase64,
+} from './purchaseOrderDownload';
 

@@ -231,7 +231,7 @@ export function downloadMaterialPendingReportPDF(
 export function downloadCNCQuotation(q: CNCQuotationRecord) {
   const filename = sanitizeFilename(q.quoteNo || 'cnc_quotation');
   const doc = new jsPDF();
-  addPdfHeader(doc, 'CNC Quotation', q.quoteNo);
+  addPdfHeader(doc, 'CNC Quotation 2', q.quoteNo);
 
   autoTable(doc, {
     ...TABLE_OPTS,

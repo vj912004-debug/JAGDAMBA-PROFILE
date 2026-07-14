@@ -1,12 +1,13 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Menu, Bell, Search } from 'lucide-react';
+import { Menu, Bell, Search, Sun, Moon } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
 import { isToday, parseISO } from 'date-fns';
 
 export default function Header({ collapsed, onToggle, onSearch, searchValue }) {
-  const { state } = useApp();
+  const { state, actions } = useApp();
   const navigate = useNavigate();
+  const isDark = state.theme === 'dark';
 
   const todayBirthdays = state.contacts.filter(c => {
     if (!c.birthday) return false;
@@ -40,6 +41,9 @@ export default function Header({ collapsed, onToggle, onSearch, searchValue }) {
         />
       </div>
       <div className="header-right">
+        <button className="icon-btn" onClick={actions.toggleTheme} title={isDark ? 'Switch to light mode' : 'Switch to dark mode'}>
+          {isDark ? <Sun size={18} /> : <Moon size={18} />}
+        </button>
         <button className="icon-btn" onClick={() => navigate('/reminders')} title="Reminders">
           <Bell size={18} />
           {reminderCount > 0 && <span className="badge-dot" />}

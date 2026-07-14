@@ -1,394 +1,559 @@
 import React, { useState, useMemo } from 'react';
-import { Search, RotateCcw, FileSpreadsheet, FileText, Printer, Filter, ClipboardList, PackageCheck, Clock, Scale, IndianRupee, Download } from 'lucide-react';
-import { useAppContext, type PurchaseOrder } from '../store/AppContext';
-import { clsx } from 'clsx';
-import toast from 'react-hot-toast';
-import { downloadMaterialPendingReportPDF } from '../utils/listExport';
-import { generatePurchaseOrderPDF } from '../utils/pdfGenerator';
 
-interface PendingRow {
-  poId: string;
-  poNumber: string;
-  poDate: string;
-  supplier: string;
-  grade: string;
-  spec: string;
-  orderedNos: number;
-  receivedNos: number;
-  pendingNos: number;
-  pendingWeightKg: number;
-  rate: number;
-  pendingAmount: number;
-  expectedDate: string;
-}
+import {
+
+  Search, RotateCcw, FileSpreadsheet, Printer, ChevronDown, ChevronRight,
+
+  Users, ClipboardList, Package, Scale, IndianRupee, PackageCheck,
+
+} from 'lucide-react';
+
+import { useAppContext, type PurchaseOrder } from '../store/AppContext';
+
+import toast from 'react-hot-toast';
+
+import { downloadMaterialPendingReportPDF } from '../utils/listExport';
+
+import { ErpPageHeader, ErpScreenActions, ErpStatCard, ErpTableCaption } from '../components/ErpPageShell';
+
+import { erpHotkeyProps } from '../utils/erpHotkeys';
+
+import { computePOPendingRows } from '../utils/poPending';
+
+
 
 const inr = (n: number) => n.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
 const kg = (n: number) => n.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
+
+
 function parseDate(s: string): Date | null {
+
   if (!s) return null;
+
   if (/^\d{4}-\d{2}-\d{2}/.test(s)) {
+
     const d = new Date(s);
+
     return isNaN(d.getTime()) ? null : d;
+
   }
+
   const m = s.match(/^(\d{1,2})[/-](\d{1,2})[/-](\d{4})$/);
+
   if (m) {
+
     const d = new Date(Number(m[3]), Number(m[2]) - 1, Number(m[1]));
+
     return isNaN(d.getTime()) ? null : d;
+
   }
+
   const d = new Date(s);
+
   return isNaN(d.getTime()) ? null : d;
+
 }
+
+
 
 function toISO(d: Date) { return d.toISOString().split('T')[0]; }
 
+
+
+function fmtPoDate(s: string) {
+
+  const d = parseDate(s);
+
+  return d ? d.toLocaleDateString('en-GB') : s;
+
+}
+
+
+
 export const MaterialPendingReport: React.FC = () => {
+
   const { purchaseOrders, purchaseReceipts } = useAppContext();
 
+
+
   const today = new Date();
-  const firstOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+
+  const asOn = today.toLocaleDateString('en-GB');
+
+
 
   const [supplier, setSupplier] = useState('All');
-  const [fromDate, setFromDate] = useState(toISO(firstOfMonth));
-  const [toDate, setToDate] = useState(toISO(today));
+
+  const [fromDate, setFromDate] = useState('');
+
+  const [toDate, setToDate] = useState('');
+
   const [poNo, setPoNo] = useState('');
+
   const [itemGrade, setItemGrade] = useState('');
-  const [applied, setApplied] = useState({ supplier: 'All', fromDate: toISO(firstOfMonth), toDate: toISO(today), poNo: '', itemGrade: '' });
+
+  const [thickness, setThickness] = useState('');
+
+  const [width, setWidth] = useState('');
+
+  const [length, setLength] = useState('');
+
+  const [collapsed, setCollapsed] = useState<Record<string, boolean>>({});
+
+  const [applied, setApplied] = useState({
+
+    supplier: 'All', fromDate: '', toDate: '',
+
+    poNo: '', itemGrade: '', thickness: '', width: '', length: '',
+
+  });
+
+
 
   const supplierOptions = useMemo(
+
     () => Array.from(new Set(purchaseOrders.map(p => p.supplierName))).sort(),
-    [purchaseOrders]
+
+    [purchaseOrders],
+
   );
 
-  // Received Nos per individual PO item id
-  const receivedByItem = useMemo(() => {
-    const map = new Map<string, number>();
-    purchaseReceipts.forEach(r => {
-      const po = purchaseOrders.find(p => p.id === r.poId);
-      if (!po) return;
-      if (r.items && r.items.length > 0) {
-        r.items.forEach(ri => map.set(ri.itemId, (map.get(ri.itemId) || 0) + ri.receivedQty));
-      } else if (po.items.length === 1) {
-        const id = po.items[0].id;
-        map.set(id, (map.get(id) || 0) + r.receivedQty);
-      }
-    });
-    return map;
-  }, [purchaseOrders, purchaseReceipts]);
 
-  const matchesPO = (po: PurchaseOrder) => {
+
+  const matchesFilter = (po: PurchaseOrder, item: PurchaseOrder['items'][0]) => {
+
     if (applied.supplier !== 'All' && po.supplierName !== applied.supplier) return false;
+
     const d = parseDate(po.date);
+
     const iso = d ? toISO(d) : po.date;
+
     if (applied.fromDate && iso < applied.fromDate) return false;
+
     if (applied.toDate && iso > applied.toDate) return false;
+
     if (applied.poNo && !po.poNumber.toLowerCase().includes(applied.poNo.toLowerCase())) return false;
+
+    if (applied.itemGrade && !item.grade.toLowerCase().includes(applied.itemGrade.toLowerCase())) return false;
+
+    if (applied.thickness && item.thickness !== applied.thickness) return false;
+
+    if (applied.width && item.width !== applied.width) return false;
+
+    if (applied.length && item.length !== applied.length) return false;
+
     return true;
+
   };
 
-  const filteredPOs = useMemo(() => purchaseOrders.filter(matchesPO), [purchaseOrders, applied]);
 
-  const rows = useMemo<PendingRow[]>(() => {
-    const out: PendingRow[] = [];
-    filteredPOs.forEach(po => {
-      if (po.status === 'Complete') return; // pending report: only open POs
-      const d = parseDate(po.date);
-      const expected = d ? new Date(d.getTime() + 14 * 86400000) : null;
-      po.items.forEach(item => {
-        if (applied.itemGrade && !item.grade.toLowerCase().includes(applied.itemGrade.toLowerCase())) return;
-        const ordered = item.nos || 0;
-        const received = Math.min(ordered, receivedByItem.get(item.id) || 0);
-        const pending = Math.max(0, ordered - received);
-        const perPieceKg = ordered ? item.kg / ordered : 0;
-        const pendingWeightKg = perPieceKg * pending;
-        out.push({
-          poId: po.id,
-          poNumber: po.poNumber,
-          poDate: d ? d.toLocaleDateString('en-GB') : po.date,
-          supplier: po.supplierName,
-          grade: item.grade,
-          spec: `${item.thickness} MM x ${item.width} MM x ${item.length} MM`,
-          orderedNos: ordered,
-          receivedNos: received,
-          pendingNos: pending,
-          pendingWeightKg,
-          rate: item.rate || 0,
-          pendingAmount: pendingWeightKg * (item.rate || 0),
-          expectedDate: expected ? expected.toLocaleDateString('en-GB') : '-',
-        });
-      });
+
+  const rows = useMemo(() => {
+
+    const raw = computePOPendingRows(purchaseOrders, purchaseReceipts, matchesFilter);
+
+    return raw.map(r => ({ ...r, poDate: fmtPoDate(r.poDate) }));
+
+  }, [purchaseOrders, purchaseReceipts, applied]);
+
+
+
+  const grouped = useMemo(() => {
+
+    const map = new Map<string, typeof rows>();
+
+    rows.forEach(r => {
+
+      if (!map.has(r.supplier)) map.set(r.supplier, []);
+
+      map.get(r.supplier)!.push(r);
+
     });
-    return out;
-  }, [filteredPOs, receivedByItem, applied.itemGrade]);
+
+    return Array.from(map.entries()).sort(([a], [b]) => a.localeCompare(b));
+
+  }, [rows]);
+
+
 
   const totals = useMemo(() => ({
-    orderedNos: rows.reduce((s, r) => s + r.orderedNos, 0),
+
+    poNos: rows.reduce((s, r) => s + r.poNos, 0),
+
     receivedNos: rows.reduce((s, r) => s + r.receivedNos, 0),
+
     pendingNos: rows.reduce((s, r) => s + r.pendingNos, 0),
-    pendingWeight: rows.reduce((s, r) => s + r.pendingWeightKg, 0),
+
+    pendingWeight: rows.reduce((s, r) => s + r.pendingKg, 0),
+
     pendingAmount: rows.reduce((s, r) => s + r.pendingAmount, 0),
+
   }), [rows]);
 
-  // Summary stat cards
-  const stats = useMemo(() => {
-    const poValue = filteredPOs.reduce((s, p) => s + (p.totalAmount || 0), 0);
-    let receivedCount = 0;
-    let receivedValue = 0;
-    let pendingCount = 0;
-    filteredPOs.forEach(po => {
-      let poReceived = 0;
-      let poPendingAmt = 0;
-      po.items.forEach(item => {
-        const ordered = item.nos || 0;
-        const received = Math.min(ordered, receivedByItem.get(item.id) || 0);
-        const pending = Math.max(0, ordered - received);
-        const perPieceKg = ordered ? item.kg / ordered : 0;
-        poReceived += received;
-        receivedValue += perPieceKg * received * (item.rate || 0);
-        poPendingAmt += perPieceKg * pending * (item.rate || 0);
-      });
-      if (poReceived > 0) receivedCount++;
-      if (poPendingAmt > 0) pendingCount++;
-    });
-    return {
-      totalPO: filteredPOs.length,
-      poValue,
-      receivedCount,
-      receivedValue,
-      pendingCount,
-      pendingValue: totals.pendingAmount,
-    };
-  }, [filteredPOs, receivedByItem, totals.pendingAmount]);
 
-  const handleSearch = () => setApplied({ supplier, fromDate, toDate, poNo, itemGrade });
+
+  const dimOptions = useMemo(() => {
+
+    const thk = new Set<string>();
+
+    const w = new Set<string>();
+
+    const len = new Set<string>();
+
+    purchaseOrders.forEach(po => po.items.forEach(i => {
+
+      thk.add(i.thickness); w.add(i.width); len.add(i.length);
+
+    }));
+
+    return {
+
+      thicknesses: Array.from(thk).sort(),
+
+      widths: Array.from(w).sort(),
+
+      lengths: Array.from(len).sort(),
+
+    };
+
+  }, [purchaseOrders]);
+
+
+
+  const handleSearch = () => setApplied({ supplier, fromDate, toDate, poNo, itemGrade, thickness, width, length });
+
   const handleClear = () => {
-    setSupplier('All'); setFromDate(toISO(firstOfMonth)); setToDate(toISO(today)); setPoNo(''); setItemGrade('');
-    setApplied({ supplier: 'All', fromDate: toISO(firstOfMonth), toDate: toISO(today), poNo: '', itemGrade: '' });
+
+    setSupplier('All'); setFromDate(''); setToDate('');
+
+    setPoNo(''); setItemGrade(''); setThickness(''); setWidth(''); setLength('');
+
+    setApplied({ supplier: 'All', fromDate: '', toDate: '', poNo: '', itemGrade: '', thickness: '', width: '', length: '' });
+
   };
+
+
 
   const handleExportExcel = () => {
-    const header = 'Sr No,PO No,PO Date,Supplier,Item/Grade,Specification,PO Nos,Nos Received,Nos Pending,Pending Weight (KG),Rate,Pending Amount,Expected Date';
+
+    const header = 'Sr No,Supplier,PO No,PO Date,Grade,Thickness,Width,Length,PO Nos,Received Nos,Pending Nos,Pending Kg,Rate,Pending Amount';
+
     const lines = rows.map((r, i) =>
-      `${i + 1},${r.poNumber},${r.poDate},${r.supplier},${r.grade},"${r.spec}",${r.orderedNos},${r.receivedNos},${r.pendingNos},${r.pendingWeightKg.toFixed(2)},${r.rate.toFixed(2)},${r.pendingAmount.toFixed(2)},${r.expectedDate}`
+
+      `${i + 1},${r.supplier},${r.poNumber},${r.poDate},${r.grade},${r.thickness},${r.width},${r.length},${r.poNos},${r.receivedNos},${r.pendingNos},${r.pendingKg.toFixed(2)},${r.rate.toFixed(2)},${r.pendingAmount.toFixed(2)}`,
+
     );
-    const csv = [header, ...lines].join('\n');
-    const blob = new Blob([csv], { type: 'text/csv' });
+
+    const blob = new Blob([[header, ...lines].join('\n')], { type: 'text/csv' });
+
     const url = URL.createObjectURL(blob);
+
     const a = document.createElement('a');
+
     a.href = url;
-    a.download = `material_pending_report_${toISO(today)}.csv`;
+
+    a.download = `po_pending_report_${toISO(today)}.csv`;
+
     a.click();
+
     URL.revokeObjectURL(url);
+
     toast.success('Excel file downloaded');
+
   };
+
+
 
   const handleExportPDF = () => {
-    if (rows.length === 0) {
-      toast.error('No pending material to export');
-      return;
-    }
-    downloadMaterialPendingReportPDF(rows, totals);
-    toast.success('Pending material report PDF downloaded');
+
+    if (rows.length === 0) { toast.error('No pending material to export'); return; }
+
+    downloadMaterialPendingReportPDF(rows.map(r => ({
+
+      poId: r.poId, poNumber: r.poNumber, poDate: r.poDate, supplier: r.supplier,
+
+      grade: r.grade, spec: `${r.thickness} MM x ${r.width} MM x ${r.length} MM`,
+
+      orderedNos: r.poNos, receivedNos: r.receivedNos, pendingNos: r.pendingNos,
+
+      pendingWeightKg: r.pendingKg, rate: r.rate, pendingAmount: r.pendingAmount, expectedDate: '-',
+
+    })), totals);
+
+    toast.success('PDF downloaded');
+
   };
 
-  const handleDownloadPO = (poId: string) => {
-    const po = purchaseOrders.find(p => p.id === poId);
-    if (!po) {
-      toast.error('Purchase order not found');
-      return;
-    }
-    generatePurchaseOrderPDF(po);
-    toast.success(`PO ${po.poNumber} downloaded`);
-  };
+
+
+  const toggleGroup = (name: string) => setCollapsed(prev => ({ ...prev, [name]: !prev[name] }));
+
+
+
+  let sr = 0;
+
+
 
   return (
-    <div className="max-w-[1500px] mx-auto space-y-4 fade-in">
-      {/* Top actions */}
-      <div className="flex justify-end gap-2">
-        <button onClick={handleExportExcel} className="erp-btn erp-btn-primary">
-          <FileSpreadsheet className="w-4 h-4" /> Export to Excel
-        </button>
-        <button onClick={handleExportPDF} className="erp-btn erp-btn-primary">
-          <FileText className="w-4 h-4" /> Export to PDF
-        </button>
-        <button onClick={() => window.print()} className="erp-btn erp-btn-ghost">
-          <Printer className="w-4 h-4" /> Print
-        </button>
-      </div>
 
-      {/* Filters */}
+    <div className="max-w-[1680px] mx-auto p-3 sm:p-4 space-y-4 fade-in pb-8">
+
+      <ErpPageHeader
+
+        title="Purchase Order Pending Report"
+
+        subtitle="Pending = PO Nos − GRN Received Nos (per line item)"
+
+        extra={
+
+          <ErpScreenActions>
+
+            <button type="button" onClick={handleExportExcel} className="erp-btn erp-btn-ghost"><FileSpreadsheet className="w-4 h-4 text-green-600" /> Export Excel</button>
+
+            <button type="button" {...erpHotkeyProps('print')} onClick={() => window.print()} className="erp-btn erp-btn-ghost"><Printer className="w-4 h-4" /> Print</button>
+
+          </ErpScreenActions>
+
+        }
+
+      />
+
+
+
       <div className="erp-card p-4">
-        <h3 className="flex items-center gap-2 text-xs font-extrabold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-3">
-          <Filter className="w-3.5 h-3.5" /> Filters
-        </h3>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-4 items-end">
-          <div>
-            <label className="field-label mb-1">Supplier</label>
-            <select value={supplier} onChange={e => setSupplier(e.target.value)}
-              className="w-full bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none">
-              <option value="All">All Suppliers</option>
-              {supplierOptions.map(s => <option key={s} value={s}>{s}</option>)}
-            </select>
-          </div>
-          <div>
-            <label className="field-label mb-1">From Date</label>
-            <input type="date" value={fromDate} onChange={e => setFromDate(e.target.value)}
-              className="w-full bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none" />
-          </div>
-          <div>
-            <label className="field-label mb-1">To Date</label>
-            <input type="date" value={toDate} onChange={e => setToDate(e.target.value)}
-              className="w-full bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none" />
-          </div>
-          <div>
-            <label className="field-label mb-1">PO No.</label>
-            <input type="text" value={poNo} onChange={e => setPoNo(e.target.value)} placeholder="All"
-              className="w-full bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none no-uppercase" />
-          </div>
-          <div>
-            <label className="field-label mb-1">Item / Grade</label>
-            <input type="text" value={itemGrade} onChange={e => setItemGrade(e.target.value)} placeholder="All"
-              className="w-full bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none no-uppercase" />
-          </div>
-          <div className="flex flex-col gap-2">
-            <button onClick={handleSearch} className="erp-btn erp-btn-primary justify-center">
-              <Search className="w-4 h-4" /> Search
-            </button>
-            <button onClick={handleClear} className="erp-btn erp-btn-ghost justify-center">
-              <RotateCcw className="w-4 h-4" /> Clear
-            </button>
-          </div>
+
+        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-3 items-end">
+
+          <div><label className="tc-mgmt-label">Supplier</label><select value={supplier} onChange={e => setSupplier(e.target.value)} className="tc-mgmt-input"><option value="All">All</option>{supplierOptions.map(s => <option key={s} value={s}>{s}</option>)}</select></div>
+
+          <div><label className="tc-mgmt-label">PO No.</label><input value={poNo} onChange={e => setPoNo(e.target.value)} className="tc-mgmt-input no-uppercase" placeholder="All" /></div>
+
+          <div><label className="tc-mgmt-label">PO Date From</label><input type="date" value={fromDate} onChange={e => setFromDate(e.target.value)} className="tc-mgmt-input" /></div>
+
+          <div><label className="tc-mgmt-label">PO Date To</label><input type="date" value={toDate} onChange={e => setToDate(e.target.value)} className="tc-mgmt-input" /></div>
+
+          <div><label className="tc-mgmt-label">Grade</label><input value={itemGrade} onChange={e => setItemGrade(e.target.value)} className="tc-mgmt-input no-uppercase" placeholder="All" /></div>
+
+          <div><label className="tc-mgmt-label">Thickness</label><select value={thickness} onChange={e => setThickness(e.target.value)} className="tc-mgmt-input"><option value="">All</option>{dimOptions.thicknesses.map(v => <option key={v} value={v}>{v}</option>)}</select></div>
+
+          <div><label className="tc-mgmt-label">Width</label><select value={width} onChange={e => setWidth(e.target.value)} className="tc-mgmt-input"><option value="">All</option>{dimOptions.widths.map(v => <option key={v} value={v}>{v}</option>)}</select></div>
+
+          <div><label className="tc-mgmt-label">Length</label><select value={length} onChange={e => setLength(e.target.value)} className="tc-mgmt-input"><option value="">All</option>{dimOptions.lengths.map(v => <option key={v} value={v}>{v}</option>)}</select></div>
+
         </div>
+
+        <div className="flex justify-end gap-2 mt-3">
+
+          <button type="button" onClick={handleSearch} className="erp-btn erp-btn-navy"><Search className="w-4 h-4" /> Search</button>
+
+          <button type="button" onClick={handleClear} className="erp-btn erp-btn-ghost"><RotateCcw className="w-4 h-4" /> Clear</button>
+
+        </div>
+
       </div>
 
-      {/* Stat cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
-        <StatCard icon={ClipboardList} ring="bg-blue-600" label="Total PO" value={String(stats.totalPO)} sub={`Total Value`} subValue={`₹ ${inr(stats.poValue)}`} />
-        <StatCard icon={PackageCheck} ring="bg-cyan-600" label="Total Received" value={String(stats.receivedCount)} sub="Total Value" subValue={`₹ ${inr(stats.receivedValue)}`} />
-        <StatCard icon={Clock} ring="bg-indigo-600" label="Total Pending" value={String(stats.pendingCount)} sub="Pending Value" subValue={`₹ ${inr(stats.pendingValue)}`} danger />
-        <StatCard icon={Scale} ring="bg-sky-600" label="Total Weight Pending" value={`${kg(totals.pendingWeight)} KG`} danger />
-        <StatCard icon={IndianRupee} ring="bg-blue-700" label="Total Amount Pending" value={`₹ ${inr(totals.pendingAmount)}`} danger />
-      </div>
 
-      {/* Pending details table */}
-      <div className="erp-card">
-        <div className="erp-section-header justify-between">
-          <span className="flex items-center gap-2">
-            <ClipboardList className="w-4 h-4" /> Pending Material Details
-          </span>
-          <span className="flex items-center gap-2 normal-case tracking-normal font-semibold">
-            <button
-              onClick={handleExportExcel}
-              className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-white/15 hover:bg-white/25 text-white text-xs transition-colors"
-              title="Download full report as Excel"
-            >
-              <FileSpreadsheet className="w-3.5 h-3.5" /> Excel
-            </button>
-            <button
-              onClick={handleExportPDF}
-              className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-white/15 hover:bg-white/25 text-white text-xs transition-colors"
-              title="Download full report as PDF"
-            >
-              <FileText className="w-3.5 h-3.5" /> PDF
-            </button>
-          </span>
-        </div>
+
+      <div className="erp-card overflow-hidden">
+
+        <ErpTableCaption
+
+          title={`Purchase Order Pending Details (As on ${asOn})`}
+
+          meta={<span className="text-xs font-bold text-brand-blue">Total Suppliers: {grouped.length} · Pending Lines: {rows.length}</span>}
+
+        />
+
         <div className="overflow-x-auto">
-          <table className="w-full text-sm border-collapse">
+
+          <table className="w-full erp-report-table">
+
             <thead>
-              <tr className="bg-slate-100 dark:bg-slate-800/60 text-slate-600 dark:text-slate-300">
-                <th className="px-2.5 py-2.5 text-left text-xs font-bold">Sr No</th>
-                <th className="px-2.5 py-2.5 text-left text-xs font-bold">PO No.</th>
-                <th className="px-2.5 py-2.5 text-left text-xs font-bold">PO Date</th>
-                <th className="px-2.5 py-2.5 text-left text-xs font-bold">Supplier Name</th>
-                <th className="px-2.5 py-2.5 text-left text-xs font-bold">Item Name / Grade</th>
-                <th className="px-2.5 py-2.5 text-left text-xs font-bold">Specification</th>
-                <th className="px-2.5 py-2.5 text-right text-xs font-bold">Pending Nos (PO)</th>
-                <th className="px-2.5 py-2.5 text-right text-xs font-bold">Nos Received</th>
-                <th className="px-2.5 py-2.5 text-right text-xs font-bold">Nos Pending</th>
-                <th className="px-2.5 py-2.5 text-right text-xs font-bold">Pending Weight (KG)</th>
-                <th className="px-2.5 py-2.5 text-right text-xs font-bold">Rate (₹)</th>
-                <th className="px-2.5 py-2.5 text-right text-xs font-bold">Pending Amount (₹)</th>
-                <th className="px-2.5 py-2.5 text-left text-xs font-bold">Expected Date</th>
-                <th className="px-2.5 py-2.5 text-center text-xs font-bold">PO PDF</th>
+
+              <tr>
+
+                <th>Sr.</th><th>Supplier</th><th>PO No.</th><th>PO Date</th><th>Grade</th>
+
+                <th>Thk</th><th>Width</th><th>Length</th>
+
+                <th className="text-right">PO Nos</th>
+
+                <th className="text-right">GRN Recd</th>
+
+                <th className="text-right">Pending Nos</th>
+
+                <th className="text-right">Pending Kg</th>
+
+                <th className="text-right">Rate</th>
+
+                <th className="text-right">Pending ₹</th>
+
               </tr>
+
             </thead>
-            <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
-              {rows.length === 0 ? (
-                <tr><td colSpan={14} className="px-3 py-10 text-center text-slate-400 italic">No pending material for the selected filters</td></tr>
-              ) : rows.map((r, i) => (
-                <tr key={`${r.poId}-${i}`} className="hover:bg-blue-50/40 dark:hover:bg-slate-800/40 transition-colors">
-                  <td className="px-2.5 py-2.5 text-slate-600 dark:text-slate-400">{i + 1}</td>
-                  <td className="px-2.5 py-2.5 font-semibold">
-                    <button
-                      type="button"
-                      onClick={() => handleDownloadPO(r.poId)}
-                      className="text-brand-blue hover:underline"
-                      title={`Download PO ${r.poNumber}`}
-                    >
-                      {r.poNumber}
-                    </button>
-                  </td>
-                  <td className="px-2.5 py-2.5 text-slate-700 dark:text-slate-200">{r.poDate}</td>
-                  <td className="px-2.5 py-2.5 text-slate-700 dark:text-slate-200">{r.supplier}</td>
-                  <td className="px-2.5 py-2.5 text-slate-700 dark:text-slate-200">{r.grade}</td>
-                  <td className="px-2.5 py-2.5 text-slate-600 dark:text-slate-300 text-xs">{r.spec}</td>
-                  <td className="px-2.5 py-2.5 text-right text-slate-700 dark:text-slate-200">{r.orderedNos}</td>
-                  <td className="px-2.5 py-2.5 text-right text-slate-700 dark:text-slate-200">{r.receivedNos}</td>
-                  <td className={clsx("px-2.5 py-2.5 text-right font-bold", r.pendingNos > 0 ? "text-red-500" : "text-emerald-600")}>{r.pendingNos}</td>
-                  <td className="px-2.5 py-2.5 text-right text-slate-700 dark:text-slate-200">{kg(r.pendingWeightKg)}</td>
-                  <td className="px-2.5 py-2.5 text-right text-slate-700 dark:text-slate-200">{r.rate.toFixed(2)}</td>
-                  <td className="px-2.5 py-2.5 text-right font-semibold text-slate-800 dark:text-slate-100">{inr(r.pendingAmount)}</td>
-                  <td className="px-2.5 py-2.5 text-slate-700 dark:text-slate-200">{r.expectedDate}</td>
-                  <td className="px-2.5 py-2.5 text-center">
-                    <button
-                      type="button"
-                      onClick={() => handleDownloadPO(r.poId)}
-                      className="inline-flex items-center justify-center p-1.5 rounded-lg text-brand-blue hover:bg-blue-50 dark:hover:bg-blue-900/30 transition-colors"
-                      title={`Download PO ${r.poNumber}`}
-                    >
-                      <Download className="w-4 h-4" />
-                    </button>
-                  </td>
-                </tr>
-              ))}
+
+            <tbody>
+
+              {grouped.length === 0 ? (
+
+                <tr><td colSpan={14} className="text-center py-10 text-slate-400 italic">No pending material — all PO lines fully received via GRN, or no PO matches filters</td></tr>
+
+              ) : grouped.map(([sup, items]) => {
+
+                const subPo = items.reduce((s, r) => s + r.poNos, 0);
+
+                const subRecd = items.reduce((s, r) => s + r.receivedNos, 0);
+
+                const subPending = items.reduce((s, r) => s + r.pendingNos, 0);
+
+                const subKg = items.reduce((s, r) => s + r.pendingKg, 0);
+
+                const subAmt = items.reduce((s, r) => s + r.pendingAmount, 0);
+
+                const isCollapsed = collapsed[sup];
+
+                return (
+
+                  <React.Fragment key={sup}>
+
+                    <tr className="supplier-group">
+
+                      <td colSpan={8}>
+
+                        <button type="button" onClick={() => toggleGroup(sup)} className="inline-flex items-center gap-1">
+
+                          {isCollapsed ? <ChevronRight className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+
+                          {sup}
+
+                        </button>
+
+                      </td>
+
+                      <td className="text-right">{subPo}</td>
+
+                      <td className="text-right text-green-700">{subRecd}</td>
+
+                      <td className="text-right">{subPending}</td>
+
+                      <td className="text-right">{kg(subKg)}</td>
+
+                      <td />
+
+                      <td className="text-right">{inr(subAmt)}</td>
+
+                    </tr>
+
+                    {!isCollapsed && items.map(r => {
+
+                      sr += 1;
+
+                      return (
+
+                        <tr key={`${r.poId}-${r.itemId}`}>
+
+                          <td>{sr}</td>
+
+                          <td>{r.supplier}</td>
+
+                          <td className="font-semibold text-brand-blue">{r.poNumber}</td>
+
+                          <td>{r.poDate}</td>
+
+                          <td>{r.grade}</td>
+
+                          <td>{r.thickness}</td><td>{r.width}</td><td>{r.length}</td>
+
+                          <td className="text-right">{r.poNos}</td>
+
+                          <td className="text-right text-green-600 font-semibold">{r.receivedNos}</td>
+
+                          <td className="text-right font-bold text-brand-blue">{r.pendingNos}</td>
+
+                          <td className="text-right">{kg(r.pendingKg)}</td>
+
+                          <td className="text-right">{inr(r.rate)}</td>
+
+                          <td className="text-right font-semibold">{inr(r.pendingAmount)}</td>
+
+                        </tr>
+
+                      );
+
+                    })}
+
+                  </React.Fragment>
+
+                );
+
+              })}
+
             </tbody>
+
             {rows.length > 0 && (
+
               <tfoot>
-                <tr className="bg-slate-50 dark:bg-slate-800/40 font-bold text-brand-blue border-t-2 border-slate-200 dark:border-slate-700">
-                  <td className="px-2.5 py-2.5" colSpan={6}>Total</td>
-                  <td className="px-2.5 py-2.5 text-right">{totals.orderedNos}</td>
-                  <td className="px-2.5 py-2.5 text-right">{totals.receivedNos}</td>
-                  <td className="px-2.5 py-2.5 text-right text-red-500">{totals.pendingNos}</td>
-                  <td className="px-2.5 py-2.5 text-right">{kg(totals.pendingWeight)}</td>
-                  <td className="px-2.5 py-2.5"></td>
-                  <td className="px-2.5 py-2.5 text-right">{inr(totals.pendingAmount)}</td>
-                  <td className="px-2.5 py-2.5"></td>
-                  <td className="px-2.5 py-2.5"></td>
+
+                <tr className="grand-total">
+
+                  <td colSpan={8} className="px-2.5 py-2.5 uppercase">Grand Total</td>
+
+                  <td className="text-right px-2.5 py-2.5">{totals.poNos}</td>
+
+                  <td className="text-right px-2.5 py-2.5">{totals.receivedNos}</td>
+
+                  <td className="text-right px-2.5 py-2.5">{totals.pendingNos}</td>
+
+                  <td className="text-right px-2.5 py-2.5">{kg(totals.pendingWeight)}</td>
+
+                  <td />
+
+                  <td className="text-right px-2.5 py-2.5">{inr(totals.pendingAmount)}</td>
+
                 </tr>
+
               </tfoot>
+
             )}
+
           </table>
+
         </div>
+
       </div>
+
+
+
+      <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-3">
+
+        <ErpStatCard icon={Users} label="Suppliers" value={String(grouped.length)} ring="bg-brand-blue" />
+
+        <ErpStatCard icon={ClipboardList} label="PO Lines Pending" value={String(rows.length)} ring="bg-orange-500" />
+
+        <ErpStatCard icon={Package} label="PO Nos" value={String(totals.poNos)} ring="bg-violet-600" />
+
+        <ErpStatCard icon={PackageCheck} label="GRN Received" value={String(totals.receivedNos)} ring="bg-cyan-600" />
+
+        <ErpStatCard icon={Scale} label="Pending Kg" value={kg(totals.pendingWeight)} ring="bg-green-600" />
+
+        <ErpStatCard icon={IndianRupee} label="Pending Amount" value={`₹${inr(totals.pendingAmount)}`} ring="bg-amber-500" />
+
+      </div>
+
+
 
       <p className="text-center text-xs text-brand-blue font-medium">
-        Note : Pending quantity and amount are calculated based on GRN received.
+
+        Pending Nos = PO Nos − GRN Received Nos. Only lines with balance pending are listed. Fully received PO lines are hidden.
+
       </p>
+
     </div>
+
   );
+
 };
 
-const StatCard: React.FC<{ icon: any; ring: string; label: string; value: string; sub?: string; subValue?: string; danger?: boolean }> =
-  ({ icon: Icon, ring, label, value, sub, subValue, danger }) => (
-    <div className="erp-card p-4 flex items-center gap-3">
-      <span className={clsx('w-12 h-12 rounded-full flex items-center justify-center shrink-0 text-white', ring)}>
-        <Icon className="w-6 h-6" />
-      </span>
-      <div className="min-w-0">
-        <p className="text-xs font-semibold text-slate-500 dark:text-slate-400 truncate">{label}</p>
-        <p className={clsx('text-lg font-black', danger ? 'text-red-500' : 'text-slate-800 dark:text-slate-100')}>{value}</p>
-        {sub && <p className="text-[10px] font-medium text-slate-400">{sub} <span className="font-bold text-slate-600 dark:text-slate-300">{subValue}</span></p>}
-      </div>
-    </div>
-  );
+

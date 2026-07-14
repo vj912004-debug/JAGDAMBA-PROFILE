@@ -5,37 +5,15 @@ import { clsx } from 'clsx';
 import { useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
 
-import { PurchaseOrderPrint } from '../components/PurchaseOrderPrint';
-import { downloadPDF, generatePurchaseReportPDF, getPdfBase64 } from '../utils/pdfGenerator';
-import { getWhatsAppApiUrl } from '../utils/whatsappApi';
-import { upper } from '../utils/textCase';
+import { PurchaseOrderPrint, PO_PRINT_WIDTH_PX } from '../components/PurchaseOrderPrint';
+import { PoToolbarActions } from '../components/PoToolbarActions';
+import { downloadPurchaseOrderPDF, generatePurchaseReportPDF, getPurchaseOrderPdfBase64 } from '../utils/pdfGenerator';
+import { sendWhatsAppMedia, buildWhatsAppPOMessage } from '../utils/whatsappApi';
+import { openEmailPO } from '../utils/purchaseOrderSend';
+import { openPurchaseOrderPrintWindow } from '../utils/purchaseOrderPrintWindow';
+import { poFileName } from '../utils/poNumber';
 
 type TabType = 'pending' | 'completed' | 'supplier' | 'item';
-
-function openEmailPO(po: PurchaseOrder) {
-  let to = po.supplierEmail?.trim() || '';
-  if (!to) {
-    const entered = window.prompt('Enter supplier email address:', '');
-    if (!entered?.trim()) return;
-    to = entered.trim();
-  }
-
-  const body = [
-    `Dear ${po.supplierName},`,
-    ``,
-    `Please find the attached Purchase Order ${po.poNumber} from Jagdamba Profile.`,
-    `Kindly acknowledge receipt and confirm the delivery schedule.`,
-    ``,
-    `Thanks & Regards,`,
-    `Jagdamba Profile`,
-    `504/1/A, GIDC Makarpura, Vadodara - 390010`,
-    `Mo: 8799617251 / 8799617252`,
-  ].join('\n');
-
-  const subject = encodeURIComponent(`Purchase Order ${po.poNumber} - Jagdamba Profile`);
-  const gmailUrl = `https://mail.google.com/mail/?view=cm&fs=1&to=${encodeURIComponent(to)}&su=${subject}&body=${encodeURIComponent(body)}`;
-  window.open(gmailUrl, '_blank', 'noopener,noreferrer');
-}
 
 export const PurchaseReports: React.FC = () => {
   const { t, purchaseOrders, purchaseReceipts, role, deletePurchaseOrder } = useAppContext();
@@ -43,6 +21,7 @@ export const PurchaseReports: React.FC = () => {
   const [activeTab, setActiveTab] = useState<TabType>('pending');
   const [search, setSearch] = useState('');
   const [previewPO, setPreviewPO] = useState<PurchaseOrder | null>(null);
+  const [toolbarPo, setToolbarPo] = useState<PurchaseOrder | null>(null);
   const [showReceipts, setShowReceipts] = useState<string | null>(null);
   const [showWhatsAppModal, setShowWhatsAppModal] = useState(false);
   const [whatsAppData, setWhatsAppData] = useState({ number: '', message: '' });
@@ -50,18 +29,15 @@ export const PurchaseReports: React.FC = () => {
   const [isSendingWhatsApp, setIsSendingWhatsApp] = useState(false);
 
   const openWhatsAppPO = async (po: PurchaseOrder) => {
+    setPreviewPO(po);
     setWhatsAppData({
       number: po.supplierMobile?.trim() || '',
-      message: `Dear ${po.supplierName},\n\nPlease find attached Purchase Order ${po.poNumber}.\n\nRegards,\nJagdamba Steel`,
+      message: buildWhatsAppPOMessage(po.supplierName, po.poNumber),
     });
-    setPoPdfForSend(null);
+    const pdf = await getPurchaseOrderPdfBase64(po);
+    setPoPdfForSend(pdf || null);
+    if (!pdf) toast.error('Failed to generate PO PDF');
     setShowWhatsAppModal(true);
-
-    setTimeout(async () => {
-      const pdf = await getPdfBase64('po-print-area');
-      if (!pdf) toast.error('Failed to generate PO PDF');
-      else setPoPdfForSend(pdf);
-    }, 400);
   };
 
   const sendWhatsAppPO = async () => {
@@ -71,10 +47,7 @@ export const PurchaseReports: React.FC = () => {
       return;
     }
 
-    let pdf = poPdfForSend;
-    if (!pdf) {
-      pdf = await getPdfBase64('po-print-area');
-    }
+    const pdf = poPdfForSend || (await getPurchaseOrderPdfBase64(previewPO));
     if (!pdf) {
       toast.error('PO PDF not ready — try again');
       return;
@@ -83,28 +56,25 @@ export const PurchaseReports: React.FC = () => {
     setIsSendingWhatsApp(true);
     const loadingToast = toast.loading('Sending WhatsApp...');
     try {
-      const response = await fetch(getWhatsAppApiUrl('/api/whatsapp/send-media'), {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          number: whatsAppData.number,
-          mediaData: pdf,
-          fileName: `PO_${previewPO.poNumber}.pdf`,
-          caption: whatsAppData.message,
-        }),
+      await sendWhatsAppMedia({
+        number: whatsAppData.number,
+        mediaData: pdf,
+        fileName: poFileName(previewPO.poNumber),
+        caption: whatsAppData.message,
       });
-      const result = await response.json();
-      if (result.success) {
-        toast.success('PO sent on WhatsApp!', { id: loadingToast });
-        setShowWhatsAppModal(false);
-      } else {
-        throw new Error(result.message);
-      }
+      toast.success('PO sent on WhatsApp!', { id: loadingToast });
+      setShowWhatsAppModal(false);
     } catch (err: any) {
       toast.error(`WhatsApp Error: ${err.message}`, { id: loadingToast });
     } finally {
       setIsSendingWhatsApp(false);
     }
+  };
+
+  const handleWhatsAppEnter = (e: React.KeyboardEvent) => {
+    if (e.key !== 'Enter' || e.shiftKey || isSendingWhatsApp) return;
+    e.preventDefault();
+    sendWhatsAppPO();
   };
 
   // Helper to get total received for a PO (in Nos)
@@ -198,8 +168,8 @@ export const PurchaseReports: React.FC = () => {
           <h1 className="text-2xl font-bold text-slate-800 dark:text-slate-100">{t('purchaseReports')}</h1>
           <p className="text-sm text-slate-500 dark:text-slate-400 mt-0.5">Track and manage your material procurement</p>
         </div>
-        <div className="flex gap-2 w-full sm:w-auto">
-          <div className="relative flex-1 sm:w-64">
+        <div className="flex flex-wrap gap-2 w-full sm:w-auto">
+          <div className="relative flex-1 sm:w-64 min-w-[200px]">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
             <input 
               type="text" 
@@ -219,6 +189,7 @@ export const PurchaseReports: React.FC = () => {
           >
             <Download className="w-4 h-4" /> PDF Report
           </button>
+          <PoToolbarActions purchaseOrder={toolbarPo} />
         </div>
       </div>
 
@@ -260,8 +231,19 @@ export const PurchaseReports: React.FC = () => {
                     : po.items[0]?.grade || 'N/A';
                   return (
                     <React.Fragment key={po.id}>
-                      <tr className="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
-                      <td className="p-4 font-mono text-sm text-blue-600 dark:text-blue-400 font-semibold">{po.poNumber}</td>
+                      <tr
+                        className={clsx(
+                          'hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors cursor-pointer',
+                          (toolbarPo?.id === po.id || previewPO?.id === po.id) && 'ring-2 ring-inset ring-brand-blue bg-blue-50/40 dark:bg-blue-900/20',
+                        )}
+                        onClick={() => {
+                          setPreviewPO(po);
+                          setToolbarPo(po);
+                        }}
+                      >
+                      <td className="p-4 font-mono text-sm font-semibold">
+                        <span className="text-blue-600 dark:text-blue-400 hover:underline">{po.poNumber}</span>
+                      </td>
                       <td className="p-4 text-sm text-slate-600 dark:text-slate-300">{po.date}</td>
                       <td className="p-4 text-sm font-medium text-slate-800 dark:text-slate-100">{po.supplierName}</td>
                       <td className="p-4 text-sm text-slate-600 dark:text-slate-300">{itemDisplay}</td>
@@ -295,7 +277,8 @@ export const PurchaseReports: React.FC = () => {
                       <td className="p-4 text-center">
                         <div className="flex items-center justify-center gap-1">
                           <button 
-                            onClick={() => setPreviewPO(po)}
+                            type="button"
+                            onClick={(e) => { e.stopPropagation(); setPreviewPO(po); setToolbarPo(po); }}
                             className="p-1.5 text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded-lg transition-colors"
                             title="Preview & Print"
                           >
@@ -303,7 +286,8 @@ export const PurchaseReports: React.FC = () => {
                           </button>
                           {(role === 'Admin' || role === 'Office Entry') && (
                             <button 
-                              onClick={() => navigate(`/purchase-order?edit=${po.id}`)}
+                              type="button"
+                              onClick={(e) => { e.stopPropagation(); navigate(`/purchase-order?edit=${po.id}`); }}
                               className="p-1.5 text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors"
                               title="Edit Purchase Order"
                             >
@@ -312,7 +296,9 @@ export const PurchaseReports: React.FC = () => {
                           )}
                           {(role === 'Admin' || role === 'Office Entry') && (
                             <button 
-                              onClick={() => {
+                              type="button"
+                              onClick={(e) => {
+                                e.stopPropagation();
                                 if (window.confirm('Are you sure you want to delete this Purchase Order?')) {
                                   deletePurchaseOrder(po.id);
                                 }
@@ -324,7 +310,8 @@ export const PurchaseReports: React.FC = () => {
                             </button>
                           )}
                           <button 
-                            onClick={() => setShowReceipts(showReceipts === po.id ? null : po.id)}
+                            type="button"
+                            onClick={(e) => { e.stopPropagation(); setShowReceipts(showReceipts === po.id ? null : po.id); }}
                             className={clsx(
                               "p-1.5 rounded-lg transition-colors",
                               showReceipts === po.id ? "bg-amber-100 text-amber-700" : "text-amber-600 hover:bg-amber-50 dark:bg-amber-900/30"
@@ -490,43 +477,19 @@ export const PurchaseReports: React.FC = () => {
               </h3>
               <div className="flex items-center gap-3">
                 <button 
-                  onClick={() => downloadPDF('po-print-area', `PO_${previewPO.poNumber}`)} 
+                  onClick={async () => {
+                    const ok = await downloadPurchaseOrderPDF(previewPO);
+                    if (ok) toast.success('PO PDF downloaded');
+                  }} 
                   className="flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-xl text-sm font-bold transition-all shadow-md active:scale-95"
                 >
                   <Download className="w-4 h-4" /> Download PDF
                 </button>
                 <button 
                   onClick={() => {
-                    const el = document.getElementById('po-print-area');
-                    if (!el) return;
-                    const printWindow = window.open('', '_blank', 'width=900,height=700');
-                    if (!printWindow) return;
-                    printWindow.document.write(`
-                      <!DOCTYPE html>
-                      <html>
-                        <head>
-                          <meta charset="UTF-8" />
-                          <title>Purchase Order - ${previewPO.poNumber}</title>
-                          <style>
-                            * { box-sizing: border-box; margin: 0; padding: 0; }
-                            body { background: #fff; }
-                            @page { size: A4; margin: 0; }
-                            @media print {
-                              body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-                            }
-                          </style>
-                        </head>
-                        <body>
-                          ${el.outerHTML}
-                        </body>
-                      </html>
-                    `);
-                    printWindow.document.close();
-                    printWindow.focus();
-                    setTimeout(() => {
-                      printWindow.print();
-                      printWindow.close();
-                    }, 500);
+                    if (!openPurchaseOrderPrintWindow(`Purchase Order - ${previewPO.poNumber}`)) {
+                      toast.error('Print area not ready — try again');
+                    }
                   }}
                   className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-xl text-sm font-bold transition-all shadow-md active:scale-95"
                 >
@@ -552,8 +515,8 @@ export const PurchaseReports: React.FC = () => {
                 </button>
               </div>
             </div>
-            <div className="grow overflow-y-auto p-8 bg-slate-200 dark:bg-slate-700/50">
-              <div className="scale-75 sm:scale-90 lg:scale-100 origin-top">
+            <div className="grow overflow-auto p-4 sm:p-8 bg-slate-200 dark:bg-slate-700/50">
+              <div className="mx-auto shrink-0" style={{ width: PO_PRINT_WIDTH_PX, minWidth: PO_PRINT_WIDTH_PX }}>
                 <PurchaseOrderPrint po={previewPO} />
               </div>
             </div>
@@ -583,6 +546,7 @@ export const PurchaseReports: React.FC = () => {
                   type="text"
                   value={whatsAppData.number}
                   onChange={(e) => setWhatsAppData({ ...whatsAppData, number: e.target.value })}
+                  onKeyDown={handleWhatsAppEnter}
                   placeholder="e.g. 98XXXXXXXX"
                   className="w-full bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-3 text-sm font-bold focus:ring-2 focus:ring-green-500 outline-none no-uppercase"
                 />
@@ -592,7 +556,8 @@ export const PurchaseReports: React.FC = () => {
                 <textarea
                   rows={4}
                   value={whatsAppData.message}
-                  onChange={(e) => setWhatsAppData({ ...whatsAppData, message: upper(e.target.value) })}
+                  onChange={(e) => setWhatsAppData({ ...whatsAppData, message: e.target.value })}
+                  onKeyDown={handleWhatsAppEnter}
                   className="w-full bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-green-500 outline-none resize-none"
                 />
               </div>

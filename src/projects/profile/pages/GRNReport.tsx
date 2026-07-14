@@ -1,10 +1,18 @@
 import React, { useState, useMemo } from 'react';
 import { Download, Search } from 'lucide-react';
 import { useAppContext } from '../store/AppContext';
+import { PoToolbarActions } from '../components/PoToolbarActions';
+import { clsx } from 'clsx';
 
 export const GRNReport: React.FC = () => {
   const { t, purchaseOrders, purchaseReceipts } = useAppContext();
   const [search, setSearch] = useState('');
+  const [selectedPoId, setSelectedPoId] = useState<string | null>(null);
+
+  const toolbarPo = useMemo(
+    () => (selectedPoId ? purchaseOrders.find(p => p.id === selectedPoId) ?? null : null),
+    [selectedPoId, purchaseOrders],
+  );
 
   const grnReport = useMemo(() => {
     return purchaseReceipts.map(pr => {
@@ -60,6 +68,7 @@ export const GRNReport: React.FC = () => {
           <button onClick={handleExport} className="flex items-center gap-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 px-4 py-2 rounded-xl text-sm font-semibold hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-all">
             <Download className="w-4 h-4" /> Export
           </button>
+          <PoToolbarActions purchaseOrder={toolbarPo} />
         </div>
       </div>
 
@@ -85,7 +94,14 @@ export const GRNReport: React.FC = () => {
               {grnReport.length === 0 ? (
                 <tr><td colSpan={10} className="p-10 text-center text-slate-400 italic">No material receipts recorded yet</td></tr>
               ) : grnReport.map((pr, idx) => (
-                <tr key={`${pr.id}-${idx}`} className="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
+                <tr
+                  key={`${pr.id}-${idx}`}
+                  onClick={() => setSelectedPoId(pr.poId)}
+                  className={clsx(
+                    'hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors cursor-pointer',
+                    selectedPoId === pr.poId && 'ring-2 ring-inset ring-brand-blue bg-blue-50/40 dark:bg-blue-900/20',
+                  )}
+                >
                   <td className="p-4 text-sm text-slate-600 dark:text-slate-300 font-medium">{pr.date}</td>
                   <td className="p-4 text-sm font-mono text-blue-600 dark:text-blue-400 font-bold">{pr.poNumber}</td>
                   <td className="p-4 text-sm font-medium text-slate-800 dark:text-slate-100">{pr.supplierName}</td>

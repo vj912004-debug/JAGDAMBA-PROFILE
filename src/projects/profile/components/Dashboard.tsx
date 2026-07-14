@@ -2,6 +2,7 @@ import React, { useMemo } from 'react';
 import { useAppContext, ALL_STAGES } from '../store/AppContext';
 import { Package, TrendingUp, AlertTriangle, CheckCircle, Truck, ScrollText, Database, Clock, ArrowRight } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { WhatsAppConnectControl } from './WhatsAppConnectControl';
 
 export const Dashboard: React.FC = () => {
   const { t, branch, orders, dispatches, challans, plates, usages } = useAppContext();
@@ -58,14 +59,17 @@ export const Dashboard: React.FC = () => {
 
   return (
     <div className="max-w-7xl mx-auto space-y-5 fade-in transition-colors duration-300">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
           <h1 className="text-2xl font-bold text-slate-800 dark:text-slate-100 transition-colors">{t('dashboard')}</h1>
           <p className="text-sm text-slate-500 dark:text-slate-400 transition-colors">{new Date().toLocaleDateString('en-IN', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}</p>
         </div>
-        <button onClick={() => navigate('/order-entry')} className="hidden sm:flex items-center gap-2 bg-linear-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white px-4 py-2 rounded-xl text-sm font-semibold shadow-sm transition-all active:scale-95">
-          <Package className="w-4 h-4" /> New Order
-        </button>
+        <div className="flex flex-wrap items-center gap-2">
+          <WhatsAppConnectControl />
+          <button onClick={() => navigate('/order-entry')} className="flex items-center gap-2 bg-linear-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white px-4 py-2 rounded-xl text-sm font-semibold shadow-sm transition-all active:scale-95">
+            <Package className="w-4 h-4" /> New Order
+          </button>
+        </div>
       </div>
 
       {/* Primary Stats */}

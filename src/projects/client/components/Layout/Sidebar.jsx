@@ -35,9 +35,20 @@ export default function Sidebar({ collapsed, onToggle }) {
 
   return (
     <aside className={`sidebar${collapsed ? ' collapsed' : ''}`}>
-      <div className="sidebar-logo">
-        <div className="logo-icon">⚙️</div>
-        <div className="logo-text">
+      <div className="sidebar-logo" style={{ justifyContent: collapsed ? 'center' : 'flex-start' }}>
+        <img
+          src="/steel-connect-logo.png"
+          alt="Steel Connect Pro"
+          style={{
+            width: collapsed ? 40 : 44,
+            height: collapsed ? 40 : 44,
+            objectFit: 'contain',
+            flexShrink: 0,
+            transition: 'width 0.3s, height 0.3s',
+            filter: 'drop-shadow(0 0 6px rgba(123,104,238,0.3))',
+          }}
+        />
+        <div className="logo-text" style={{ opacity: collapsed ? 0 : 1, width: collapsed ? 0 : 'auto', overflow: 'hidden', transition: 'opacity 0.2s, width 0.3s' }}>
           Steel Connect<span>Pro</span>
         </div>
       </div>

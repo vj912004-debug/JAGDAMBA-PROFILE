@@ -1,32 +1,98 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { useAppContext, type TCRecord, MATERIAL_GRADES } from '../store/AppContext';
 import { 
-  FileSearch, Plus, Search, Filter, History, 
+  Plus, Search, 
   Send, CheckCircle2, 
-  Printer, Trash2, Edit3, X, Calendar,
-  Hash, Layers, Ruler, Weight, Factory, ClipboardList, Download, MessageSquare
+  Trash2, Edit3, X,
+  Download, MessageSquare, Mail,
+  Eye, RotateCcw, FileSpreadsheet, Image, FlaskConical, FileText,
+  Filter, Printer, MoreVertical, Hourglass, ClipboardList, Package, Layers, Upload,
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { cn } from '../components/Sidebar';
-import { generateTCPDFBase64, getPdfBase64 } from '../utils/pdfGenerator';
+import { PartyAutocomplete } from '../components/PartyAutocomplete';
+import { PoToolbarActions } from '../components/PoToolbarActions';
+import { NumericInput } from '../components/NumericInput';
+import { generateTCPDFBase64, getPurchaseOrderPdfBase64 } from '../utils/pdfGenerator';
 import { upper } from '../utils/textCase';
-import { PurchaseOrderPrint } from '../components/PurchaseOrderPrint';
-import type { PurchaseOrder } from '../store/AppContext';
+import type { PurchaseOrder, PartyMaster } from '../store/AppContext';
+import { getWhatsAppApiUrl, sendWhatsAppMedia, buildWhatsAppPOMessage } from '../utils/whatsappApi';
+import { erpHotkeyProps } from '../utils/erpHotkeys';
+import { ErpEntryPage, ErpListPagination, paginateRows } from '../components/ErpPageShell';
+import { poFileName } from '../utils/poNumber';
+import { exportToExcel } from '../utils/excel';
+
+const MAKES = ['AM/NS INDIA', 'JINDAL ODISHA', 'JINDAL RAIGHAD', 'SELL RSP', 'SELL', 'TATA', 'JSW', 'POSCO', 'CHINA'] as const;
+
+type TcStatus = 'Active' | 'Expired' | 'Expiry Soon';
+
+const getTcStatus = (tcDate: string): TcStatus => {
+  const date = new Date(tcDate);
+  if (Number.isNaN(date.getTime())) return 'Active';
+  const expiry = new Date(date);
+  expiry.setFullYear(expiry.getFullYear() + 2);
+  const daysUntilExpiry = (expiry.getTime() - Date.now()) / (1000 * 60 * 60 * 24);
+  if (daysUntilExpiry < 0) return 'Expired';
+  if (daysUntilExpiry <= 30) return 'Expiry Soon';
+  return 'Active';
+};
+
+const statusRowClass = (status: TcStatus) => {
+  if (status === 'Expired') return 'row-expired';
+  if (status === 'Expiry Soon') return 'row-expiry-soon';
+  return '';
+};
+
+const statusDotClass = (status: TcStatus) => {
+  if (status === 'Expired') return 'expired';
+  if (status === 'Expiry Soon') return 'soon';
+  return 'active';
+};
+
+const emptyForm = (): Partial<TCRecord> => ({
+  heatNumber: '',
+  plateNumber: '',
+  tcNumber: '',
+  tcDate: new Date().toISOString().split('T')[0],
+  salesOrderNumber: '',
+  salesOrderDate: '',
+  purchaseOrderNumber: '',
+  purchaseOrderDate: '',
+  supplierInvoiceNumber: '',
+  supplierInvoiceDate: '',
+  grnNumber: '',
+  grade: '',
+  thickness: '',
+  width: '',
+  length: '',
+  plateWeight: '',
+  make: '',
+  standard: '',
+  batchNumber: '',
+  remarks: '',
+  supplierName: '',
+  nos: '1',
+  emailStatus: 'Not Sent',
+  dispatchHistory: [],
+});
 
 export const TCManagement: React.FC = () => {
-  const { t, tcRecords, addTCRecord, updateTCRecord, deleteTCRecord, purchaseOrders } = useAppContext();
+  const { tcRecords, addTCRecord, updateTCRecord, deleteTCRecord, purchaseOrders, persistErpNow } = useAppContext();
   
-  const [isAdding, setIsAdding] = useState(false);
   const [selectedTC, setSelectedTC] = useState<TCRecord | null>(null);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [showAdvancedSearch, setShowAdvancedSearch] = useState(false);
+  const [showEntryModal, setShowEntryModal] = useState(false);
+  const [menuOpenId, setMenuOpenId] = useState<string | null>(null);
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
   const [showMailModal, setShowMailModal] = useState(false);
   const [showWhatsAppModal, setShowWhatsAppModal] = useState(false);
-  const [showGlobalWAModal, setShowGlobalWAModal] = useState(false);
+  const [showGlobalEmailModal, setShowGlobalEmailModal] = useState(false);
   const [mailData, setMailData] = useState({ to: '', subject: '', message: '' });
   const [whatsAppData, setWhatsAppData] = useState({ number: '', message: '' });
   const [showPoMailModal, setShowPoMailModal] = useState(false);
+  const [showPoWhatsAppModal, setShowPoWhatsAppModal] = useState(false);
   const [poMailData, setPoMailData] = useState({ to: '', subject: '', message: '' });
+  const [poWhatsAppData, setPoWhatsAppData] = useState({ number: '', message: '' });
   const [poForSend, setPoForSend] = useState<PurchaseOrder | null>(null);
   const [poPdfForSend, setPoPdfForSend] = useState<string | null>(null);
   
@@ -35,74 +101,86 @@ export const TCManagement: React.FC = () => {
   const [waQr, setWaQr] = useState<string | null>(null);
   const [isWaLoading, setIsWaLoading] = useState(false);
 
-  const getWhatsAppApiUrl = (path: string) => {
-    const base = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
-      ? 'http://localhost:5001'
-      : '';
-    return `${base}${path}`;
-  };
-  
+  // Email Connection State
+  const [emailStatus, setEmailStatus] = useState<string>('NOT_CONFIGURED');
+  const [emailConfig, setEmailConfig] = useState<{ user?: string; host?: string; port?: string | number }>({});
+  const [emailError, setEmailError] = useState<string | null>(null);
+  const [isEmailLoading, setIsEmailLoading] = useState(false);
+
   // Advanced Search Filters
-  const [filters, setFilters] = useState({
+  const emptyFilters = () => ({
     heatNumber: '',
     plateNumber: '',
     tcNumber: '',
-    salesOrderNumber: '',
+    tcDateFrom: '',
+    tcDateTo: '',
     partyName: '',
     grade: '',
     thickness: '',
     make: '',
-    invoiceNumber: ''
+    tcStatus: '' as '' | TcStatus,
   });
 
-  // Form State
-  const [formData, setFormData] = useState<Partial<TCRecord>>({
-    heatNumber: '',
-    plateNumber: '',
-    tcNumber: '',
-    tcDate: new Date().toISOString().split('T')[0],
-    salesOrderNumber: '',
-    salesOrderDate: '',
-    purchaseOrderNumber: '',
-    purchaseOrderDate: '',
-    supplierInvoiceNumber: '',
-    supplierInvoiceDate: '',
-    grnNumber: '',
-    grade: '',
-    thickness: '',
-    width: '',
-    length: '',
-    plateWeight: '',
-    make: '',
-    standard: '',
-    batchNumber: '',
-    remarks: '',
-    emailStatus: 'Not Sent',
-    dispatchHistory: []
-  });
+  const [draftFilters, setDraftFilters] = useState(emptyFilters);
+  const [appliedFilters, setAppliedFilters] = useState(emptyFilters);
 
-  // Filtered Records
+  const [formData, setFormData] = useState<Partial<TCRecord>>(emptyForm());
+
+  const inDateRange = (value: string, from: string, to: string) => {
+    if (!value) return !from && !to;
+    if (from && value < from) return false;
+    if (to && value > to) return false;
+    return true;
+  };
+
   const filteredRecords = useMemo(() => {
     return tcRecords.filter(record => {
-      const matchSearch = searchQuery === '' || 
-        record.heatNumber.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        record.plateNumber.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        record.tcNumber.toLowerCase().includes(searchQuery.toLowerCase());
-      
-      const matchFilters = 
-        (filters.heatNumber === '' || record.heatNumber.toLowerCase().includes(filters.heatNumber.toLowerCase())) &&
-        (filters.plateNumber === '' || record.plateNumber.toLowerCase().includes(filters.plateNumber.toLowerCase())) &&
-        (filters.tcNumber === '' || record.tcNumber.toLowerCase().includes(filters.tcNumber.toLowerCase())) &&
-        (filters.salesOrderNumber === '' || record.salesOrderNumber.toLowerCase().includes(filters.salesOrderNumber.toLowerCase())) &&
-        (filters.grade === '' || record.grade.toLowerCase().includes(filters.grade.toLowerCase())) &&
-        (filters.thickness === '' || record.thickness.toLowerCase().includes(filters.thickness.toLowerCase())) &&
-        (filters.make === '' || record.make.toLowerCase().includes(filters.make.toLowerCase())) &&
-        (filters.invoiceNumber === '' || record.supplierInvoiceNumber.toLowerCase().includes(filters.invoiceNumber.toLowerCase()));
+      const party = record.supplierName || record.make || '';
+      const status = getTcStatus(record.tcDate);
 
-      return matchSearch && matchFilters;
+      return (
+        (appliedFilters.heatNumber === '' || record.heatNumber.toLowerCase().includes(appliedFilters.heatNumber.toLowerCase())) &&
+        (appliedFilters.plateNumber === '' || record.plateNumber.toLowerCase().includes(appliedFilters.plateNumber.toLowerCase())) &&
+        (appliedFilters.tcNumber === '' || record.tcNumber.toLowerCase().includes(appliedFilters.tcNumber.toLowerCase())) &&
+        inDateRange(record.tcDate, appliedFilters.tcDateFrom, appliedFilters.tcDateTo) &&
+        (appliedFilters.partyName === '' || party.toLowerCase().includes(appliedFilters.partyName.toLowerCase())) &&
+        (appliedFilters.grade === '' || record.grade.toLowerCase().includes(appliedFilters.grade.toLowerCase())) &&
+        (appliedFilters.thickness === '' || record.thickness.toLowerCase().includes(appliedFilters.thickness.toLowerCase())) &&
+        (appliedFilters.make === '' || record.make.toLowerCase().includes(appliedFilters.make.toLowerCase())) &&
+        (appliedFilters.tcStatus === '' || status === appliedFilters.tcStatus)
+      );
     });
-  }, [tcRecords, searchQuery, filters]);
+  }, [tcRecords, appliedFilters]);
 
+  const pagedRecords = useMemo(
+    () => paginateRows(filteredRecords, page, pageSize),
+    [filteredRecords, page, pageSize],
+  );
+
+  const filterOptions = useMemo(() => ({
+    parties: ['', ...Array.from(new Set(tcRecords.map(r => r.supplierName || r.make || '').filter(Boolean))).sort()],
+    grades: ['', ...Array.from(new Set(tcRecords.map(r => r.grade).filter(Boolean))).sort()],
+    thicknesses: ['', ...Array.from(new Set(tcRecords.map(r => r.thickness).filter(Boolean))).sort()],
+    makes: ['', ...MAKES.filter(m => tcRecords.some(r => r.make === m))],
+  }), [tcRecords]);
+
+  const stats = useMemo(() => {
+    const statuses = tcRecords.map(r => getTcStatus(r.tcDate));
+    return {
+      total: tcRecords.length,
+      active: statuses.filter(s => s === 'Active').length,
+      expired: statuses.filter(s => s === 'Expired').length,
+      expirySoon: statuses.filter(s => s === 'Expiry Soon').length,
+    };
+  }, [tcRecords]);
+
+
+  useEffect(() => {
+    if (!menuOpenId) return;
+    const close = () => setMenuOpenId(null);
+    document.addEventListener('click', close);
+    return () => document.removeEventListener('click', close);
+  }, [menuOpenId]);
 
   // Auto-weight Calculation
   useEffect(() => {
@@ -118,11 +196,11 @@ export const TCManagement: React.FC = () => {
     }
   }, [formData.thickness, formData.width, formData.length]);
 
-  // Duplicate Check
   useEffect(() => {
-    if (isAdding && (formData.heatNumber || formData.plateNumber)) {
-      const duplicateHeat = tcRecords.find(r => r.heatNumber === formData.heatNumber);
-      const duplicatePlate = tcRecords.find(r => r.plateNumber === formData.plateNumber);
+    if (selectedTC) return;
+    if (formData.heatNumber || formData.plateNumber) {
+      const duplicateHeat = tcRecords.find((r) => r.heatNumber === formData.heatNumber);
+      const duplicatePlate = tcRecords.find((r) => r.plateNumber === formData.plateNumber);
       
       if (duplicateHeat || duplicatePlate) {
         toast.error(
@@ -131,7 +209,27 @@ export const TCManagement: React.FC = () => {
         );
       }
     }
-  }, [formData.heatNumber, formData.plateNumber, isAdding, tcRecords]);
+  }, [formData.heatNumber, formData.plateNumber, selectedTC, tcRecords]);
+
+  useEffect(() => {
+    if (!formData.purchaseOrderNumber?.trim()) return;
+    const po = purchaseOrders.find(
+      p => p.poNumber.toUpperCase() === formData.purchaseOrderNumber!.trim().toUpperCase()
+    );
+    if (!po) return;
+    setFormData(prev => ({
+      ...prev,
+      supplierName: prev.supplierName || po.supplierName,
+      purchaseOrderDate: prev.purchaseOrderDate || po.date,
+    }));
+  }, [formData.purchaseOrderNumber, purchaseOrders]);
+
+  const linkedPo = useMemo(() => {
+    if (!formData.purchaseOrderNumber?.trim()) return null;
+    return purchaseOrders.find(
+      p => p.poNumber.toUpperCase() === formData.purchaseOrderNumber!.trim().toUpperCase()
+    ) ?? null;
+  }, [formData.purchaseOrderNumber, purchaseOrders]);
 
   // Poll WhatsApp Status
   useEffect(() => {
@@ -155,10 +253,80 @@ export const TCManagement: React.FC = () => {
     fetchStatus(); // immediate check
     
     // Poll fast (3s) if any modal is open, otherwise slower (10s)
-    const intervalTime = (showWhatsAppModal || showGlobalWAModal) ? 3000 : 10000;
+    const intervalTime = showWhatsAppModal ? 3000 : 10000;
     const interval = setInterval(fetchStatus, intervalTime);
     return () => clearInterval(interval);
-  }, [showWhatsAppModal, showGlobalWAModal]);
+  }, [showWhatsAppModal]);
+
+  // Poll Email Configuration Status
+  useEffect(() => {
+    const fetchEmailStatus = async () => {
+      try {
+        const res = await fetch('/api/mail/status');
+        const data = await res.json();
+        setEmailStatus(data.status);
+        if (data.user) {
+          setEmailConfig({ user: data.user, host: data.host, port: data.port });
+        }
+      } catch (e) {
+        console.error('Failed to fetch email status', e);
+      }
+    };
+
+    fetchEmailStatus();
+    const intervalTime = showGlobalEmailModal ? 5000 : 15000;
+    const interval = setInterval(fetchEmailStatus, intervalTime);
+    return () => clearInterval(interval);
+  }, [showGlobalEmailModal]);
+
+  useEffect(() => {
+    if (!showGlobalEmailModal) return;
+
+    const checkAndVerify = async () => {
+      try {
+        const res = await fetch('/api/mail/status');
+        const data = await res.json();
+        setEmailStatus(data.status);
+        if (data.user) {
+          setEmailConfig({ user: data.user, host: data.host, port: data.port });
+        }
+        if (data.status !== 'NOT_CONFIGURED') {
+          await handleEmailVerify(true);
+        }
+      } catch (e) {
+        console.error('Failed to check email on modal open', e);
+      }
+    };
+
+    checkAndVerify();
+  }, [showGlobalEmailModal]);
+
+  const handleEmailVerify = async (silent = false) => {
+    setIsEmailLoading(true);
+    setEmailError(null);
+    try {
+      const res = await fetch('/api/mail/verify', { method: 'POST' });
+      const data = await res.json();
+      if (data.success) {
+        setEmailStatus('CONNECTED');
+        setEmailConfig({ user: data.user, host: data.host, port: data.port });
+        if (!silent) toast.success('Email server connected');
+      } else {
+        setEmailStatus(data.status || 'ERROR');
+        setEmailError(data.message || 'Failed to verify email connection');
+        if (data.user) {
+          setEmailConfig({ user: data.user, host: data.host, port: data.port });
+        }
+        if (!silent) toast.error(data.message || 'Failed to verify email connection');
+      }
+    } catch (error) {
+      setEmailStatus('ERROR');
+      setEmailError('Failed to reach email server');
+      if (!silent) toast.error('Failed to reach email server');
+    } finally {
+      setIsEmailLoading(false);
+    }
+  };
 
   const handleWaInit = async () => {
     setIsWaLoading(true);
@@ -186,54 +354,205 @@ export const TCManagement: React.FC = () => {
     }
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (selectedTC) {
+      toast.error('Use Update to save changes to the selected record, or Clear for a new entry');
+      return;
+    }
     if (!formData.heatNumber || !formData.plateNumber || !formData.tcNumber) {
       toast.error('Required fields: Heat No, Plate No, TC No');
       return;
     }
 
     const newRecord: TCRecord = {
-      ...formData as TCRecord,
-      id: selectedTC ? selectedTC.id : `TC-${Date.now()}`,
-      dispatchHistory: selectedTC ? selectedTC.dispatchHistory : []
+      ...(formData as TCRecord),
+      id: `TC-${Date.now()}`,
+      dispatchHistory: [],
     };
 
-    if (selectedTC) {
-      updateTCRecord(newRecord);
-      toast.success('TC Record updated');
-    } else {
-      addTCRecord(newRecord);
+    addTCRecord(newRecord);
+    setSelectedTC(newRecord);
+    setFormData(newRecord);
+    try {
+      await persistErpNow({ tcRecords: [newRecord, ...tcRecords] });
       toast.success('New TC Record added');
+    } catch {
+      toast.success('TC Record added locally — server sync failed, use Update to retry');
     }
-    
-    setIsAdding(false);
+  };
+
+  const handleSelectSupplier = (party: PartyMaster) => {
+    setFormData(prev => ({ ...prev, supplierName: party.partyName }));
+    toast.success('Supplier filled from Party Master', { icon: '✨' });
+  };
+
+  const handleNew = () => {
+    openNewEntry();
+    toast.success('Ready for new TC entry');
+  };
+
+  const handleClear = () => {
     setSelectedTC(null);
-    setFormData({
-      heatNumber: '',
-      plateNumber: '',
-      tcNumber: '',
-      tcDate: new Date().toISOString().split('T')[0],
-      emailStatus: 'Not Sent',
-      dispatchHistory: []
-    });
+    setFormData(emptyForm());
   };
 
-  const handleSelectRecord = (record: TCRecord) => {
-    setSelectedTC(record);
-    setIsAdding(false);
+  const closeEntryModal = () => {
+    setShowEntryModal(false);
+    setMenuOpenId(null);
   };
 
-  const handleEdit = (record: TCRecord) => {
+  const printTcRecord = (record: TCRecord) => {
+    const data = record.pdfData || generateTCPDFBase64(record);
+    const w = window.open('', '_blank');
+    if (!w) {
+      toast.error('Pop-up blocked — allow pop-ups to print');
+      return;
+    }
+    w.document.write(`<iframe src="${data}" style="width:100%;height:100%;border:0" onload="this.contentWindow.print()"></iframe>`);
+    w.document.title = record.pdfName || `TC_${record.heatNumber}`;
+  };
+
+  const handleUpdate = async () => {
+    if (!selectedTC) {
+      toast.error('Select a record from the list to update');
+      return;
+    }
+    if (!formData.heatNumber || !formData.plateNumber || !formData.tcNumber) {
+      toast.error('Required fields: Heat No, Plate No, TC No');
+      return;
+    }
+
+    const updated: TCRecord = {
+      ...selectedTC,
+      ...(formData as TCRecord),
+      id: selectedTC.id,
+      dispatchHistory: selectedTC.dispatchHistory ?? [],
+    };
+    updateTCRecord(updated);
+    setSelectedTC(updated);
+    setFormData(updated);
+    try {
+      await persistErpNow({
+        tcRecords: tcRecords.map(r => r.id === updated.id ? updated : r),
+      });
+      toast.success('TC Record updated');
+    } catch {
+      toast.success('TC updated locally — server sync failed, retry Update');
+    }
+  };
+
+  const handleDeleteSelected = () => {
+    if (!selectedTC) {
+      toast.error('Select a record from the list to delete');
+      return;
+    }
+    handleDelete(selectedTC.id);
+    handleClear();
+  };
+
+  const resetFilters = () => {
+    const cleared = emptyFilters();
+    setDraftFilters(cleared);
+    setAppliedFilters(cleared);
+    setPage(1);
+  };
+
+  const applySearch = () => {
+    setAppliedFilters({ ...draftFilters });
+    setPage(1);
+  };
+
+  const handleExport = () => {
+    if (filteredRecords.length === 0) {
+      toast.error('No records to export');
+      return;
+    }
+    exportToExcel(
+      filteredRecords.map((r, i) => ({
+        'Sr No': i + 1,
+        'TC No.': r.tcNumber,
+        'TC Date': r.tcDate,
+        'Party Name': r.supplierName || r.make,
+        'Grade': r.grade,
+        'Thickness (mm)': r.thickness,
+        'Plate No.': r.plateNumber,
+        'Heat No.': r.heatNumber,
+        'Make': r.make,
+        'Weight (KG)': r.plateWeight,
+        'Status': getTcStatus(r.tcDate),
+      })),
+      'TC Document List',
+      `TC_List_${new Date().toISOString().slice(0, 10)}.xlsx`
+    );
+    toast.success('Exported to Excel');
+  };
+
+  const attachFile = (field: keyof TCRecord, nameField: keyof TCRecord) => (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (file.size > 8 * 1024 * 1024) {
+      toast.error('File too large (max 8 MB). Use a smaller PDF or image.');
+      e.target.value = '';
+      return;
+    }
+    const reader = new FileReader();
+    reader.onerror = () => toast.error('Failed to read file');
+    reader.onload = (event) => {
+      const result = event.target?.result as string;
+      if (!result) {
+        toast.error('Failed to read file');
+        return;
+      }
+      setFormData(prev => ({ ...prev, [field]: result, [nameField]: file.name }));
+      if (selectedTC) {
+        const updated: TCRecord = {
+          ...selectedTC,
+          [field]: result,
+          [nameField]: file.name,
+          id: selectedTC.id,
+          dispatchHistory: selectedTC.dispatchHistory ?? [],
+        };
+        updateTCRecord(updated);
+        setSelectedTC(updated);
+        setFormData(updated);
+        persistErpNow({
+          tcRecords: tcRecords.map(r => r.id === updated.id ? updated : r),
+        }).catch(() => toast.error('Attachment saved locally — server sync failed'));
+      }
+      toast.success(`${file.name} attached${selectedTC ? ' and saved' : ''}`);
+    };
+    reader.readAsDataURL(file);
+    e.target.value = '';
+  };
+
+  const loadRecord = (record: TCRecord) => {
     setSelectedTC(record);
     setFormData(record);
-    setIsAdding(true);
+    setShowEntryModal(true);
+    setMenuOpenId(null);
   };
 
-  const handleDelete = (id: string) => {
-    if (window.confirm('Are you sure you want to delete this record?')) {
-      deleteTCRecord(id);
+  const openNewEntry = () => {
+    setSelectedTC(null);
+    setFormData(emptyForm());
+    setShowEntryModal(true);
+    setMenuOpenId(null);
+  };
+
+  const handleDelete = async (id: string) => {
+    if (!window.confirm('Are you sure you want to delete this record?')) return;
+    const next = tcRecords.filter(r => r.id !== id);
+    deleteTCRecord(id);
+    if (selectedTC?.id === id) {
+      setSelectedTC(null);
+      setFormData(emptyForm());
+    }
+    try {
+      await persistErpNow({ tcRecords: next });
       toast.success('Record deleted');
+    } catch {
+      toast.error('Deleted locally but server sync failed');
     }
   };
 
@@ -255,9 +574,9 @@ export const TCManagement: React.FC = () => {
       return;
     }
 
-    let tcDataToSend = selectedTC.pdfData;
+    let tcDataToSend = formData.pdfData || selectedTC.pdfData;
     if (!tcDataToSend) {
-      tcDataToSend = generateTCPDFBase64(selectedTC);
+      tcDataToSend = generateTCPDFBase64({ ...selectedTC, ...formData } as TCRecord);
     }
 
     const loadingToast = toast.loading('Sending email...');
@@ -307,19 +626,68 @@ export const TCManagement: React.FC = () => {
     setPoMailData({
       to: po.supplierEmail || '',
       subject: `Purchase Order ${po.poNumber} - Jagdamba Steel`,
-      message: `Dear ${po.supplierName},\n\nPlease find attached Purchase Order ${po.poNumber}.\n\nRegards,\nJagdamba Steel`,
+      message: buildWhatsAppPOMessage(po.supplierName, po.poNumber),
     });
     setShowPoMailModal(true);
   };
 
+  const handleWhatsAppPO = (record: TCRecord) => {
+    if (!record.purchaseOrderNumber?.trim()) {
+      toast.error('No Purchase Order linked to this TC');
+      return;
+    }
+    const po = purchaseOrders.find(
+      (p) => p.poNumber.toUpperCase() === record.purchaseOrderNumber!.trim().toUpperCase()
+    );
+    if (!po) {
+      toast.error(`Purchase Order ${record.purchaseOrderNumber} not found`);
+      return;
+    }
+    setSelectedTC(record);
+    setPoForSend(po);
+    setPoPdfForSend(null);
+    setPoWhatsAppData({
+      number: po.supplierMobile || '',
+      message: buildWhatsAppPOMessage(po.supplierName, po.poNumber),
+    });
+    setShowPoWhatsAppModal(true);
+  };
+
+  const sendPoWhatsApp = async () => {
+    if (!poForSend) return;
+    if (!poWhatsAppData.number.trim()) {
+      toast.error('WhatsApp number is required');
+      return;
+    }
+    const pdf = poPdfForSend || (await getPurchaseOrderPdfBase64(poForSend));
+    if (!pdf) {
+      toast.error('Failed to generate PO PDF');
+      return;
+    }
+    const loadingToast = toast.loading('Sending WhatsApp...');
+    try {
+      await sendWhatsAppMedia({
+        number: poWhatsAppData.number,
+        mediaData: pdf,
+        fileName: poFileName(poForSend.poNumber),
+        caption: poWhatsAppData.message,
+      });
+      toast.success('PO sent on WhatsApp!', { id: loadingToast });
+      setShowPoWhatsAppModal(false);
+      setPoForSend(null);
+      setPoPdfForSend(null);
+    } catch (err: unknown) {
+      toast.error(`WhatsApp Error: ${(err as Error).message}`, { id: loadingToast });
+    }
+  };
+
   useEffect(() => {
-    if (!showPoMailModal || !poForSend) return;
-    const timer = setTimeout(async () => {
-      const pdf = await getPdfBase64('tc-po-print-area');
+    if ((!showPoMailModal && !showPoWhatsAppModal) || !poForSend) return;
+    void (async () => {
+      const pdf = await getPurchaseOrderPdfBase64(poForSend);
       if (pdf) setPoPdfForSend(pdf);
-    }, 500);
-    return () => clearTimeout(timer);
-  }, [showPoMailModal, poForSend]);
+    })();
+  }, [showPoMailModal, showPoWhatsAppModal, poForSend]);
 
   const sendPoEmail = async () => {
     if (!poForSend) return;
@@ -328,10 +696,7 @@ export const TCManagement: React.FC = () => {
       return;
     }
 
-    let pdf = poPdfForSend;
-    if (!pdf) {
-      pdf = await getPdfBase64('tc-po-print-area');
-    }
+    const pdf = poPdfForSend || (await getPurchaseOrderPdfBase64(poForSend));
     if (!pdf) {
       toast.error('Failed to generate PO PDF');
       return;
@@ -347,7 +712,7 @@ export const TCManagement: React.FC = () => {
           subject: poMailData.subject,
           message: poMailData.message,
           poData: pdf,
-          fileName: `PO_${poForSend.poNumber}.pdf`,
+          fileName: poFileName(poForSend.poNumber),
         }),
       });
       const result = await response.json();
@@ -381,570 +746,494 @@ export const TCManagement: React.FC = () => {
       return;
     }
 
-    let tcDataToSend = selectedTC.pdfData;
+    let tcDataToSend = formData.pdfData || selectedTC.pdfData;
     if (!tcDataToSend) {
-      tcDataToSend = generateTCPDFBase64(selectedTC);
+      tcDataToSend = generateTCPDFBase64({ ...selectedTC, ...formData } as TCRecord);
     }
 
     const loadingToast = toast.loading('Sending WhatsApp...');
     try {
-      const response = await fetch(getWhatsAppApiUrl('/api/whatsapp/send-media'), {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          number: whatsAppData.number,
-          mediaData: tcDataToSend,
-          fileName: selectedTC.pdfName || `TC_${selectedTC.heatNumber || 'Generated'}.pdf`,
-          caption: whatsAppData.message
-        }),
+      await sendWhatsAppMedia({
+        number: whatsAppData.number,
+        mediaData: tcDataToSend,
+        fileName: selectedTC.pdfName || `TC_${selectedTC.heatNumber || 'Generated'}.pdf`,
+        caption: whatsAppData.message,
       });
-
-      const result = await response.json();
-      if (result.success) {
-        toast.success('WhatsApp message sent!', { id: loadingToast });
-        setShowWhatsAppModal(false);
-      } else {
-        throw new Error(result.message);
-      }
+      toast.success('WhatsApp message sent!', { id: loadingToast });
+      setShowWhatsAppModal(false);
     } catch (err: any) {
       toast.error(`WhatsApp Error: ${err.message}`, { id: loadingToast });
     }
   };
 
-  return (
-    <>
-    <div className="max-w-[1600px] mx-auto p-4 space-y-6 fade-in">
-      {/* Header Section */}
-      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 bg-white dark:bg-slate-900 p-6 rounded-3xl shadow-sm border border-slate-100 dark:border-slate-800 transition-colors">
-        <div>
-          <h1 className="text-3xl font-black flex items-center gap-3">
-            <FileSearch className="w-8 h-8 text-blue-600 dark:text-blue-400" />
-            <span className="bg-linear-to-r from-slate-900 to-slate-600 dark:from-slate-100 dark:to-slate-400 bg-clip-text text-transparent">
-              {t('tcManagement')}
-            </span>
-          </h1>
-          <p className="text-slate-500 dark:text-slate-400 font-medium mt-1">Manage Test Certificates & Material History</p>
-        </div>
-        
-        <div className="flex flex-wrap items-center gap-3">
-          {/* WhatsApp Connection Control */}
-          <button 
-            onClick={() => setShowGlobalWAModal(true)}
-            className={cn(
-              "flex items-center gap-2 px-4 py-3 rounded-2xl font-bold text-sm shadow-sm transition-all active:scale-95 border",
-              waStatus === 'CONNECTED' 
-                ? "bg-green-50 dark:bg-green-950/20 border-green-200 dark:border-green-900/30 text-green-700 dark:text-green-400 hover:bg-green-100 dark:hover:bg-green-900/30" 
-                : waStatus === 'QR_READY'
-                ? "bg-amber-50 dark:bg-amber-950/20 border-amber-200 dark:border-amber-900/30 text-amber-700 dark:text-amber-400 hover:bg-amber-100 dark:hover:bg-amber-900/30 animate-pulse"
-                : waStatus === 'INITIALIZING'
-                ? "bg-blue-50 dark:bg-blue-950/20 border-blue-200 dark:border-blue-900/30 text-blue-700 dark:text-blue-400 hover:bg-blue-100 dark:hover:bg-blue-900/50 animate-pulse"
-                : "bg-slate-50 border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:bg-slate-800 dark:hover:bg-slate-700/50"
-            )}
-          >
-            <MessageSquare className="w-4 h-4" />
-            WhatsApp: {waStatus === 'CONNECTED' ? 'Connected' : waStatus === 'QR_READY' ? 'Scan QR' : waStatus === 'INITIALIZING' ? 'Initializing...' : 'Disconnected'}
-          </button>
+  const handleWhatsAppEnter = (e: React.KeyboardEvent) => {
+    if (e.key !== 'Enter' || e.shiftKey) return;
+    e.preventDefault();
+    sendWhatsApp();
+  };
 
-          <div className="flex flex-col items-end px-4 border-r border-slate-100 dark:border-slate-800">
-            <span className="meta-10">Total Certificates</span>
-            <span className="text-xl font-black text-slate-800 dark:text-slate-100">{tcRecords.length}</span>
-          </div>
-          
-          <button 
-            onClick={() => { setIsAdding(true); setSelectedTC(null); setFormData({ ...formData, id: '', heatNumber: '', plateNumber: '', tcNumber: '' }); }}
-            className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-2xl font-bold shadow-lg shadow-blue-200 dark:shadow-none transition-all active:scale-95"
-          >
-            <Plus className="w-5 h-5" />
-            Add New TC
-          </button>
-        </div>
-      </div>
-
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-        {/* Left Column: Search & List */}
-        <div className="lg:col-span-4 space-y-4">
-          <div className="bg-white dark:bg-slate-900 p-4 rounded-3xl shadow-sm border border-slate-100 dark:border-slate-800 space-y-4">
-            <div className="relative">
-              <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
-              <input 
-                type="text" 
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Search Heat / Plate / TC..."
-                className="w-full bg-slate-50 dark:bg-slate-800/50 border-none rounded-2xl pl-12 pr-4 py-3 text-sm focus:ring-2 focus:ring-blue-500 outline-none font-medium"
-              />
+  const entryForm = (
+    <form onSubmit={handleSubmit} className="tc-entry-form">
+      <div className="tc-entry-shell">
+        <div className="tc-entry-main">
+          <div className="tc-mgmt-panel">
+            <div className="tc-section-head"><ClipboardList /> TC Entry</div>
+            <div className="p-3 grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+              <div>
+                <label className="tc-mgmt-label">TC No. *</label>
+                <input type="text" required value={formData.tcNumber || ''} onChange={e => setFormData({ ...formData, tcNumber: upper(e.target.value) })} className="tc-mgmt-input" />
+              </div>
+              <div>
+                <label className="tc-mgmt-label">TC Date</label>
+                <input type="date" value={formData.tcDate || ''} onChange={e => setFormData({ ...formData, tcDate: e.target.value })} className="tc-mgmt-input" />
+              </div>
+              <div>
+                <label className="tc-mgmt-label">Party Name</label>
+                <PartyAutocomplete
+                  value={formData.supplierName || ''}
+                  onChange={(val) => setFormData({ ...formData, supplierName: val })}
+                  onSelectParty={handleSelectSupplier}
+                  placeholder="Select party..."
+                  className="tc-mgmt-input pl-9"
+                />
+              </div>
+              <div>
+                <label className="tc-mgmt-label">Sales Order No.</label>
+                <input type="text" value={formData.salesOrderNumber || ''} onChange={e => setFormData({ ...formData, salesOrderNumber: upper(e.target.value) })} className="tc-mgmt-input" />
+              </div>
+              <div>
+                <label className="tc-mgmt-label">Invoice No.</label>
+                <input type="text" value={formData.supplierInvoiceNumber || ''} onChange={e => setFormData({ ...formData, supplierInvoiceNumber: upper(e.target.value) })} className="tc-mgmt-input" />
+              </div>
+              <div>
+                <label className="tc-mgmt-label">Purchase Order No</label>
+                <input type="text" value={formData.purchaseOrderNumber || ''} onChange={e => setFormData({ ...formData, purchaseOrderNumber: upper(e.target.value) })} className="tc-mgmt-input" />
+              </div>
+              <div>
+                <label className="tc-mgmt-label">PO Date</label>
+                <input type="date" value={formData.purchaseOrderDate || ''} onChange={e => setFormData({ ...formData, purchaseOrderDate: e.target.value })} className="tc-mgmt-input" />
+              </div>
+              <div>
+                <label className="tc-mgmt-label">Make</label>
+                <select value={formData.make || ''} onChange={e => setFormData({ ...formData, make: upper(e.target.value) })} className="tc-mgmt-input">
+                  <option value="">Select</option>
+                  {MAKES.map(m => <option key={m} value={m}>{m}</option>)}
+                </select>
+              </div>
             </div>
-            
-            <button 
-              onClick={() => setShowAdvancedSearch(!showAdvancedSearch)}
-              className={cn(
-                "w-full flex items-center justify-center gap-2 py-2 rounded-xl text-xs font-bold transition-all",
-                showAdvancedSearch ? "bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400" : "bg-slate-50 text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:bg-slate-800"
-              )}
-            >
-              <Filter className="w-4 h-4" />
-              Advanced Search Filters
-            </button>
+          </div>
 
-            {showAdvancedSearch && (
-              <div className="grid grid-cols-2 gap-2 pt-2 border-t border-slate-50 slide-down">
-                {Object.keys(filters).map((key) => (
-                  <div key={key}>
-                    <label className="field-label mb-1">{key.replace(/([A-Z])/g, ' $1')}</label>
-                    {key === 'grade' ? (
-                      <select 
-                        value={(filters as any)[key]}
-                        onChange={(e) => setFilters({...filters, [key]: upper(e.target.value)})}
-                        className="w-full bg-slate-50 dark:bg-slate-800/50 border-none rounded-lg px-3 py-2 text-xs focus:ring-1 focus:ring-blue-500 outline-none font-bold"
-                      >
-                        <option value="">All Grades</option>
+          <div className="tc-mgmt-panel">
+            <div className="tc-section-head"><Package /> Material Details</div>
+            <div className="overflow-x-auto">
+              <table className="tc-mgmt-table w-full min-w-[900px]">
+                <thead>
+                  <tr>
+                    <th>Sr No</th>
+                    <th>Grade</th>
+                    <th>Thickness (mm)</th>
+                    <th>Width (mm)</th>
+                    <th>Length (mm)</th>
+                    <th>Nos</th>
+                    <th>Heat No.</th>
+                    <th>Plate No.</th>
+                    <th>Make</th>
+                    <th>TC No.</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td className="text-center font-bold">1</td>
+                    <td>
+                      <select value={formData.grade || ''} onChange={e => setFormData({ ...formData, grade: upper(e.target.value) })} className="tc-mgmt-input text-xs py-1">
+                        <option value="">—</option>
                         {MATERIAL_GRADES.map(g => <option key={g} value={g}>{g}</option>)}
                       </select>
-                    ) : key === 'make' ? (
-                      <select 
-                        value={(filters as any)[key]}
-                        onChange={(e) => setFilters({...filters, [key]: upper(e.target.value)})}
-                        className="w-full bg-slate-50 dark:bg-slate-800/50 border-none rounded-lg px-3 py-2 text-xs focus:ring-1 focus:ring-blue-500 outline-none font-bold"
-                      >
-                        <option value="">All Makes</option>
-                        <option value="AM/NS INDIA">AM/NS INDIA</option>
-                        <option value="JINDAL ODISHA">JINDAL ODISHA</option>
-                        <option value="JINDAL RAIGHAD">JINDAL RAIGHAD</option>
-                        <option value="SELL RSP">SELL RSP</option>
-                        <option value="SELL">SELL</option>
-                        <option value="TATA">TATA</option>
-                        <option value="JSW">JSW</option>
-                      </select>
-                    ) : (
-                      <input 
-                        type="text" 
-                        value={(filters as any)[key]}
-                        onChange={(e) => setFilters({...filters, [key]: upper(e.target.value)})}
-                        className="w-full bg-slate-50 dark:bg-slate-800/50 border-none rounded-lg px-3 py-2 text-xs focus:ring-1 focus:ring-blue-500 outline-none font-bold"
-                      />
-                    )}
-                  </div>
-                ))}
-                <button 
-                  onClick={() => setFilters({ heatNumber: '', plateNumber: '', tcNumber: '', salesOrderNumber: '', partyName: '', grade: '', thickness: '', make: '', invoiceNumber: '' })}
-                  className="col-span-2 text-2xs font-bold text-red-500 uppercase py-2 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-lg transition-colors"
-                >
-                  Clear All Filters
-                </button>
-              </div>
-            )}
+                    </td>
+                    <td><NumericInput value={formData.thickness || ''} onChange={v => setFormData({ ...formData, thickness: v })} className="tc-mgmt-input text-xs py-1 text-center" /></td>
+                    <td><NumericInput value={formData.width || ''} onChange={v => setFormData({ ...formData, width: v })} className="tc-mgmt-input text-xs py-1 text-center" /></td>
+                    <td><NumericInput value={formData.length || ''} onChange={v => setFormData({ ...formData, length: v })} className="tc-mgmt-input text-xs py-1 text-center" /></td>
+                    <td><NumericInput value={formData.nos || '1'} onChange={v => setFormData({ ...formData, nos: v })} className="tc-mgmt-input text-xs py-1 text-center" /></td>
+                    <td><input type="text" required value={formData.heatNumber || ''} onChange={e => setFormData({ ...formData, heatNumber: upper(e.target.value) })} className="tc-mgmt-input text-xs py-1" /></td>
+                    <td><input type="text" required value={formData.plateNumber || ''} onChange={e => setFormData({ ...formData, plateNumber: upper(e.target.value) })} className="tc-mgmt-input text-xs py-1" /></td>
+                    <td>{formData.make || '—'}</td>
+                    <td>{formData.tcNumber || '—'}</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <div className="tc-material-total">Total Nos : {formData.nos || '1'}</div>
           </div>
 
-          <div className="bg-white dark:bg-slate-900 rounded-3xl shadow-sm border border-slate-100 dark:border-slate-800 overflow-hidden min-h-[500px]">
-            <div className="p-4 border-b border-slate-50 bg-slate-50/50 dark:bg-slate-800/50 flex items-center justify-between">
-              <h3 className="text-sm font-bold text-slate-800 dark:text-slate-100">Results ({filteredRecords.length})</h3>
-            </div>
-            <div className="divide-y divide-slate-50 max-h-[600px] overflow-y-auto">
-              {filteredRecords.map(record => (
-                <div 
-                  key={record.id}
-                  onClick={() => handleSelectRecord(record)}
-                  className={cn(
-                    "p-4 hover:bg-blue-50/30 dark:hover:bg-blue-900/30 cursor-pointer transition-all group",
-                    selectedTC?.id === record.id ? "bg-blue-50 dark:bg-blue-900/30 border-l-4 border-blue-600" : ""
-                  )}
-                >
-                  <div className="flex items-center justify-between mb-1">
-                    <span className="text-sm font-black text-slate-800 dark:text-slate-100 group-hover:text-blue-600 dark:hover:text-blue-400 transition-colors">{record.heatNumber}</span>
-                    <span className="text-2xs font-bold bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 px-2 py-0.5 rounded-full uppercase">{record.grade}</span>
-                  </div>
-                  <div className="flex items-center gap-3 text-xs text-slate-500 dark:text-slate-400 font-medium">
-                    <span className="flex items-center gap-1"><Hash className="w-3 h-3" /> {record.plateNumber}</span>
-                    <span className="flex items-center gap-1"><FileSearch className="w-3 h-3" /> {record.tcNumber}</span>
-                  </div>
-                </div>
-              ))}
-              {filteredRecords.length === 0 && (
-                <div className="p-12 text-center text-slate-400">
-                  <Search className="w-12 h-12 mx-auto mb-2 opacity-20" />
-                  <p className="font-bold">No records found</p>
-                </div>
-              )}
+          <div className="tc-mgmt-panel">
+            <div className="tc-section-head"><Layers /> Linked Documents Preview</div>
+            <div className="tc-linked-docs-grid">
+              <LinkedDocCard title="TC PDF" icon={FileText} fileName={formData.pdfName} dataUrl={formData.pdfData} />
+              <LinkedDocCard title="Plate Photo" icon={Image} fileName={formData.platePhotoName} dataUrl={formData.platePhotoData} />
+              <LinkedDocCard title="UT Report" icon={FlaskConical} fileName={formData.labReportName} dataUrl={formData.labReportData} />
+              <LinkedDocCard title="Heat Marking" icon={Image} fileName={formData.heatMarkingPhotoName} dataUrl={formData.heatMarkingPhotoData} />
             </div>
           </div>
         </div>
 
-        {/* Right Column: Form or History */}
-        <div className="lg:col-span-8 space-y-6">
-          {isAdding ? (
-            <div className="bg-white dark:bg-slate-900 rounded-3xl shadow-xl border border-blue-100 dark:border-blue-800 overflow-hidden slide-up">
-              <div className="bg-blue-600 p-6 text-white flex items-center justify-between">
-                <div>
-                  <h2 className="text-xl font-bold flex items-center gap-2">
-                    {selectedTC ? <Edit3 className="w-6 h-6" /> : <Plus className="w-6 h-6" />}
-                    {selectedTC ? 'Edit Test Certificate' : 'New TC Master Entry'}
-                  </h2>
-                  <p className="text-blue-100 text-xs mt-1">All fields marked with * are essential for tracking</p>
-                </div>
-                <button onClick={() => setIsAdding(false)} className="p-2 hover:bg-white dark:bg-slate-900/10 rounded-xl transition-colors">
-                  <X className="w-6 h-6" />
-                </button>
-              </div>
-              
-              <form onSubmit={handleSubmit} className="p-8 space-y-8">
-                {/* Field Groups */}
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                  {/* Basic Info */}
-                  <div className="space-y-4">
-                    <h3 className="text-xs font-black text-blue-600 dark:text-blue-400 uppercase tracking-[0.2em] flex items-center gap-2">
-                      <Hash className="w-4 h-4" /> Core Tracking
-                    </h3>
-                    <div className="space-y-3">
-                      <div>
-                        <label className="field-label mb-1">Heat Number *</label>
-                        <input type="text" required value={formData.heatNumber} onChange={e => setFormData({...formData, heatNumber: upper(e.target.value)})} className="w-full bg-slate-50 dark:bg-slate-800/50 border-none rounded-xl px-4 py-2.5 text-sm font-bold focus:ring-2 focus:ring-blue-500 outline-none" placeholder="e.g. H12345" />
-                      </div>
-                      <div>
-                        <label className="field-label mb-1">Plate Number *</label>
-                        <input type="text" required value={formData.plateNumber} onChange={e => setFormData({...formData, plateNumber: upper(e.target.value)})} className="w-full bg-slate-50 dark:bg-slate-800/50 border-none rounded-xl px-4 py-2.5 text-sm font-bold focus:ring-2 focus:ring-blue-500 outline-none" placeholder="e.g. P9876" />
-                      </div>
-                      <div>
-                        <label className="field-label mb-1">TC Number *</label>
-                        <input type="text" required value={formData.tcNumber} onChange={e => setFormData({...formData, tcNumber: upper(e.target.value)})} className="w-full bg-slate-50 dark:bg-slate-800/50 border-none rounded-xl px-4 py-2.5 text-sm font-bold focus:ring-2 focus:ring-blue-500 outline-none" placeholder="e.g. TC-2026-001" />
-                      </div>
-                      <div>
-                        <label className="field-label mb-1">TC Date</label>
-                        <input type="date" value={formData.tcDate} onChange={e => setFormData({...formData, tcDate: upper(e.target.value)})} className="w-full bg-slate-50 dark:bg-slate-800/50 border-none rounded-xl px-4 py-2.5 text-sm font-bold focus:ring-2 focus:ring-blue-500 outline-none" />
-                      </div>
-                    </div>
-                  </div>
+        <aside className="tc-entry-upload-col">
+          <div className="tc-upload-sidebar">
+            <div className="tc-upload-sidebar-head"><Upload className="w-4 h-4" /> Document Upload</div>
+            <div className="tc-upload-sidebar-body">
+              <TcUploadBox label="TC PDF" icon={FileText} fileName={formData.pdfName} onChange={attachFile('pdfData', 'pdfName')} accept=".pdf,image/*" />
+              <TcUploadBox label="Plate Photo" icon={Image} fileName={formData.platePhotoName} onChange={attachFile('platePhotoData', 'platePhotoName')} accept="image/*" />
+              <TcUploadBox label="UT Report" icon={FlaskConical} fileName={formData.labReportName} onChange={attachFile('labReportData', 'labReportName')} accept=".pdf,image/*" />
+              <TcUploadBox label="Heat Marking Photo" icon={Image} fileName={formData.heatMarkingPhotoName} onChange={attachFile('heatMarkingPhotoData', 'heatMarkingPhotoName')} accept="image/*" />
+            </div>
+          </div>
+        </aside>
+      </div>
 
-                  {/* Orders Info */}
-                  <div className="space-y-4">
-                    <h3 className="text-xs font-black text-blue-600 dark:text-blue-400 uppercase tracking-[0.2em] flex items-center gap-2">
-                      <ClipboardList className="w-4 h-4" /> Order & Invoice
-                    </h3>
-                    <div className="space-y-3">
-                      <div className="grid grid-cols-2 gap-2">
-                        <div>
-                          <label className="field-label mb-1">Sales Order No</label>
-                          <input type="text" value={formData.salesOrderNumber} onChange={e => setFormData({...formData, salesOrderNumber: upper(e.target.value)})} className="w-full bg-slate-50 dark:bg-slate-800/50 border-none rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-blue-500 outline-none" />
-                        </div>
-                        <div>
-                          <label className="field-label mb-1">SO Date</label>
-                          <input type="date" value={formData.salesOrderDate} onChange={e => setFormData({...formData, salesOrderDate: upper(e.target.value)})} className="w-full bg-slate-50 dark:bg-slate-800/50 border-none rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-blue-500 outline-none" />
-                        </div>
-                      </div>
-                      <div className="grid grid-cols-2 gap-2">
-                        <div>
-                          <label className="field-label mb-1">Purchase Order No</label>
-                          <input type="text" value={formData.purchaseOrderNumber} onChange={e => setFormData({...formData, purchaseOrderNumber: upper(e.target.value)})} className="w-full bg-slate-50 dark:bg-slate-800/50 border-none rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-blue-500 outline-none" />
-                        </div>
-                        <div>
-                          <label className="field-label mb-1">PO Date</label>
-                          <input type="date" value={formData.purchaseOrderDate} onChange={e => setFormData({...formData, purchaseOrderDate: upper(e.target.value)})} className="w-full bg-slate-50 dark:bg-slate-800/50 border-none rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-blue-500 outline-none" />
-                        </div>
-                      </div>
-                      <div className="grid grid-cols-2 gap-2">
-                        <div>
-                          <label className="field-label mb-1">Supplier Inv No</label>
-                          <input type="text" value={formData.supplierInvoiceNumber} onChange={e => setFormData({...formData, supplierInvoiceNumber: upper(e.target.value)})} className="w-full bg-slate-50 dark:bg-slate-800/50 border-none rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-blue-500 outline-none" />
-                        </div>
-                        <div>
-                          <label className="field-label mb-1">Inv Date</label>
-                          <input type="date" value={formData.supplierInvoiceDate} onChange={e => setFormData({...formData, supplierInvoiceDate: upper(e.target.value)})} className="w-full bg-slate-50 dark:bg-slate-800/50 border-none rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-blue-500 outline-none" />
-                        </div>
-                      </div>
-                      <div>
-                        <label className="field-label mb-1">GRN Number</label>
-                        <input type="text" value={formData.grnNumber} onChange={e => setFormData({...formData, grnNumber: upper(e.target.value)})} className="w-full bg-slate-50 dark:bg-slate-800/50 border-none rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-blue-500 outline-none" />
-                      </div>
-                    </div>
-                  </div>
+      <div className="tc-entry-action-bar">
+        <button type="submit" {...erpHotkeyProps('save')} className="tc-action-btn tc-action-btn-navy"><CheckCircle2 className="w-4 h-4" /> Save</button>
+        <button type="button" onClick={handleUpdate} className="tc-action-btn tc-action-btn-orange"><Edit3 className="w-4 h-4" /> Update</button>
+        <button type="button" onClick={handleDeleteSelected} className="tc-action-btn tc-action-btn-red"><Trash2 className="w-4 h-4" /> Delete</button>
+        <button type="button" onClick={handleClear} className="tc-action-btn tc-action-btn-outline"><RotateCcw className="w-4 h-4" /> Clear</button>
+        <button
+          type="button"
+          onClick={() => selectedTC && printTcRecord(selectedTC)}
+          disabled={!selectedTC}
+          className="tc-action-btn tc-action-btn-outline"
+        >
+          <Printer className="w-4 h-4" /> Print
+        </button>
+        <button
+          type="button"
+          onClick={() => selectedTC && handleResendEmail(selectedTC)}
+          disabled={!selectedTC}
+          className="tc-action-btn tc-action-btn-outline"
+        >
+          <Mail className="w-4 h-4" /> Email
+        </button>
+        <button
+          type="button"
+          onClick={() => selectedTC && handleWhatsAppTC(selectedTC)}
+          disabled={!selectedTC}
+          className="tc-action-btn tc-action-btn-wa"
+        >
+          <MessageSquare className="w-4 h-4" /> WhatsApp
+        </button>
+        <button type="button" {...erpHotkeyProps('new')} onClick={handleNew} className="tc-action-btn tc-action-btn-outline"><Plus className="w-4 h-4" /> New</button>
+        <PoToolbarActions purchaseOrder={linkedPo} requireSelection={false} />
+      </div>
+    </form>
+  );
 
-                  {/* Specifications */}
-                  <div className="space-y-4">
-                    <h3 className="text-xs font-black text-blue-600 dark:text-blue-400 uppercase tracking-[0.2em] flex items-center gap-2">
-                      <Ruler className="w-4 h-4" /> Technical Specs
-                    </h3>
-                    <div className="space-y-3">
-                      <div className="grid grid-cols-2 gap-2">
-                        <div>
-                          <label className="field-label mb-1">Grade</label>
-                          <select 
-                            value={formData.grade} 
-                            onChange={e => setFormData({...formData, grade: upper(e.target.value)})} 
-                            className="w-full bg-slate-50 dark:bg-slate-800/50 border-none rounded-xl px-4 py-2.5 text-sm font-bold focus:ring-2 focus:ring-blue-500 outline-none"
-                          >
-                            <option value="">Select Grade</option>
-                            {MATERIAL_GRADES.map(grade => (
-                              <option key={grade} value={grade}>{grade}</option>
-                            ))}
-                          </select>
-                        </div>
-                        <div>
-                          <label className="field-label mb-1">Thickness</label>
-                          <input type="text" value={formData.thickness} onChange={e => setFormData({...formData, thickness: upper(e.target.value)})} className="w-full bg-slate-50 dark:bg-slate-800/50 border-none rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-blue-500 outline-none" placeholder="e.g. 10mm" />
-                        </div>
-                      </div>
-                      <div className="grid grid-cols-2 gap-2">
-                        <div>
-                          <label className="field-label mb-1">Width (mm)</label>
-                          <input type="text" value={formData.width} onChange={e => setFormData({...formData, width: upper(e.target.value)})} className="w-full bg-slate-50 dark:bg-slate-800/50 border-none rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-blue-500 outline-none" />
-                        </div>
-                        <div>
-                          <label className="field-label mb-1">Length (mm)</label>
-                          <input type="text" value={formData.length} onChange={e => setFormData({...formData, length: upper(e.target.value)})} className="w-full bg-slate-50 dark:bg-slate-800/50 border-none rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-blue-500 outline-none" />
-                        </div>
-                      </div>
-                      <div className="grid grid-cols-2 gap-2">
-                        <div>
-                          <label className="field-label mb-1">Plate Wt (Kg)</label>
-                          <input type="text" value={formData.plateWeight} onChange={e => setFormData({...formData, plateWeight: upper(e.target.value)})} className="w-full bg-slate-50 dark:bg-slate-800/50 border-none rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-blue-500 outline-none" />
-                        </div>
-                        <div>
-                          <label className="field-label mb-1">Make / Company</label>
-                          <select 
-                            value={formData.make} 
-                            onChange={e => setFormData({...formData, make: upper(e.target.value)})} 
-                            className="w-full bg-slate-50 dark:bg-slate-800/50 border-none rounded-xl px-4 py-2.5 text-sm font-bold focus:ring-2 focus:ring-blue-500 outline-none"
-                          >
-                            <option value="">Select Make</option>
-                            <option value="AM/NS INDIA">AM/NS INDIA</option>
-                            <option value="JINDAL ODISHA">JINDAL ODISHA</option>
-                            <option value="JINDAL RAIGHAD">JINDAL RAIGHAD</option>
-                            <option value="SELL RSP">SELL RSP</option>
-                            <option value="SELL">SELL</option>
-                            <option value="TATA">TATA</option>
-                            <option value="JSW">JSW</option>
-                            <option value="POSCO">POSCO</option>
-                            <option value="CHINA">CHINA</option>
-                          </select>
-                        </div>
-                      </div>
-                      <div>
-                        <label className="field-label mb-1">Standard / Specification</label>
-                        <input type="text" value={formData.standard} onChange={e => setFormData({...formData, standard: upper(e.target.value)})} className="w-full bg-slate-50 dark:bg-slate-800/50 border-none rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-blue-500 outline-none" placeholder="e.g. ASTM A36" />
-                      </div>
-                    </div>
-                  </div>
-                </div>
+  return (
+    <>
+    <ErpEntryPage>
+    <div className="tc-dash-page">
+      {/* Summary cards */}
+      <div className="tc-dash-stat-row">
+        <div className="tc-dash-stat-card">
+          <div className="tc-dash-stat-icon blue"><FileText className="w-5 h-5" /></div>
+          <div>
+            <div className="tc-dash-stat-label blue">Total TC</div>
+            <div className="tc-dash-stat-value">{stats.total.toLocaleString('en-IN')}</div>
+            <div className="tc-dash-stat-sub">Total Documents</div>
+          </div>
+        </div>
+        <div className="tc-dash-stat-card">
+          <div className="tc-dash-stat-icon green"><CheckCircle2 className="w-5 h-5" /></div>
+          <div>
+            <div className="tc-dash-stat-label green">Active TC</div>
+            <div className="tc-dash-stat-value">{stats.active.toLocaleString('en-IN')}</div>
+            <div className="tc-dash-stat-sub">Valid (Within 2 Years)</div>
+          </div>
+        </div>
+        <div className="tc-dash-stat-card">
+          <div className="tc-dash-stat-icon red"><X className="w-5 h-5" /></div>
+          <div>
+            <div className="tc-dash-stat-label red">Expired TC</div>
+            <div className="tc-dash-stat-value">{stats.expired.toLocaleString('en-IN')}</div>
+            <div className="tc-dash-stat-sub">Older Than 2 Years</div>
+          </div>
+        </div>
+        <div className="tc-dash-stat-card">
+          <div className="tc-dash-stat-icon purple"><Hourglass className="w-5 h-5" /></div>
+          <div>
+            <div className="tc-dash-stat-label purple">Expiry Soon</div>
+            <div className="tc-dash-stat-value">{stats.expirySoon.toLocaleString('en-IN')}</div>
+            <div className="tc-dash-stat-sub">Will Expire in 30 Days</div>
+          </div>
+        </div>
+      </div>
 
-                {/* PDF Upload */}
-                <div className="pt-6 border-t border-slate-50">
-                  <h3 className="text-xs font-black text-blue-600 dark:text-blue-400 uppercase tracking-[0.2em] flex items-center gap-2 mb-4">
-                    <Printer className="w-4 h-4" /> Attachments
-                  </h3>
-                  <div className="flex items-center gap-4">
-                    <label className="flex-1 flex flex-col items-center justify-center border-2 border-dashed border-slate-200 dark:border-slate-700 rounded-2xl p-6 hover:border-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/30 transition-all cursor-pointer group">
-                      <Download className="w-8 h-8 text-slate-300 group-hover:text-blue-500 mb-2" />
-                      <span className="text-sm font-bold text-slate-600 dark:text-slate-300">
-                        {formData.pdfName ? formData.pdfName : 'Upload TC PDF or Photo'}
+      {/* Search filters */}
+      <div className="tc-dash-filter-card">
+        <div className="tc-dash-filter-head"><Filter className="w-3.5 h-3.5" /> Search Filters</div>
+        <div className="tc-dash-filter-body">
+          <div className="tc-dash-filter-row">
+            <div>
+              <label className="tc-mgmt-label">Party Name</label>
+              <select value={draftFilters.partyName} onChange={e => setDraftFilters({ ...draftFilters, partyName: e.target.value })} className="tc-mgmt-input">
+                <option value="">Select</option>
+                {filterOptions.parties.filter(Boolean).map(p => <option key={p} value={p}>{p}</option>)}
+              </select>
+            </div>
+            <div>
+              <label className="tc-mgmt-label">Grade</label>
+              <select value={draftFilters.grade} onChange={e => setDraftFilters({ ...draftFilters, grade: upper(e.target.value) })} className="tc-mgmt-input">
+                <option value="">Select</option>
+                {filterOptions.grades.filter(Boolean).map(g => <option key={g} value={g}>{g}</option>)}
+                {MATERIAL_GRADES.filter(g => !filterOptions.grades.includes(g)).map(g => <option key={g} value={g}>{g}</option>)}
+              </select>
+            </div>
+            <div>
+              <label className="tc-mgmt-label">Thickness (mm)</label>
+              <select value={draftFilters.thickness} onChange={e => setDraftFilters({ ...draftFilters, thickness: e.target.value })} className="tc-mgmt-input">
+                <option value="">Select</option>
+                {filterOptions.thicknesses.filter(Boolean).map(t => <option key={t} value={t}>{t}</option>)}
+              </select>
+            </div>
+            <div>
+              <label className="tc-mgmt-label">Make</label>
+              <select value={draftFilters.make} onChange={e => setDraftFilters({ ...draftFilters, make: upper(e.target.value) })} className="tc-mgmt-input">
+                <option value="">Select</option>
+                {MAKES.map(m => <option key={m} value={m}>{m}</option>)}
+              </select>
+            </div>
+            <div>
+              <label className="tc-mgmt-label">TC Status</label>
+              <select value={draftFilters.tcStatus} onChange={e => setDraftFilters({ ...draftFilters, tcStatus: e.target.value as '' | TcStatus })} className="tc-mgmt-input">
+                <option value="">Select</option>
+                <option value="Active">Active</option>
+                <option value="Expired">Expired</option>
+                <option value="Expiry Soon">Expiry Soon</option>
+              </select>
+            </div>
+            <div>
+              <label className="tc-mgmt-label">TC No.</label>
+              <input type="text" value={draftFilters.tcNumber} onChange={e => setDraftFilters({ ...draftFilters, tcNumber: upper(e.target.value) })} className="tc-mgmt-input" />
+            </div>
+          </div>
+          <div className="tc-dash-filter-row">
+            <div>
+              <label className="tc-mgmt-label">Plate No.</label>
+              <input type="text" value={draftFilters.plateNumber} onChange={e => setDraftFilters({ ...draftFilters, plateNumber: upper(e.target.value) })} className="tc-mgmt-input" />
+            </div>
+            <div>
+              <label className="tc-mgmt-label">Heat No.</label>
+              <input type="text" value={draftFilters.heatNumber} onChange={e => setDraftFilters({ ...draftFilters, heatNumber: upper(e.target.value) })} className="tc-mgmt-input" />
+            </div>
+            <div>
+              <label className="tc-mgmt-label">Date From</label>
+              <input type="date" value={draftFilters.tcDateFrom} onChange={e => setDraftFilters({ ...draftFilters, tcDateFrom: e.target.value })} className="tc-mgmt-input" />
+            </div>
+            <div>
+              <label className="tc-mgmt-label">Date To</label>
+              <input type="date" value={draftFilters.tcDateTo} onChange={e => setDraftFilters({ ...draftFilters, tcDateTo: e.target.value })} className="tc-mgmt-input" />
+            </div>
+            <div className="tc-dash-filter-actions">
+              <button type="button" onClick={applySearch} className="erp-entry-btn erp-entry-btn-blue"><Search className="w-4 h-4" /> Search</button>
+              <button type="button" onClick={resetFilters} className="erp-entry-btn erp-entry-btn-outline-orange"><RotateCcw className="w-4 h-4" /> Clear</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* TC Document List */}
+      <div className="tc-doc-panel">
+        <div className="tc-doc-list-head">
+          <div className="tc-doc-list-title">
+            <FileText className="w-4 h-4" />
+            TC Document List
+            <span className="tc-doc-record-badge">Total Records : {filteredRecords.length.toLocaleString('en-IN')}</span>
+          </div>
+          <div className="flex flex-wrap items-center gap-2">
+            <button type="button" onClick={openNewEntry} className="tc-doc-export-btn"><Plus className="w-3.5 h-3.5" /> New TC</button>
+            <button type="button" onClick={handleExport} className="tc-doc-export-btn"><FileSpreadsheet className="w-3.5 h-3.5" /> Export To Excel</button>
+            <button
+              type="button"
+              onClick={() => setShowGlobalEmailModal(true)}
+              className={cn(
+                'tc-doc-export-btn',
+                emailStatus === 'CONNECTED' ? 'text-green-700' : emailStatus === 'ERROR' ? 'text-red-600' : ''
+              )}
+            >
+              <Mail className="w-3.5 h-3.5" />
+              {emailStatus === 'CONNECTED' ? 'Email OK' : 'Email'}
+            </button>
+          </div>
+        </div>
+
+        <div className="overflow-x-auto">
+          <table className="tc-doc-table w-full min-w-[1100px]">
+            <thead>
+              <tr>
+                <th>Sr No</th>
+                <th>TC No.</th>
+                <th>TC Date</th>
+                <th>Party Name</th>
+                <th>Grade</th>
+                <th>Thickness (mm)</th>
+                <th>Plate No.</th>
+                <th>Heat No.</th>
+                <th>Make</th>
+                <th>Weight (KG)</th>
+                <th>Status</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              {pagedRecords.map((record, idx) => {
+                const status = getTcStatus(record.tcDate);
+                const srNo = (page - 1) * pageSize + idx + 1;
+                return (
+                  <tr key={record.id} className={cn(statusRowClass(status), selectedTC?.id === record.id && 'ring-2 ring-inset ring-brand-blue')}>
+                    <td className="text-center">{srNo}</td>
+                    <td className="font-bold text-brand-blue">{record.tcNumber}</td>
+                    <td>{record.tcDate}</td>
+                    <td>{record.supplierName || '—'}</td>
+                    <td>{record.grade || '—'}</td>
+                    <td className="text-center">{record.thickness || '—'}</td>
+                    <td>{record.plateNumber}</td>
+                    <td className="font-semibold">{record.heatNumber}</td>
+                    <td>{record.make || '—'}</td>
+                    <td className="text-right">{record.plateWeight || '—'}</td>
+                    <td>
+                      <span className={`tc-status-text ${statusDotClass(status)}`}>
+                        <span className={`tc-status-dot ${statusDotClass(status)}`} />
+                        {status}
                       </span>
-                      <span className="text-xs text-slate-400 mt-1">Accepts PDF, JPG, PNG</span>
-                      <input 
-                        type="file" 
-                        accept=".pdf,image/*" 
-                        className="hidden" 
-                        onChange={(e) => {
-                          const file = e.target.files?.[0];
-                          if (file) {
-                            const reader = new FileReader();
-                            reader.onload = (event) => {
-                              const result = event.target?.result as string;
-                              setFormData({
-                                ...formData,
-                                pdfData: result,
-                                pdfName: file.name
-                              });
-                              toast.success(`${file.type.startsWith('image/') ? 'Photo' : 'PDF'} attached successfully`);
-                            };
-                            reader.readAsDataURL(file);
-                          }
-                        }}
-                      />
-                    </label>
-                    {formData.pdfData && (
-                      <div className="flex flex-col gap-2">
-                        {formData.pdfData.startsWith('data:image/') ? (
-                          <img src={formData.pdfData} alt="Preview" className="w-32 h-32 object-cover rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm" />
-                        ) : (
-                          <button 
-                            type="button"
-                            onClick={() => {
-                              const win = window.open();
-                              win?.document.write(`<iframe src="${formData.pdfData}" frameborder="0" style="border:0; top:0px; left:0px; bottom:0px; right:0px; width:100%; height:100%;" allowfullscreen></iframe>`);
-                            }}
-                            className="p-4 bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 rounded-2xl font-bold hover:bg-blue-100 dark:hover:bg-blue-900/50 transition-colors"
-                          >
-                            Preview PDF
-                          </button>
-                        )}
+                    </td>
+                    <td>
+                      <div className="flex items-center justify-center gap-0.5">
+                        <button type="button" title="View" onClick={() => loadRecord(record)} className="tc-doc-action-btn"><Eye className="w-3.5 h-3.5" /></button>
+                        <button type="button" title="Download" onClick={() => {
+                          const data = record.pdfData || generateTCPDFBase64(record);
+                          const a = document.createElement('a');
+                          a.href = data;
+                          a.download = record.pdfName || `TC_${record.heatNumber}.pdf`;
+                          a.click();
+                        }} className="tc-doc-action-btn"><Download className="w-3.5 h-3.5" /></button>
+                        <button type="button" title="Print" onClick={() => printTcRecord(record)} className="tc-doc-action-btn"><Printer className="w-3.5 h-3.5" /></button>
+                        <div className="relative">
+                          <button type="button" title="More" onClick={(e) => { e.stopPropagation(); setMenuOpenId(menuOpenId === record.id ? null : record.id); }} className="tc-doc-action-btn"><MoreVertical className="w-3.5 h-3.5" /></button>
+                          {menuOpenId === record.id && (
+                            <div className="tc-more-menu" onClick={e => e.stopPropagation()}>
+                              <button type="button" onClick={() => loadRecord(record)}>Edit TC</button>
+                              <button type="button" onClick={() => { handleWhatsAppTC(record); setMenuOpenId(null); }}>WhatsApp TC</button>
+                              <button type="button" onClick={() => { handleResendEmail(record); setMenuOpenId(null); }}>Email TC</button>
+                              {record.purchaseOrderNumber && (
+                                <>
+                                  <button type="button" onClick={() => { handleWhatsAppPO(record); setMenuOpenId(null); }}>WhatsApp PO</button>
+                                  <button type="button" onClick={() => { handleEmailPO(record); setMenuOpenId(null); }}>Email PO</button>
+                                </>
+                              )}
+                              <button type="button" onClick={() => { void handleDelete(record.id); setMenuOpenId(null); }} className="text-red-600">Delete</button>
+                            </div>
+                          )}
+                        </div>
                       </div>
-                    )}
-                  </div>
-                </div>
+                    </td>
+                  </tr>
+                );
+              })}
+              {pagedRecords.length === 0 && (
+                <tr><td colSpan={12} className="text-center py-10 text-slate-400 italic">No TC records found</td></tr>
+              )}
+            </tbody>
+          </table>
+        </div>
 
-                <div className="flex items-center justify-end gap-3 pt-4">
-                  <button type="button" onClick={() => setIsAdding(false)} className="px-8 py-3 rounded-2xl text-sm font-bold text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">Cancel</button>
-                  <button type="submit" className="px-10 py-3 rounded-2xl text-sm font-bold bg-blue-600 hover:bg-blue-700 text-white shadow-lg shadow-blue-200 transition-all active:scale-95 flex items-center gap-2">
-                    {selectedTC ? <CheckCircle2 className="w-4 h-4" /> : <Plus className="w-4 h-4" />}
-                    {selectedTC ? 'Update Record' : 'Save TC Master'}
-                  </button>
-                </div>
-              </form>
-            </div>
-          ) : selectedTC ? (
-            <div className="space-y-6 slide-up">
-              {/* Detailed View */}
-              <div className="bg-white dark:bg-slate-900 rounded-3xl shadow-sm border border-slate-100 dark:border-slate-800 overflow-hidden">
-                <div className="p-6 border-b border-slate-50 flex items-center justify-between bg-slate-50/50 dark:bg-slate-800/50">
-                  <div className="flex items-center gap-4">
-                    <div className="w-12 h-12 bg-blue-600 rounded-2xl flex items-center justify-center text-white shadow-lg shadow-blue-100">
-                      <FileSearch className="w-6 h-6" />
-                    </div>
-                    <div>
-                      <h2 className="text-xl font-black text-slate-800 dark:text-slate-100">TC Record: {selectedTC.tcNumber}</h2>
-                      <p className="text-xs text-slate-500 dark:text-slate-400 font-medium flex items-center gap-2">
-                        <History className="w-3 h-3 text-blue-600 dark:text-blue-400" />
-                        Heat: {selectedTC.heatNumber} • Plate: {selectedTC.plateNumber}
-                      </p>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    {selectedTC.pdfData && (
-                      <button 
-                        onClick={() => {
-                          const win = window.open();
-                          win?.document.write(`<iframe src="${selectedTC.pdfData}" frameborder="0" style="border:0; top:0px; left:0px; bottom:0px; right:0px; width:100%; height:100%;" allowfullscreen></iframe>`);
-                        }}
-                        className="flex items-center gap-2 bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 px-4 py-2 rounded-xl text-xs font-bold hover:bg-blue-100 dark:hover:bg-blue-900/50 transition-all"
-                      >
-                        <FileSearch className="w-4 h-4" />
-                        View Attachment
-                      </button>
-                    )}
-                    <button 
-                      onClick={() => handleResendEmail(selectedTC)}
-                      className="flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-xl text-xs font-bold shadow-lg shadow-emerald-100 transition-all active:scale-95"
-                    >
-                      <Send className="w-4 h-4" />
-                      Mail TC
-                    </button>
-                    {selectedTC.purchaseOrderNumber && (
-                      <button 
-                        onClick={() => handleEmailPO(selectedTC)}
-                        className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-xl text-xs font-bold shadow-lg shadow-indigo-100 transition-all active:scale-95"
-                      >
-                        <Send className="w-4 h-4" />
-                        Email PO
-                      </button>
-                    )}
-                    <button 
-                      onClick={() => handleWhatsAppTC(selectedTC)}
-                      className="flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-xl text-xs font-bold shadow-lg shadow-green-100 transition-all active:scale-95"
-                    >
-                      <MessageSquare className="w-4 h-4" />
-                      WhatsApp TC
-                    </button>
-                    <button onClick={() => handleEdit(selectedTC)} className="p-2 text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded-xl transition-colors" title="Edit Record"><Edit3 className="w-5 h-5" /></button>
-                    <button onClick={() => handleDelete(selectedTC.id)} className="p-2 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-xl transition-colors" title="Delete Record"><Trash2 className="w-5 h-5" /></button>
-                    <button className="p-2 text-slate-400 hover:bg-slate-100 dark:bg-slate-800 rounded-xl transition-colors" title="Print TC"><Printer className="w-5 h-5" /></button>
-                  </div>
-                </div>
+        <ErpListPagination
+          page={page}
+          pageSize={pageSize}
+          total={filteredRecords.length}
+          onPageChange={setPage}
+          onPageSizeChange={s => { setPageSize(s); setPage(1); }}
+          navLabels="text"
+          activeTone="orange"
+          showVersion={false}
+          className="tc-doc-pagination"
+          perPageSuffix="per page"
+        />
 
-                <div className="p-8 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-                  <DetailCard icon={Layers} label="Material Grade" value={selectedTC.grade} />
-                  <DetailCard icon={Ruler} label="Thickness" value={selectedTC.thickness} />
-                  <DetailCard icon={Weight} label="Plate Weight" value={`${selectedTC.plateWeight} Kg`} />
-                  <DetailCard icon={Factory} label="Make / Company" value={selectedTC.make} />
-                  <DetailCard icon={Calendar} label="TC Date" value={selectedTC.tcDate} />
-                  <DetailCard icon={Hash} label="Sales Order" value={selectedTC.salesOrderNumber || '-'} />
-                  <DetailCard icon={Hash} label="Supplier Inv" value={selectedTC.supplierInvoiceNumber || '-'} />
-                  <DetailCard icon={CheckCircle2} label="Email Status" value={selectedTC.emailStatus} variant={selectedTC.emailStatus === 'Sent' ? 'success' : 'warning'} />
-                </div>
-              </div>
-
-              {/* History Section */}
-              <div className="bg-white dark:bg-slate-900 rounded-3xl shadow-sm border border-slate-100 dark:border-slate-800 overflow-hidden">
-                <div className="p-6 border-b border-slate-50 flex items-center justify-between">
-                  <h3 className="text-lg font-bold text-slate-800 dark:text-slate-100 flex items-center gap-2">
-                    <History className="w-5 h-5 text-blue-600 dark:text-blue-400" />
-                    Dispatch History & Tracking
-                  </h3>
-                  <button 
-                    onClick={() => handleResendEmail(selectedTC)}
-                    className="flex items-center gap-2 text-xs font-bold text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/30 px-4 py-2 rounded-xl transition-all"
-                  >
-                    <Send className="w-4 h-4" />
-                    Resend Email to All
-                  </button>
-                </div>
-                
-                <div className="overflow-x-auto">
-                  <table className="w-full text-left">
-                    <thead>
-                      <tr className="bg-slate-50/50 dark:bg-slate-800/50 text-2xs font-black text-slate-400 uppercase tracking-widest border-b border-slate-50">
-                        <th className="px-6 py-4">Party Name</th>
-                        <th className="px-6 py-4">Date of Dispatch</th>
-                        <th className="px-6 py-4">SO Number</th>
-                        <th className="px-6 py-4">TC Number</th>
-                        <th className="px-6 py-4">Status</th>
-                        <th className="px-6 py-4 text-right">Action</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-slate-50">
-                      {selectedTC.dispatchHistory.map((history, idx) => (
-                        <tr key={idx} className="hover:bg-slate-50/30 dark:hover:bg-slate-800/50 transition-colors">
-                          <td className="px-6 py-4 font-bold text-slate-800 dark:text-slate-100 text-sm">{history.partyName}</td>
-                          <td className="px-6 py-4 text-xs font-medium text-slate-500 dark:text-slate-400">{history.dispatchDate}</td>
-                          <td className="px-6 py-4 text-xs font-bold text-slate-700 dark:text-slate-200">{history.salesOrderNumber}</td>
-                          <td className="px-6 py-4 text-xs font-mono text-slate-500 dark:text-slate-400">{history.tcNumber}</td>
-                          <td className="px-6 py-4">
-                            <span className={cn(
-                              "px-2 py-1 rounded-full text-3xs font-black uppercase tracking-tighter",
-                              history.emailStatus === 'Sent' ? "bg-emerald-100 text-emerald-700 dark:text-emerald-400" : "bg-amber-100 text-amber-700"
-                            )}>
-                              {history.emailStatus}
-                            </span>
-                          </td>
-                          <td className="px-6 py-4 text-right">
-                            <button 
-                              onClick={() => handleResendEmail(selectedTC)}
-                              className="text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 text-xs font-bold"
-                            >
-                              Resend
-                            </button>
-                          </td>
-                        </tr>
-                      ))}
-                      {selectedTC.dispatchHistory.length === 0 && (
-                        <tr>
-                          <td colSpan={6} className="px-6 py-12 text-center text-slate-400 font-bold">No dispatch history recorded for this certificate</td>
-                        </tr>
-                      )}
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-            </div>
-          ) : (
-            <div className="h-full flex flex-col items-center justify-center p-12 bg-white dark:bg-slate-900 rounded-3xl shadow-sm text-center border-dashed border-2 border-slate-200 dark:border-slate-700">
-              <div className="w-20 h-20 bg-slate-50 dark:bg-slate-800/50 rounded-full flex items-center justify-center mb-4">
-                <FileSearch className="w-10 h-10 text-slate-300" />
-              </div>
-              <h3 className="text-xl font-bold text-slate-800 dark:text-slate-100">Select a Certificate</h3>
-              <p className="text-slate-500 dark:text-slate-400 max-w-xs mt-2">Choose a TC from the left sidebar to view its complete specifications and history.</p>
-              <button 
-                onClick={() => setIsAdding(true)}
-                className="mt-6 flex items-center gap-2 text-blue-600 dark:text-blue-400 font-bold text-sm hover:underline"
-              >
-                <Plus className="w-4 h-4" /> Or create a new one
-              </button>
-            </div>
-          )}
+        <div className="tc-doc-legend">
+          <span><span className="tc-status-dot active" /> Active TC (Within 2 Years)</span>
+          <span><span className="tc-status-dot expired" /> Expired TC (Older Than 2 Years)</span>
+          <span><span className="tc-status-dot soon" /> Expiry Soon (Will Expire in 30 Days)</span>
         </div>
       </div>
     </div>
+    </ErpEntryPage>
+
+    {showEntryModal && (
+      <div className="tc-entry-modal" onClick={closeEntryModal}>
+        <div className="tc-entry-modal-panel max-w-[1400px]" onClick={e => e.stopPropagation()}>
+          <div className="tc-entry-modal-head">
+            <span className="tc-entry-modal-title">TC / MTC Document Management System</span>
+            <button type="button" onClick={closeEntryModal} className="p-1.5 rounded-full hover:bg-white/10 text-white"><X className="w-5 h-5" /></button>
+          </div>
+          {entryForm}
+        </div>
+      </div>
+    )}
 
     <div style={{ position: 'fixed', left: 0, top: 0, zIndex: -1, opacity: 0.01, pointerEvents: 'none', width: '210mm' }}>
-      {poForSend && <PurchaseOrderPrint po={poForSend} printAreaId="tc-po-print-area" />}
     </div>
+
+    {/* WhatsApp PO Modal */}
+    {showPoWhatsAppModal && poForSend && (
+      <div className="fixed inset-0 z-100 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in">
+        <div className="bg-white dark:bg-slate-900 w-full max-w-lg rounded-[2.5rem] shadow-2xl overflow-hidden slide-up">
+          <div className="bg-green-600 p-8 text-white">
+            <div className="flex justify-between items-center mb-2">
+              <h3 className="text-2xl font-black flex items-center gap-3">
+                <MessageSquare className="w-8 h-8" />
+                WhatsApp Purchase Order
+              </h3>
+              <button onClick={() => { setShowPoWhatsAppModal(false); setPoForSend(null); }} className="p-2 hover:bg-white/10 rounded-full transition-colors">
+                <X className="w-6 h-6" />
+              </button>
+            </div>
+            <p className="text-green-100 text-sm font-medium">PO {poForSend.poNumber} • TC Heat: {selectedTC?.heatNumber}</p>
+          </div>
+          <div className="p-8 space-y-4">
+            <div>
+              <label className="block text-2xs font-black text-slate-400 uppercase tracking-widest mb-1.5">WhatsApp Number *</label>
+              <input
+                type="text"
+                value={poWhatsAppData.number}
+                onChange={(e) => setPoWhatsAppData({ ...poWhatsAppData, number: e.target.value })}
+                className="w-full bg-slate-50 dark:bg-slate-800/50 border-none rounded-2xl px-4 py-3 text-sm font-bold focus:ring-2 focus:ring-green-500 outline-none no-uppercase"
+                placeholder="91XXXXXXXXXX"
+              />
+            </div>
+            <div>
+              <label className="block text-2xs font-black text-slate-400 uppercase tracking-widest mb-1.5">Message</label>
+              <textarea
+                rows={5}
+                value={poWhatsAppData.message}
+                onChange={(e) => setPoWhatsAppData({ ...poWhatsAppData, message: upper(e.target.value) })}
+                className="w-full bg-slate-50 dark:bg-slate-800/50 border-none rounded-2xl px-4 py-3 text-sm font-medium focus:ring-2 focus:ring-green-500 outline-none resize-none"
+              />
+            </div>
+            <div className="flex gap-3 pt-2">
+              <button
+                onClick={() => { setShowPoWhatsAppModal(false); setPoForSend(null); }}
+                className="flex-1 py-4 rounded-2xl text-sm font-black text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => void sendPoWhatsApp()}
+                className="flex-1 py-4 rounded-2xl text-sm font-black bg-green-600 hover:bg-green-700 text-white flex items-center justify-center gap-2 transition-all active:scale-95"
+              >
+                <MessageSquare className="w-4 h-4" />
+                Send PO on WhatsApp
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    )}
 
     {/* Email PO Modal */}
     {showPoMailModal && poForSend && (
@@ -1134,6 +1423,7 @@ export const TCManagement: React.FC = () => {
                       required
                       value={whatsAppData.number}
                       onChange={e => setWhatsAppData({...whatsAppData, number: e.target.value})}
+                      onKeyDown={handleWhatsAppEnter}
                       placeholder="e.g. 98XXXXXXXX"
                       className="w-full bg-slate-50 dark:bg-slate-800/50 border-none rounded-2xl px-4 py-3 text-sm font-bold focus:ring-2 focus:ring-green-500 outline-none"
                     />
@@ -1145,6 +1435,7 @@ export const TCManagement: React.FC = () => {
                       rows={5}
                       value={whatsAppData.message}
                       onChange={e => setWhatsAppData({...whatsAppData, message: upper(e.target.value)})}
+                      onKeyDown={handleWhatsAppEnter}
                       className="w-full bg-slate-50 dark:bg-slate-800/50 border-none rounded-2xl px-4 py-3 text-sm font-medium focus:ring-2 focus:ring-green-500 outline-none resize-none"
                     />
                   </div>
@@ -1204,110 +1495,115 @@ export const TCManagement: React.FC = () => {
       </div>
     )}
 
-    {/* Global WhatsApp Connection Modal */}
-    {showGlobalWAModal && (
+    {/* Global Email Connection Modal */}
+    {showGlobalEmailModal && (
       <div className="fixed inset-0 z-100 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in">
         <div className="bg-white dark:bg-slate-900 w-full max-w-md rounded-[2.5rem] shadow-2xl overflow-hidden slide-up border border-slate-100 dark:border-slate-800 transition-colors">
-          <div className="bg-green-600 p-8 text-white">
+          <div className="bg-blue-600 p-8 text-white">
             <div className="flex justify-between items-center">
               <h3 className="text-2xl font-black flex items-center gap-3">
-                <MessageSquare className="w-8 h-8" />
-                WhatsApp Web
+                <Mail className="w-8 h-8" />
+                Email Service
               </h3>
-              <button onClick={() => setShowGlobalWAModal(false)} className="p-2 hover:bg-white dark:bg-slate-900/10 rounded-full transition-colors">
+              <button onClick={() => setShowGlobalEmailModal(false)} className="p-2 hover:bg-white dark:bg-slate-900/10 rounded-full transition-colors">
                 <X className="w-6 h-6" />
               </button>
             </div>
-            <p className="text-green-100 text-sm font-medium mt-1">Connect or Disconnect WhatsApp Web Service</p>
+            <p className="text-blue-100 text-sm font-medium mt-1">SMTP configuration for sending TC and PO emails</p>
           </div>
-          
+
           <div className="p-8 space-y-6 bg-white dark:bg-slate-900 transition-colors">
             <div className="flex items-center justify-between p-4 bg-slate-50 dark:bg-slate-800/50 rounded-2xl border border-slate-100 dark:border-slate-800">
               <div>
                 <p className="meta-10">Connection Status</p>
                 <p className={cn(
                   "text-lg font-black mt-0.5",
-                  waStatus === 'CONNECTED' ? "text-green-600 dark:text-green-400" :
-                  waStatus === 'QR_READY' ? "text-amber-500" :
-                  waStatus === 'INITIALIZING' ? "text-blue-500" : "text-slate-500 dark:text-slate-400"
+                  emailStatus === 'CONNECTED' ? "text-green-600 dark:text-green-400" :
+                  emailStatus === 'CONFIGURED' ? "text-blue-500" :
+                  emailStatus === 'ERROR' ? "text-red-500" : "text-slate-500 dark:text-slate-400"
                 )}>
-                  {waStatus}
+                  {isEmailLoading ? 'CHECKING...' : emailStatus.replace('_', ' ')}
                 </p>
               </div>
               <div className={cn(
                 "w-3.5 h-3.5 rounded-full",
-                waStatus === 'CONNECTED' ? "bg-green-500 shadow-lg shadow-green-200" :
-                waStatus === 'QR_READY' ? "bg-amber-500 animate-pulse" :
-                waStatus === 'INITIALIZING' ? "bg-blue-500 animate-pulse" : "bg-slate-300 dark:bg-slate-700"
+                emailStatus === 'CONNECTED' ? "bg-green-500 shadow-lg shadow-green-200" :
+                emailStatus === 'CONFIGURED' ? "bg-blue-500" :
+                emailStatus === 'ERROR' ? "bg-red-500" :
+                isEmailLoading ? "bg-blue-500 animate-pulse" : "bg-slate-300 dark:bg-slate-700"
               )}></div>
             </div>
 
-            {waStatus === 'CONNECTED' ? (
+            {emailStatus === 'NOT_CONFIGURED' ? (
               <div className="text-center space-y-4">
-                <div className="w-20 h-20 bg-green-50 dark:bg-green-950/20 rounded-full flex items-center justify-center mx-auto">
-                  <CheckCircle2 className="w-10 h-10 text-green-600 dark:text-green-400" />
+                <div className="w-20 h-20 bg-slate-50 dark:bg-slate-800 rounded-full flex items-center justify-center mx-auto">
+                  <Mail className="w-10 h-10 text-slate-400 dark:text-slate-500" />
                 </div>
                 <div>
-                  <h4 className="text-lg font-bold text-slate-800 dark:text-slate-100">WhatsApp is Connected</h4>
-                  <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">Your account is ready to send certificates and messages.</p>
+                  <h4 className="text-lg font-bold text-slate-800 dark:text-slate-100">Email Not Configured</h4>
+                  <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
+                    Add SMTP settings (SMTP_HOST, SMTP_USER, SMTP_PASS) to the server environment to enable email sending.
+                  </p>
                 </div>
-                <button 
-                  onClick={handleWaDisconnect} 
-                  disabled={isWaLoading}
-                  className="w-full bg-red-600 hover:bg-red-700 text-white py-4 rounded-2xl text-sm font-black shadow-lg shadow-red-200 dark:shadow-none transition-all active:scale-95 disabled:opacity-50"
-                >
-                  {isWaLoading ? 'Disconnecting...' : 'Disconnect WhatsApp'}
-                </button>
               </div>
-            ) : waStatus === 'QR_READY' && waQr ? (
-              <div className="text-center space-y-4">
-                <p className="text-sm font-bold text-slate-600 dark:text-slate-400">Scan this QR code with WhatsApp Web on your phone:</p>
-                <div className="inline-block p-4 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm mx-auto">
-                  <img src={waQr} alt="WhatsApp QR" className="w-48 h-48" />
+            ) : (
+              <>
+                <div className="space-y-3 p-4 bg-slate-50 dark:bg-slate-800/50 rounded-2xl border border-slate-100 dark:border-slate-800">
+                  <div>
+                    <p className="meta-10">From Address</p>
+                    <p className="text-sm font-bold text-slate-800 dark:text-slate-100 mt-0.5">{emailConfig.user || '-'}</p>
+                  </div>
+                  <div>
+                    <p className="meta-10">SMTP Host</p>
+                    <p className="text-sm font-bold text-slate-800 dark:text-slate-100 mt-0.5">
+                      {emailConfig.host || '-'}:{emailConfig.port || 587}
+                    </p>
+                  </div>
                 </div>
+
+                {emailStatus === 'CONNECTED' ? (
+                  <div className="text-center space-y-4">
+                    <div className="w-20 h-20 bg-green-50 dark:bg-green-950/20 rounded-full flex items-center justify-center mx-auto">
+                      <CheckCircle2 className="w-10 h-10 text-green-600 dark:text-green-400" />
+                    </div>
+                    <div>
+                      <h4 className="text-lg font-bold text-slate-800 dark:text-slate-100">Email is Connected</h4>
+                      <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
+                        SMTP is ready to send Test Certificates and Purchase Orders.
+                      </p>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="text-center space-y-4">
+                    {emailError && (
+                      <p className="text-sm font-medium text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-950/20 border border-red-100 dark:border-red-900/30 rounded-xl px-4 py-3">
+                        {emailError}
+                      </p>
+                    )}
+                    <p className="text-sm text-slate-500 dark:text-slate-400">
+                      {emailStatus === 'ERROR'
+                        ? 'SMTP credentials are set but the server could not connect. Check your settings and try again.'
+                        : 'Test the SMTP connection before sending certificates.'}
+                    </p>
+                  </div>
+                )}
+
                 <div className="flex gap-3">
-                  <button 
-                    onClick={handleWaDisconnect} 
-                    disabled={isWaLoading}
-                    className="flex-1 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300 py-3 rounded-xl text-xs font-bold transition-all"
+                  <button
+                    onClick={() => handleEmailVerify()}
+                    disabled={isEmailLoading}
+                    className="flex-1 bg-blue-600 hover:bg-blue-700 text-white py-4 rounded-2xl text-sm font-black shadow-lg shadow-blue-200 dark:shadow-none transition-all active:scale-95 disabled:opacity-50"
                   >
-                    Reset/Disconnect
+                    {isEmailLoading ? 'Testing...' : 'Test Connection'}
                   </button>
-                  <button 
-                    onClick={() => setShowGlobalWAModal(false)}
-                    className="flex-1 bg-green-600 hover:bg-green-700 text-white py-3 rounded-xl text-xs font-bold shadow-md transition-all"
+                  <button
+                    onClick={() => setShowGlobalEmailModal(false)}
+                    className="flex-1 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300 py-4 rounded-2xl text-sm font-bold transition-all"
                   >
                     Done
                   </button>
                 </div>
-              </div>
-            ) : (
-              <div className="text-center space-y-4">
-                <div className="w-20 h-20 bg-slate-50 dark:bg-slate-800 rounded-full flex items-center justify-center mx-auto">
-                  <MessageSquare className="w-10 h-10 text-slate-400 dark:text-slate-500" />
-                </div>
-                <div>
-                  <h4 className="text-lg font-bold text-slate-800 dark:text-slate-100">WhatsApp is Disconnected</h4>
-                  <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">Initialize the client to generate a connection QR code.</p>
-                </div>
-                <div className="flex gap-3">
-                  <button 
-                    onClick={handleWaInit} 
-                    disabled={isWaLoading || waStatus === 'INITIALIZING'}
-                    className="flex-1 bg-green-600 hover:bg-green-700 text-white py-4 rounded-2xl text-sm font-black shadow-lg shadow-green-200 dark:shadow-none transition-all active:scale-95 disabled:opacity-50"
-                  >
-                    {(isWaLoading || waStatus === 'INITIALIZING') ? 'Initializing...' : 'Connect WhatsApp'}
-                  </button>
-                  {(waStatus === 'INITIALIZING' || isWaLoading) && (
-                    <button 
-                      onClick={handleWaDisconnect}
-                      className="px-4 bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-300 py-4 rounded-2xl text-sm font-bold"
-                    >
-                      Cancel
-                    </button>
-                  )}
-                </div>
-              </div>
+              </>
             )}
           </div>
         </div>
@@ -1317,17 +1613,54 @@ export const TCManagement: React.FC = () => {
   );
 };
 
-const DetailCard: React.FC<{ icon: any, label: string, value: string, variant?: 'default' | 'success' | 'warning' }> = ({ icon: Icon, label, value, variant = 'default' }) => (
-  <div className="space-y-1.5">
-    <div className="flex items-center gap-2 text-slate-400">
-      <Icon className="w-3.5 h-3.5" />
-      <span className="text-2xs font-bold uppercase tracking-widest">{label}</span>
+
+const TcUploadBox: React.FC<{
+  label: string;
+  icon: React.ElementType;
+  fileName?: string;
+  accept: string;
+  onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+}> = ({ label, icon: Icon, fileName, accept, onChange }) => (
+  <label className={cn('tc-dash-upload-zone', fileName && 'has-file')}>
+    <div className="tc-dash-upload-icon"><Icon className="w-5 h-5" /></div>
+    <p className="tc-dash-upload-title">{label}</p>
+    <p className="tc-dash-upload-hint">Drag &amp; Drop {label} Here or</p>
+    <span className="tc-dash-upload-browse">Browse File</span>
+    {fileName && <span className="tc-dash-upload-check">✓</span>}
+    <input type="file" accept={accept} className="hidden" onChange={onChange} />
+  </label>
+);
+
+const LinkedDocCard: React.FC<{
+  title: string;
+  icon: React.ElementType;
+  fileName?: string;
+  dataUrl?: string;
+}> = ({ title, icon: Icon, fileName, dataUrl }) => (
+  <div className="tc-linked-doc-card">
+    <div className="tc-linked-doc-card-head">
+      <Icon className="w-3.5 h-3.5 text-[#F9520B]" />
+      {title}
     </div>
-    <p className={cn(
-      "text-sm font-black",
-      variant === 'success' ? "text-emerald-600 dark:text-emerald-400" : variant === 'warning' ? "text-amber-600" : "text-slate-800 dark:text-slate-100"
-    )}>
-      {value || '-'}
-    </p>
+    <div className="tc-linked-doc-thumb">
+      {dataUrl?.startsWith('data:image') ? (
+        <img src={dataUrl} alt={title} />
+      ) : (
+        <Icon className="w-8 h-8 text-slate-300" />
+      )}
+    </div>
+    <div className="tc-linked-doc-meta">{fileName || 'No file linked'}</div>
+    <div className="tc-linked-doc-actions">
+      {dataUrl && (
+        <a href={dataUrl} target="_blank" rel="noreferrer" className="tc-doc-action-btn" title="View">
+          <Eye className="w-3.5 h-3.5" />
+        </a>
+      )}
+      {dataUrl && (
+        <a href={dataUrl} download={fileName || 'document'} className="tc-doc-action-btn" title="Download">
+          <Download className="w-3.5 h-3.5" />
+        </a>
+      )}
+    </div>
   </div>
 );

@@ -4,6 +4,7 @@ import { Plus, Edit2, Trash2, Save, X, Upload } from 'lucide-react';
 import { JOB_ROLES, DEPARTMENTS, INTERVIEW_STATUSES } from '../../data/seedData';
 import toast from 'react-hot-toast';
 import Modal from '../../components/UI/Modal';
+import { NumericInput } from '../../components/NumericInput';
 
 const EMPTY = { name: '', applyingFor: '', department: '', qualification: '', experience: '', expectedSalary: '', resume: '', interviewStatus: 'Pending' };
 const STATUS_COLORS = { Pending: '#94a3b8', Scheduled: '#3b82f6', 'In Progress': '#f97316', Selected: '#10b981', Rejected: '#ef4444', 'On Hold': '#f5a623' };
@@ -153,7 +154,7 @@ export default function Candidates() {
           </div>
           <div className="form-group">
             <label className="form-label">Expected Salary (₹)</label>
-            <input className="form-input" type="number" value={form.expectedSalary} onChange={e => set('expectedSalary', e.target.value)} placeholder="e.g. 20000" />
+            <NumericInput className="form-input" value={form.expectedSalary} onChange={v => set('expectedSalary', v)} placeholder="e.g. 20000" />
           </div>
           <div className="form-group">
             <label className="form-label">Interview Status</label>

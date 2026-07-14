@@ -24,8 +24,8 @@ export default function ClientApp() {
         <Toaster
           position="top-right"
           toastOptions={{
-            style: { background: '#1a2740', color: '#f1f5f9', border: '1px solid #1e3050' },
-            success: { iconTheme: { primary: '#f5a623', secondary: '#000' } },
+            style: { background: '#ffffff', color: '#0f1d33', border: '1px solid #d8e1f0', boxShadow: '0 4px 24px rgba(20,40,80,0.12)' },
+            success: { iconTheme: { primary: '#4169E1', secondary: '#fff' } },
           }}
         />
         <Routes>

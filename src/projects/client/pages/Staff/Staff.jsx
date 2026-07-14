@@ -5,6 +5,7 @@ import { DEPARTMENTS, JOB_ROLES } from '../../data/seedData';
 import { format } from 'date-fns';
 import toast from 'react-hot-toast';
 import Modal from '../../components/UI/Modal';
+import { NumericInput } from '../../components/NumericInput';
 
 const EMPTY_EMP = { name: '', department: '', skill: '', experience: '', salary: '', joiningDate: '' };
 
@@ -116,7 +117,7 @@ export default function Staff() {
           </div>
           <div className="form-group">
             <label className="form-label">Monthly Salary (₹)</label>
-            <input className="form-input" type="number" value={form.salary} onChange={e => set('salary', e.target.value)} placeholder="e.g. 25000" />
+            <NumericInput className="form-input" value={form.salary} onChange={v => set('salary', v)} placeholder="e.g. 25000" />
           </div>
           <div className="form-group">
             <label className="form-label">Joining Date</label>

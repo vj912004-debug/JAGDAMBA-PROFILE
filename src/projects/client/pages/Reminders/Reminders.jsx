@@ -75,7 +75,7 @@ export default function Reminders() {
             ? <div className="table-empty">No upcoming birthdays</div>
             : birthdays.map(c => (
               <div key={c.id} className="reminder-item" onClick={() => navigate(`/contacts/${c.id}`)} style={{ cursor: 'pointer' }}>
-                <div className="reminder-avatar" style={{ background: c.diff === 0 ? 'linear-gradient(135deg, var(--gold), #d97706)' : 'var(--bg-elevated)', color: c.diff === 0 ? '#000' : 'var(--text-primary)' }}>
+                <div className="reminder-avatar" style={{ background: c.diff === 0 ? 'linear-gradient(135deg, var(--gold), #2347c5)' : 'var(--bg-elevated)', color: c.diff === 0 ? '#fff' : 'var(--text-primary)' }}>
                   {(c.contactPerson || '?')[0].toUpperCase()}
                 </div>
                 <div>

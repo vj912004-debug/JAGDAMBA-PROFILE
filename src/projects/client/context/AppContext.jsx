@@ -10,7 +10,7 @@ const initialState = {
   employees: [],
   candidates: [],
   customSteelGrades: [],
-  theme: 'dark',
+  theme: localStorage.getItem('steelconnect_theme') || 'light',
   isLoading: true,
 };
 
@@ -26,6 +26,9 @@ function reducer(state, action) {
       return { ...state, isAuthenticated: false };
     case 'SET_DATA':
       return { ...state, ...action.payload, isLoading: false };
+    case 'SET_THEME':
+      localStorage.setItem('steelconnect_theme', action.payload);
+      return { ...state, theme: action.payload };
 
     // Contacts
     case 'ADD_CONTACT':
@@ -36,6 +39,8 @@ function reducer(state, action) {
       return { ...state, contacts: state.contacts.filter(c => c.id !== action.payload) };
     case 'IMPORT_CONTACTS':
       return { ...state, contacts: [...action.payload, ...state.contacts] };
+    case 'CLEAR_CONTACTS':
+      return { ...state, contacts: [] };
 
     // Employees
     case 'ADD_EMPLOYEE':
@@ -96,10 +101,18 @@ export function AppProvider({ children }) {
     fetchData();
   }, []);
 
+  // Apply the selected theme to the client portal container
+  useEffect(() => {
+    const el = document.querySelector('.client-app-container');
+    if (el) el.classList.toggle('theme-dark', state.theme === 'dark');
+  }, [state.theme]);
+
   // API Wrapper Actions
   const actions = {
     login: () => dispatch({ type: 'LOGIN' }),
     logout: () => dispatch({ type: 'LOGOUT' }),
+    setTheme: (theme) => dispatch({ type: 'SET_THEME', payload: theme }),
+    toggleTheme: () => dispatch({ type: 'SET_THEME', payload: state.theme === 'dark' ? 'light' : 'dark' }),
 
     // Contacts
     addContact: async (data) => {
@@ -117,11 +130,13 @@ export function AppProvider({ children }) {
       dispatch({ type: 'DELETE_CONTACT', payload: id });
     },
     importContacts: async (contacts) => {
-      // In a real app, you might want a bulk import API
-      // For now, we'll just add them to the local state and assume the user handles it
-      // or we could loop and call addContact. 
-      // Let's assume the user will refresh or we just update local state for now.
-      dispatch({ type: 'IMPORT_CONTACTS', payload: contacts });
+      const saved = await api.bulkCreateContacts(contacts);
+      dispatch({ type: 'IMPORT_CONTACTS', payload: saved });
+      return saved;
+    },
+    clearContacts: async () => {
+      await api.clearContacts();
+      dispatch({ type: 'CLEAR_CONTACTS' });
     },
 
     // Employees

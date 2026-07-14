@@ -19,7 +19,7 @@ const STAGE_COLORS: Record<Stage, { border: string; bg: string; text: string; do
 };
 
 export const ProductionStatus: React.FC = () => {
-  const { t, role, orders, setOrders, branch } = useAppContext();
+  const { t, role, orders, setOrders, branch, persistErpNow } = useAppContext();
   const [search, setSearch] = useState('');
   const [viewMode, setViewMode] = useState<'kanban' | 'list'>('kanban');
   const [expandedOrder, setExpandedOrder] = useState<string | null>(null);
@@ -50,13 +50,15 @@ export const ProductionStatus: React.FC = () => {
 
   const canEditStatus = role === 'Admin' || role === 'Production Supervisor' || role === 'Nesting Operator';
 
-  const moveOrder = (id: string, newStage: Stage) => {
-    setOrders(prev => prev.map(o => o.id === id ? { ...o, stage: newStage } : o));
-    // Auto-advance logic handled by manual stage updates or specific module triggers
-    if (newStage === 'Ready') {
-      // Items are ready for partial/full dispatch tracking in the Dispatch module
+  const moveOrder = async (id: string, newStage: Stage) => {
+    const next = orders.map(o => o.id === id ? { ...o, stage: newStage } : o);
+    setOrders(next);
+    try {
+      await persistErpNow({ orders: next });
+      toast.success(`Moved to ${newStage}`);
+    } catch {
+      toast.error('Updated locally but server sync failed');
     }
-    toast.success(`Moved to ${newStage}`);
   };
 
   const advanceStage = (order: Order) => {

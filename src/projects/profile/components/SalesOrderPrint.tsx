@@ -1,14 +1,28 @@
 import React from 'react';
-import { useAppContext, type Order } from '../store/AppContext';
+import { useAppContext, type Order, type PartyMaster } from '../store/AppContext';
+
+export const SALES_ORDER_PRINT_AREA_ID = 'sales-order-print-area';
 
 interface SalesOrderPrintProps {
   order: Order;
+  parties?: PartyMaster[];
 }
 
-export const SalesOrderPrint: React.FC<SalesOrderPrintProps> = ({ order }) => {
-  const { parties } = useAppContext();
-  
-  // Look up matching party to resolve full customer metadata
+const YesNoCell: React.FC<{ value: boolean }> = ({ value }) => (
+  <td className="center">
+    {value ? (
+      <>
+        <strong>YES</strong> / NO
+      </>
+    ) : (
+      <>
+        YES / <strong>NO</strong>
+      </>
+    )}
+  </td>
+);
+
+export const SalesOrderPrintInner: React.FC<{ order: Order; parties: PartyMaster[] }> = ({ order, parties }) => {
   const party = parties.find(p => p.partyName === order.partyName);
   
   const items = order.items || [];
@@ -16,7 +30,7 @@ export const SalesOrderPrint: React.FC<SalesOrderPrintProps> = ({ order }) => {
   const emptyRows = Array.from({ length: emptyRowsCount });
 
   return (
-    <div style={{ backgroundColor: '#ffffff', color: '#000000' }} className="p-0 mx-auto font-sans shadow-lg print:shadow-none w-[210mm] min-h-[297mm]" id="sales-order-print-area">
+    <div style={{ backgroundColor: '#ffffff', color: '#000000' }} className="p-0 mx-auto font-sans shadow-lg print:shadow-none w-[210mm] min-h-[297mm]" id={SALES_ORDER_PRINT_AREA_ID}>
       <style>{`
         @page {
           size: A4;
@@ -117,10 +131,13 @@ export const SalesOrderPrint: React.FC<SalesOrderPrintProps> = ({ order }) => {
         .info-table td.label {
           font-weight: bold;
           width: 20%;
-          background-color: #fafafa;
         }
         .info-table td.input {
           width: 30%;
+        }
+        .info-table td.address-cell {
+          min-height: 52px;
+          vertical-align: top;
         }
 
         /* Items Grid */
@@ -148,7 +165,6 @@ export const SalesOrderPrint: React.FC<SalesOrderPrintProps> = ({ order }) => {
         .footer-table td.label {
           font-weight: bold;
           width: 20%;
-          background-color: #fafafa;
         }
         .footer-table td.input {
           width: 30%;
@@ -160,7 +176,7 @@ export const SalesOrderPrint: React.FC<SalesOrderPrintProps> = ({ order }) => {
         /* Fixed Signature Block */
         .signature-table {
           border-bottom: none;
-          margin-top: auto;
+          margin-top: 36px;
         }
         .signature-table td {
           height: 70px; /* Provides space for physical signatures */
@@ -177,7 +193,7 @@ export const SalesOrderPrint: React.FC<SalesOrderPrintProps> = ({ order }) => {
         <div className="border-inner">
             
             <div className="header-section">
-                <h1>Jagdamba Profile</h1>
+                <h1>JAGDAMBA PROFILE</h1>
                 <div className="header-subtitle">MS & SS CNC Profile Cutting Works | Steel Traders</div>
                 <div className="header-contact">Address: Makarpura GIDC / Por GIDC, Vadodara | Mobile: 9824917250 | Email: jagdambaprofile@gmail.com</div>
                 <div className="header-gst">GST No: 24AJGPP9863R1Z5</div>
@@ -207,7 +223,7 @@ export const SalesOrderPrint: React.FC<SalesOrderPrintProps> = ({ order }) => {
                 </tr>
                 <tr>
                     <td className="label">Party Address</td>
-                    <td className="input">{party?.deliveryAddress || order.deliveryAddress || ''}</td>
+                    <td className="input address-cell">{party?.deliveryAddress || order.deliveryAddress || ''}</td>
                     <td className="label">GST No</td>
                     <td className="input">{party?.gstNumber || order.gstType || '-'}</td>
                 </tr>
@@ -268,15 +284,15 @@ export const SalesOrderPrint: React.FC<SalesOrderPrintProps> = ({ order }) => {
                 </tr>
                 <tr>
                     <td className="label">TC</td>
-                    <td className="center" style={{ fontWeight: 'bold' }}>{order.tc === 'Yes' ? 'YES' : 'NO'}</td>
+                    <YesNoCell value={order.tc === 'Yes'} />
                     <td className="label">UT</td>
-                    <td className="center" style={{ fontWeight: 'bold' }}>{order.ut === 'Yes' ? 'YES' : 'NO'}</td>
+                    <YesNoCell value={order.ut === 'Yes'} />
                 </tr>
                 <tr>
                     <td className="label">Transport</td>
-                    <td className="center" style={{ fontWeight: 'bold' }}>{order.handledBy ? 'YES' : 'NO'}</td>
+                    <YesNoCell value={!!order.handledBy} />
                     <td className="label">Loading</td>
-                    <td className="center" style={{ fontWeight: 'bold' }}>{(order.loadingUnloadingCharges && order.loadingUnloadingCharges > 0) ? 'YES' : 'NO'}</td>
+                    <YesNoCell value={!!(order.loadingUnloadingCharges && order.loadingUnloadingCharges > 0)} />
                 </tr>
                 <tr>
                     <td className="label">Remarks</td>
@@ -299,4 +315,9 @@ export const SalesOrderPrint: React.FC<SalesOrderPrintProps> = ({ order }) => {
       </div>
     </div>
   );
+};
+
+export const SalesOrderPrint: React.FC<SalesOrderPrintProps> = ({ order, parties: partiesProp }) => {
+  const { parties: contextParties } = useAppContext();
+  return <SalesOrderPrintInner order={order} parties={partiesProp ?? contextParties} />;
 };

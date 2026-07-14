@@ -1,244 +1,403 @@
-import React, { useState, useMemo } from 'react';
-import { Calculator, Plus, Trash2, Printer, RotateCcw, FileText, User, Calendar, Hash, Search, List } from 'lucide-react';
-import { useAppContext, type QuotationRecord, type QuotationItem, MATERIAL_GRADES } from '../store/AppContext';
+import React, { useState, useMemo, useCallback, useEffect } from 'react';
+import { useSearchParams } from 'react-router-dom';
+import {
+  Plus, Trash2, Printer, List, Save,
+  MessageSquare, Mail, FileDown, X, Truck, UserCircle, CalendarClock,
+} from 'lucide-react';
+import {
+  useAppContext, type QuotationRecord, type QuotationItem,
+  MATERIAL_GRADES, EMPLOYEES,
+} from '../store/AppContext';
 import toast from 'react-hot-toast';
 import { EditableSelect } from '../components/EditableSelect';
 import { upper } from '../utils/textCase';
+import { ErpPageHeader } from '../components/ErpPageShell';
+import { PartyAutocomplete } from '../components/PartyAutocomplete';
+import { NumericInput } from '../components/NumericInput';
+import type { PartyMaster } from '../store/AppContext';
+import { erpHotkeyProps } from '../utils/erpHotkeys';
+import {
+  PlateQuotationPrint,
+  PLATE_QUOTATION_PRINT_AREA_ID,
+  buildPlateQuotationPrintData,
+  type PlateQuotationPrintData,
+} from '../components/PlateQuotationPrint';
+import { generatePlateQuotationPDF } from '../utils/plateQuotationDownload';
 
+const MAKES = ['Jindal', 'SAIL', 'AM/NS', 'Posco', 'Other'];
+const PAYMENT_TERMS = ['30 Days', '15 Days', 'Advance', 'Against Delivery', 'Credit'];
 
+const inp = 'pq-input';
+
+function financialYearSuffix(d = new Date()) {
+  const year = d.getMonth() >= 3 ? d.getFullYear() : d.getFullYear() - 1;
+  return `${String(year).slice(-2)}-${String(year + 1).slice(-2)}`;
+}
+
+function nextQuoteNo(quotations: QuotationRecord[]) {
+  const fy = financialYearSuffix();
+  const prefix = `QT/${fy}/`;
+  const nums = quotations
+    .filter(q => q.quoteNo.startsWith(prefix))
+    .map(q => parseInt(q.quoteNo.split('/').pop() || '0', 10))
+    .filter(n => !Number.isNaN(n));
+  const next = (nums.length ? Math.max(...nums) : 0) + 1;
+  return `${prefix}${String(next).padStart(4, '0')}`;
+}
+
+function blankItem(): QuotationItem {
+  return {
+    id: Date.now().toString(),
+    shape: 'Square',
+    grade: MATERIAL_GRADES[0],
+    make: MAKES[0],
+    thickness: 0,
+    width: 0,
+    length: 0,
+    od: 0,
+    id_dim: 0,
+    nos: 1,
+    weight: 0,
+    rate: 0,
+    odRate: 0,
+    idRate: 0,
+    amount: 0,
+    remark: '',
+  };
+}
+
+function calcPlateWeight(item: QuotationItem): number {
+  const t = parseFloat(String(item.thickness)) || 0;
+  const w = parseFloat(String(item.width)) || 0;
+  const l = parseFloat(String(item.length)) || 0;
+  const n = parseInt(String(item.nos), 10) || 0;
+  return parseFloat(((t * w * l * n * 8) / 1_000_000).toFixed(2));
+}
+
+function calcPlateAmount(weight: number, rate: number) {
+  return parseFloat((weight * rate).toFixed(2));
+}
+
+function fmt(n: number) {
+  return n.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+}
+
+function addDays(isoDate: string, days: number) {
+  const d = new Date(isoDate);
+  d.setDate(d.getDate() + days);
+  return d.toISOString().split('T')[0];
+}
 
 export const Quotation: React.FC = () => {
-  const { t, quotations, addQuotation, deleteQuotation } = useAppContext();
-  
+  const { quotations, addQuotation, updateQuotation, deleteQuotation, parties, persistErpNow } = useAppContext();
+  const [searchParams] = useSearchParams();
+  const editId = searchParams.get('edit');
+
   const [viewMode, setViewMode] = useState<'create' | 'list'>('create');
   const [search, setSearch] = useState('');
+  const [editingId, setEditingId] = useState<string | null>(editId);
 
   const [partyName, setPartyName] = useState('');
-  const [contactPerson, setContactPerson] = useState('');
-  const [mobileNo, setMobileNo] = useState('');
-  const [address, setAddress] = useState('');
+  const [partyAddress, setPartyAddress] = useState('');
+  const [partyAddressLine2, setPartyAddressLine2] = useState('');
+  const [partyMobile, setPartyMobile] = useState('');
+  const [partyEmail, setPartyEmail] = useState('');
+  const [partyGst, setPartyGst] = useState('');
   const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
-  const [validUntil, setValidUntil] = useState(() => {
-    const d = new Date();
-    d.setDate(d.getDate() + 15);
-    return d.toISOString().split('T')[0];
-  });
-  const [quoteNo, setQuoteNo] = useState(`QT-${Date.now().toString().slice(-6)}`);
-  
-  const [items, setItems] = useState<QuotationItem[]>([
-    { id: '1', shape: 'Square', grade: 'IS 2062', thickness: 0, width: 0, length: 0, od: 0, id_dim: 0, nos: 1, weight: 0, rate: 0, odRate: 0, idRate: 0, amount: 0, remark: '' }
-  ]);
+  const [quoteNo, setQuoteNo] = useState('');
 
-  const [loadingCharges, setLoadingCharges] = useState(0);
-  const [transportCharges, setTransportCharges] = useState(0);
-  const [gstRate, setGstRate] = useState(18); // Default 18%
+  useEffect(() => {
+    if (!quoteNo) setQuoteNo(nextQuoteNo(quotations));
+  }, [quotations, quoteNo]);
 
-  const calculateWeight = (item: QuotationItem): number => {
-    const shape = item.shape;
-    const thickness = parseFloat(item.thickness as any) || 0;
-    const width = parseFloat(item.width as any) || 0;
-    const length = parseFloat(item.length as any) || 0;
-    const od = parseFloat(item.od as any) || 0;
-    const id_dim = parseFloat(item.id_dim as any) || 0;
-    const nos = parseInt(item.nos as any) || 0;
-    let weight = 0;
-    
-    if (shape === 'Square' || shape === 'CNC Profile') {
-      weight = (thickness * width * length * nos * 8) / 1000000;
-    } else if (shape === 'Ring') {
-      weight = ((Math.pow(od, 2) - Math.pow(id_dim, 2)) * (Math.PI / 4) * thickness * nos * 8) / 1000000;
-    }
-    
-    return parseFloat(weight.toFixed(3));
-  };
+  const [paymentTerms, setPaymentTerms] = useState('30 Days');
+  const [loadingChargeNote, setLoadingChargeNote] = useState('Extra');
+  const [transportChargeNote, setTransportChargeNote] = useState('Extra');
+  const [validityDays, setValidityDays] = useState('7');
+  const [utLevel, setUtLevel] = useState('');
+  const [salesPerson, setSalesPerson] = useState(EMPLOYEES[0] || '');
 
-  const updateItem = (id: string, field: keyof QuotationItem, value: any) => {
-    const normalized = typeof value === 'string' && field !== 'shape' ? upper(value) : value;
-    setItems(prev => prev.map((item: QuotationItem) => {
-      if (item.id === id) {
-        const updated = { ...item, [field]: normalized };
-        
-        // Recalculate weight if dimensions change
-        if (['shape', 'thickness', 'width', 'length', 'od', 'id_dim', 'nos'].includes(field)) {
-          updated.weight = calculateWeight(updated);
-        }
-        
-        // Recalculate amount if weight or rate changes
-        if (['weight', 'rate', 'odRate', 'idRate', 'shape', 'thickness', 'width', 'length', 'od', 'id_dim', 'nos'].includes(field)) {
-          if (updated.shape === 'Ring') {
-            const odVal = parseFloat(updated.od as any) || 0;
-            const idDimVal = parseFloat(updated.id_dim as any) || 0;
-            const thicknessVal = parseFloat(updated.thickness as any) || 0;
-            const nosVal = parseInt(updated.nos as any) || 0;
-            const odRateVal = parseFloat(updated.odRate as any) || 0;
-            const idRateVal = parseFloat(updated.idRate as any) || 0;
+  const [items, setItems] = useState<QuotationItem[]>([blankItem()]);
+  const [gstRate, setGstRate] = useState(18);
 
-            // Formula: OD Amount = ((OD+5)*(OD+5)*0.7854 * thickness * 8 * OD_Rate) / 1000000
-            // Formula: ID Amount = ((ID-10)*(ID-10)*0.7854 * thickness * 8 * ID_Rate) / 1000000
-            const odA = ((odVal + 5) * (odVal + 5) * 0.7854 * thicknessVal * 8 * odRateVal) / 1000000;
-            const idA = idDimVal > 10 ? (((idDimVal - 10) * (idDimVal - 10) * 0.7854 * thicknessVal * 8 * idRateVal) / 1000000) : 0;
-            updated.amount = Math.ceil((odA - idA) * nosVal);
-          } else {
-            const weightVal = parseFloat(updated.weight as any) || 0;
-            const rateVal = parseFloat(updated.rate as any) || 0;
-            updated.amount = Math.ceil(weightVal * rateVal);
-          }
-        }
-        
-        return updated;
+  const updateItem = useCallback((id: string, field: keyof QuotationItem, value: string | number) => {
+    setItems(prev => prev.map(item => {
+      if (item.id !== id) return item;
+      const updated = { ...item, [field]: value };
+      if (field === 'grade' || field === 'make') {
+        (updated as any)[field] = typeof value === 'string' ? upper(value) : String(value);
       }
-      return item;
+      if (['thickness', 'width', 'length', 'nos', 'rate'].includes(field)) {
+        updated.weight = calcPlateWeight(updated);
+        updated.amount = calcPlateAmount(updated.weight, parseFloat(String(updated.rate)) || 0);
+      }
+      return updated;
     }));
-  };
+  }, []);
 
-  const addItem = () => {
-    setItems((prev: QuotationItem[]) => [
-      ...prev,
-      { id: Date.now().toString(), shape: 'Square', grade: 'IS 2062', thickness: 0, width: 0, length: 0, od: 0, id_dim: 0, nos: 1, weight: 0, rate: 0, odRate: 0, idRate: 0, amount: 0, remark: '' }
-    ]);
-  };
+  const addItem = () => setItems(prev => [...prev, { ...blankItem(), id: Date.now().toString() }]);
 
   const removeItem = (id: string) => {
     if (items.length === 1) return;
-    setItems((prev: QuotationItem[]) => prev.filter((item: QuotationItem) => item.id !== id));
+    setItems(prev => prev.filter(i => i.id !== id));
   };
 
-  const totalAmount = useMemo(() => items.reduce((sum: number, item: QuotationItem) => sum + item.amount, 0), [items]);
+  const totalAmount = useMemo(
+    () => parseFloat(items.reduce((s, i) => s + (i.amount || 0), 0).toFixed(2)),
+    [items],
+  );
+  const totalNos = useMemo(
+    () => items.reduce((s, i) => s + (parseInt(String(i.nos), 10) || 0), 0),
+    [items],
+  );
+  const totalKg = useMemo(
+    () => parseFloat(items.reduce((s, i) => s + (i.weight || 0), 0).toFixed(2)),
+    [items],
+  );
+  const gstAmount = useMemo(
+    () => parseFloat((totalAmount * gstRate / 100).toFixed(2)),
+    [totalAmount, gstRate],
+  );
+  const finalAmount = useMemo(
+    () => parseFloat((totalAmount + gstAmount).toFixed(2)),
+    [totalAmount, gstAmount],
+  );
+
 
   const handleReset = () => {
+    setEditingId(null);
     setPartyName('');
-    setContactPerson('');
-    setMobileNo('');
-    setAddress('');
+    setPartyAddress('');
+    setPartyAddressLine2('');
+    setPartyMobile('');
+    setPartyEmail('');
+    setPartyGst('');
     setDate(new Date().toISOString().split('T')[0]);
-    setValidUntil(() => {
-      const d = new Date();
-      d.setDate(d.getDate() + 15);
-      return d.toISOString().split('T')[0];
-    });
-    setQuoteNo(`QT-${Date.now().toString().slice(-6)}`);
-    setItems([{ id: '1', shape: 'Square', grade: 'IS 2062', thickness: 0, width: 0, length: 0, od: 0, id_dim: 0, nos: 1, weight: 0, rate: 0, odRate: 0, idRate: 0, amount: 0, remark: '' }]);
-    setLoadingCharges(0);
-    setTransportCharges(0);
+    setQuoteNo(nextQuoteNo(quotations));
+    setPaymentTerms('30 Days');
+    setLoadingChargeNote('Extra');
+    setTransportChargeNote('Extra');
+    setValidityDays('7');
+    setUtLevel('');
+    setSalesPerson(EMPLOYEES[0] || '');
+    setItems([blankItem()]);
     setGstRate(18);
-    toast.success('Quotation reset');
+    toast.success('Quotation cleared');
   };
 
-  const handleSave = () => {
-    if (!partyName) { toast.error('Enter party name'); return; }
-    
-    const grandTotal = Math.ceil((totalAmount + loadingCharges + transportCharges) * (1 + gstRate / 100));
-    
-    const record: QuotationRecord = {
-      id: Date.now().toString(),
-      quoteNo,
-      date,
-      validUntil,
-      partyName,
-      contactPerson,
-      mobileNo,
-      address,
-      items,
-      loadingCharges,
-      transportCharges,
-      gstRate,
-      totalAmount,
-      grandTotal
+  const buildRecord = (): QuotationRecord => ({
+    id: editingId || Date.now().toString(),
+    quoteNo,
+    date,
+    validUntil: addDays(date, parseInt(validityDays, 10) || 7),
+    partyName,
+    contactPerson: '',
+    mobileNo: partyMobile,
+    address: [partyAddress, partyAddressLine2].filter(Boolean).join(', '),
+    paymentTerms,
+    loadingChargeNote,
+    transportChargeNote,
+    validityDays: parseInt(validityDays, 10) || 7,
+    utLevel,
+    salesPerson,
+    items,
+    loadingCharges: 0,
+    transportCharges: 0,
+    gstRate,
+    totalAmount,
+    grandTotal: finalAmount,
+  });
+
+  const buildPrintData = useCallback((): PlateQuotationPrintData => {
+    const base = buildPlateQuotationPrintData(buildRecord(), parties);
+    return {
+      ...base,
+      address: partyAddress || base.address,
+      addressLine2: partyAddressLine2 || base.addressLine2,
+      mobileNo: partyMobile || base.mobileNo,
+      email: partyEmail || base.email,
+      gstNo: partyGst || base.gstNo,
     };
-    
-    addQuotation(record);
-    toast.success('Quotation saved successfully');
-    setViewMode('list');
+  }, [parties, partyAddress, partyAddressLine2, partyMobile, partyEmail, partyGst, quoteNo, date, partyName, paymentTerms, loadingChargeNote, transportChargeNote, validityDays, utLevel, salesPerson, items, gstRate, totalAmount, finalAmount]);
+
+  const handlePdf = async () => {
+    if (!partyName.trim()) {
+      toast.error('Party Name is required');
+      return;
+    }
+    toast.loading('Generating PDF...', { id: 'plate-quote-pdf' });
+    try {
+      await generatePlateQuotationPDF(buildRecord(), parties);
+      toast.success(`PDF downloaded: ${quoteNo}`, { id: 'plate-quote-pdf' });
+    } catch {
+      toast.error('PDF generation failed', { id: 'plate-quote-pdf' });
+    }
+  };
+
+  const handleSave = async () => {
+    if (!partyName.trim()) {
+      toast.error('Party Name is required');
+      return;
+    }
+    const record = buildRecord();
+    try {
+      if (editingId) {
+        updateQuotation(record);
+        await persistErpNow({
+          quotations: quotations.map(q => q.id === record.id ? record : q),
+        });
+        toast.success('Quotation updated');
+      } else {
+        addQuotation(record);
+        setEditingId(record.id);
+        await persistErpNow({ quotations: [record, ...quotations] });
+        toast.success('Quotation saved');
+      }
+    } catch {
+      toast.error('Saved locally but server sync failed — retry Save');
+    }
+  };
+
+  const handleSaveAndPrint = async () => {
+    if (!partyName.trim()) {
+      toast.error('Party Name is required');
+      return;
+    }
+    const record = buildRecord();
+    try {
+      if (editingId) {
+        updateQuotation(record);
+        await persistErpNow({
+          quotations: quotations.map(q => q.id === record.id ? record : q),
+        });
+      } else {
+        addQuotation(record);
+        setEditingId(record.id);
+        await persistErpNow({ quotations: [record, ...quotations] });
+      }
+      toast.success('Quotation saved');
+      setTimeout(() => window.print(), 300);
+    } catch {
+      toast.error('Saved locally but server sync failed — retry Save');
+    }
+  };
+
+  const handleDeleteQuotation = async (id: string) => {
+    if (!window.confirm('Delete this quotation?')) return;
+    const next = quotations.filter(q => q.id !== id);
+    deleteQuotation(id);
+    if (editingId === id) setEditingId(null);
+    try {
+      await persistErpNow({ quotations: next });
+      toast.success('Quotation deleted');
+    } catch {
+      toast.error('Deleted locally but server sync failed');
+    }
   };
 
   const filteredQuotations = useMemo(() => {
     if (!search) return quotations;
     const q = search.toLowerCase();
-    return quotations.filter((r: QuotationRecord) => 
-      r.quoteNo.toLowerCase().includes(q) || 
-      r.partyName.toLowerCase().includes(q) || 
-      r.contactPerson.toLowerCase().includes(q) ||
-      r.mobileNo.toLowerCase().includes(q)
+    return quotations.filter(r =>
+      r.quoteNo.toLowerCase().includes(q) ||
+      r.partyName.toLowerCase().includes(q),
     );
   }, [quotations, search]);
 
-  const loadQuotation = (q: QuotationRecord) => {
+  const loadQuotation = (q: QuotationRecord, showToast = true) => {
+    setEditingId(q.id);
     setQuoteNo(q.quoteNo);
     setDate(q.date);
-    setValidUntil(q.validUntil);
     setPartyName(q.partyName);
-    setContactPerson(q.contactPerson);
-    setMobileNo(q.mobileNo);
-    setAddress(q.address);
-    setItems(q.items);
-    setLoadingCharges(q.loadingCharges);
-    setTransportCharges(q.transportCharges);
+    const party = parties.find(p => p.partyName === q.partyName);
+    const addr = q.address || party?.address || party?.deliveryAddress || '';
+    const parts = addr.split(/\n|, /).map(s => s.trim()).filter(Boolean);
+    setPartyAddress(parts[0] || '');
+    setPartyAddressLine2(parts.slice(1).join(', '));
+    setPartyMobile(q.mobileNo || party?.mobileNumber || '');
+    setPartyEmail(party?.email || '');
+    setPartyGst(party?.gstNumber || '');
+    setPaymentTerms(q.paymentTerms || '30 Days');
+    setLoadingChargeNote(q.loadingChargeNote || 'Extra');
+    setTransportChargeNote(q.transportChargeNote || 'Extra');
+    setValidityDays(String(q.validityDays ?? 7));
+    setUtLevel(q.utLevel || '');
+    setSalesPerson(q.salesPerson || EMPLOYEES[0] || '');
+    setItems(q.items.length ? q.items : [blankItem()]);
     setGstRate(q.gstRate);
     setViewMode('create');
-    toast.success('Quotation loaded');
+    if (showToast) toast.success('Quotation loaded');
   };
 
-  const handlePrint = () => {
-    window.print();
+  useEffect(() => {
+    if (!editId || !quotations.length) return;
+    const q = quotations.find(r => r.id === editId);
+    if (q) loadQuotation(q, false);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [editId, quotations.length]);
+
+  const handleSelectParty = (party: PartyMaster) => {
+    setPartyName(party.partyName);
+    const addr = party.address || party.deliveryAddress || '';
+    const parts = addr.split(/\n|, /).map(s => s.trim()).filter(Boolean);
+    setPartyAddress(parts[0] || '');
+    setPartyAddressLine2(parts.slice(1).join(', '));
+    setPartyMobile(party.mobileNumber || party.mobile2 || '');
+    setPartyEmail(party.email || '');
+    setPartyGst(party.gstNumber || '');
+    if (party.salesPerson) setSalesPerson(party.salesPerson);
+    toast.success('Party selected from master');
   };
 
   if (viewMode === 'list') {
     return (
-      <div className="max-w-[1200px] mx-auto space-y-6 fade-in pb-20">
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-2xl font-bold text-slate-800 dark:text-slate-100">Saved Quotations</h1>
-            <p className="text-sm text-slate-500 dark:text-slate-400">{quotations.length} records found</p>
+      <div className="quotation-page max-w-[1680px] mx-auto p-3 sm:p-4 space-y-4 fade-in pb-8">
+        <ErpPageHeader
+          title="Plate Quotation List"
+          subtitle={`${quotations.length} saved quotations`}
+          extra={
+            <button type="button" {...erpHotkeyProps('new')} onClick={() => setViewMode('create')} className="erp-btn erp-btn-green">
+              <Plus className="w-4 h-4" /> New Quote
+            </button>
+          }
+        />
+        <div className="tc-mgmt-panel xl:max-w-md">
+          <div className="tc-mgmt-panel-head">Search</div>
+          <div className="p-3">
+            <input type="text" placeholder="Quote No, Party..." value={search} onChange={e => setSearch(e.target.value)} className="tc-mgmt-input" />
           </div>
-          <button onClick={() => setViewMode('create')} className="bg-blue-600 text-white px-5 py-2 rounded-xl text-sm font-semibold hover:bg-blue-700 transition-all shadow-md">
-            + New Quotation
-          </button>
         </div>
-
-        <div className="relative">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-          <input 
-            type="text" 
-            placeholder="Search by Quote No, Party, Mobile..." 
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="w-full sm:w-96 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl pl-10 pr-4 py-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none shadow-sm"
-          />
-        </div>
-
-        <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-800 overflow-hidden">
-          <table className="w-full text-left border-collapse whitespace-nowrap">
+        <div className="tc-mgmt-panel min-w-0">
+          <div className="tc-mgmt-panel-head">Saved Quotations</div>
+          <table className="w-full tc-mgmt-table quotation-items-table">
             <thead>
-              <tr className="bg-slate-50 dark:bg-slate-800/50 text-2xs uppercase font-black text-slate-500 dark:text-slate-400">
-                <th className="p-4">Quote No</th>
-                <th className="p-4">Party Name</th>
-                <th className="p-4">Date</th>
-                <th className="p-4">Items</th>
-                <th className="p-4">Total Amount</th>
-                <th className="p-4 text-right">Actions</th>
+              <tr>
+                <th>Quote No</th>
+                <th>Party</th>
+                <th>Date</th>
+                <th>Items</th>
+                <th>Final Amount</th>
+                <th>Action</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-50">
-              {filteredQuotations.map((q: QuotationRecord) => (
-                <tr key={q.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-all">
-                  <td className="p-4 font-mono font-bold text-blue-600 dark:text-blue-400">{q.quoteNo}</td>
-                  <td className="p-4">
-                    <p className="font-bold text-slate-800 dark:text-slate-100">{q.partyName}</p>
-                    <p className="text-2xs text-slate-400">{q.mobileNo}</p>
-                  </td>
-                  <td className="p-4 text-sm text-slate-600 dark:text-slate-300">{q.date}</td>
-                  <td className="p-4 text-sm text-slate-600 dark:text-slate-300">{q.items.length} Nos</td>
-                  <td className="p-4 font-bold text-slate-800 dark:text-slate-100">₹{q.grandTotal.toLocaleString()}</td>
-                  <td className="p-4 text-right space-x-2">
-                    <button onClick={() => loadQuotation(q)} className="text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/30 px-2 py-1 rounded text-xs font-bold transition-all">Edit</button>
-                    <button onClick={() => deleteQuotation(q.id)} className="text-red-500 hover:bg-red-50 dark:hover:bg-red-900/30 px-2 py-1 rounded text-xs font-bold transition-all">Delete</button>
+            <tbody>
+              {filteredQuotations.map(q => (
+                <tr key={q.id}>
+                  <td className="font-mono font-bold text-brand-blue">{q.quoteNo}</td>
+                  <td className="font-semibold">{q.partyName}</td>
+                  <td>{q.date}</td>
+                  <td>{q.items.length}</td>
+                  <td className="font-bold">₹{q.grandTotal.toLocaleString('en-IN')}</td>
+                  <td>
+                    <div className="flex gap-1">
+                      <button type="button" onClick={() => loadQuotation(q)} className="text-blue-600 text-xs font-bold px-2 py-1">Edit</button>
+                      <button type="button" onClick={() => void handleDeleteQuotation(q.id)} className="text-red-500 text-xs font-bold px-2 py-1">Delete</button>
+                    </div>
                   </td>
                 </tr>
               ))}
               {filteredQuotations.length === 0 && (
-                <tr>
-                  <td colSpan={6} className="p-10 text-center text-slate-400 italic">No quotations found</td>
-                </tr>
+                <tr><td colSpan={6} className="text-center py-8 text-slate-400 italic">No quotations found</td></tr>
               )}
             </tbody>
           </table>
@@ -248,464 +407,249 @@ export const Quotation: React.FC = () => {
   }
 
   return (
-    <div className="max-w-[1200px] mx-auto space-y-6 fade-in pb-20 print:p-0 print:max-w-full">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 print:hidden">
-        <div>
-          <h1 className="text-2xl font-bold text-slate-800 dark:text-slate-100 flex items-center gap-2">
-            <Calculator className="w-7 h-7 text-blue-600 dark:text-blue-400" />
-            {t('quotation')} Module
-          </h1>
-          <p className="text-sm text-slate-500 dark:text-slate-400 mt-0.5">Quick weight & cost estimation for customers</p>
-        </div>
-        <div className="flex gap-2 w-full sm:w-auto">
-          <button onClick={() => setViewMode('list')} className="flex-1 sm:flex-none flex items-center justify-center gap-2 bg-slate-100 text-slate-600 dark:text-slate-300 px-4 py-2 rounded-xl text-sm font-semibold hover:bg-slate-200 dark:bg-slate-700 transition-all">
-            <List className="w-4 h-4" /> Saved Quotes
-          </button>
-          <button onClick={handleReset} className="flex-1 sm:flex-none flex items-center justify-center gap-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 px-4 py-2 rounded-xl text-sm font-semibold hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-all">
-            <RotateCcw className="w-4 h-4" /> Reset
-          </button>
-          <button onClick={handleSave} className="flex-1 sm:flex-none flex items-center justify-center gap-2 bg-emerald-600 text-white px-5 py-2 rounded-xl text-sm font-semibold hover:bg-emerald-700 transition-all shadow-md">
-            Save
-          </button>
-          <button onClick={handlePrint} className="flex-1 sm:flex-none flex items-center justify-center gap-2 bg-blue-600 text-white px-5 py-2 rounded-xl text-sm font-semibold hover:bg-blue-700 transition-all shadow-md shadow-blue-100">
-            <Printer className="w-4 h-4" /> Print / Save PDF
-          </button>
-        </div>
-      </div>
-
-      {/* Main Form */}
-      <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-        {/* Left Side: Party Details */}
-        <div className="lg:col-span-1 space-y-6 print:hidden">
-          <div className="bg-white dark:bg-slate-900 rounded-2xl p-6 shadow-sm border border-slate-100 dark:border-slate-800">
-            <h2 className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-6 flex items-center gap-2">
-              <User className="w-4 h-4 text-blue-600 dark:text-blue-400" />
-              Quote Details
-            </h2>
-            <div className="space-y-4">
-              <div>
-                <label className="field-label mb-1">Quote Number</label>
-                <div className="relative">
-                  <Hash className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400" />
-                  <input type="text" value={quoteNo} onChange={(e) => setQuoteNo(upper(e.target.value))} className="w-full bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-lg pl-9 pr-3 py-2 text-sm font-mono focus:bg-white dark:focus:bg-slate-900 focus:ring-2 focus:ring-blue-500 transition" />
-                </div>
-              </div>
-              <div>
-                <label className="field-label mb-1">Date</label>
-                <div className="relative">
-                  <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400" />
-                  <input type="date" value={date} onChange={(e) => setDate(e.target.value)} className="w-full bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-lg pl-9 pr-3 py-2 text-sm focus:bg-white dark:focus:bg-slate-900 focus:ring-2 focus:ring-blue-500 transition" />
-                </div>
-              </div>
-              <div>
-                <label className="field-label mb-1">Customer Name</label>
-                <input type="text" value={partyName} onChange={(e) => setPartyName(upper(e.target.value))} className="w-full bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-lg px-3 py-2 text-sm focus:bg-white dark:focus:bg-slate-900 focus:ring-2 focus:ring-blue-500 transition" placeholder="Durgesh" />
-              </div>
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="field-label mb-1">Contact Person</label>
-                  <input type="text" value={contactPerson} onChange={(e) => setContactPerson(upper(e.target.value))} className="w-full bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-lg px-3 py-2 text-sm focus:bg-white dark:focus:bg-slate-900 focus:ring-2 focus:ring-blue-500 transition" placeholder="Vraj Patel" />
-                </div>
-                <div>
-                  <label className="field-label mb-1">Mobile No</label>
-                  <input type="text" value={mobileNo} onChange={(e) => setMobileNo(e.target.value)} className="w-full bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-lg px-3 py-2 text-sm focus:bg-white dark:focus:bg-slate-900 focus:ring-2 focus:ring-blue-500 transition no-uppercase" placeholder="7359604778" />
-                </div>
-              </div>
-              <div>
-                <label className="field-label mb-1">Address</label>
-                <textarea rows={2} value={address} onChange={(e) => setAddress(upper(e.target.value))} className="w-full bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-lg px-3 py-2 text-sm focus:bg-white dark:focus:bg-slate-900 focus:ring-2 focus:ring-blue-500 transition" placeholder="Vadodara, Gujarat" />
-              </div>
-              <div>
-                <label className="field-label mb-1">Valid Until</label>
-                <input type="date" value={validUntil} onChange={(e) => setValidUntil(e.target.value)} className="w-full bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-lg px-3 py-2 text-sm focus:bg-white dark:focus:bg-slate-900 focus:ring-2 focus:ring-blue-500 transition" />
-              </div>
+    <div className="pq-entry-page fade-in print:p-0">
+      {/* Top row — Quotation No, Date, Party */}
+      <div className="erp-card p-4 print:hidden">
+        <div className="grid grid-cols-1 md:grid-cols-12 gap-4 items-end">
+          <div className="md:col-span-3">
+            <label className="pq-field-label">Quotation No.</label>
+            <div className="relative">
+              <input type="text" value={quoteNo} readOnly className={`${inp} font-mono font-bold pr-16 bg-slate-50`} />
+              <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[10px] font-bold text-brand-blue">(Auto)</span>
             </div>
           </div>
-
-
-          <div className="card-primary rounded-2xl p-6 text-white shadow-lg shadow-blue-100">
-            <div className="flex items-center gap-3 mb-4">
-              <div className="w-10 h-10 bg-white dark:bg-slate-900/20 rounded-xl flex items-center justify-center">
-                <FileText className="w-6 h-6" />
-              </div>
-              <div>
-                <h3 className="text-sm font-bold opacity-80 uppercase tracking-wider">Summary</h3>
-                <p className="text-xs font-medium opacity-60">Total estimation</p>
-              </div>
-            </div>
-            <div className="space-y-3">
-              <div className="flex justify-between items-end">
-                <span className="text-xs opacity-70">Sub Total</span>
-                <span className="text-sm font-bold">₹ {totalAmount.toLocaleString()}</span>
-              </div>
-              <div className="flex justify-between items-end">
-                <span className="text-xs opacity-70">Total Charges</span>
-                <span className="text-sm font-bold">₹ {(loadingCharges + transportCharges).toLocaleString()}</span>
-              </div>
-              <div className="flex justify-between items-end">
-                <span className="text-xs opacity-70">GST ({gstRate}%)</span>
-                <span className="text-sm font-bold">₹ {Math.ceil((totalAmount + loadingCharges + transportCharges) * gstRate / 100).toLocaleString()}</span>
-              </div>
-              <div className="flex justify-between items-end border-t border-white/10 pt-3">
-                <span className="text-xs opacity-70 font-bold uppercase tracking-wider">Grand Total</span>
-                <span className="text-2xl font-black">₹ {Math.ceil((totalAmount + loadingCharges + transportCharges) * (1 + gstRate / 100)).toLocaleString()}</span>
-              </div>
-            </div>
+          <div className="md:col-span-3">
+            <label className="pq-field-label">Quotation Date</label>
+            <input type="date" value={date} onChange={e => setDate(e.target.value)} className={inp} />
           </div>
-        </div>
-
-        {/* Right Side: Calculation Table */}
-        <div className="lg:col-span-3">
-          <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-800 overflow-hidden print:border-none print:shadow-none">
-            {/* Print Header */}
-            <div className="hidden print:block p-8 border-b-2 border-slate-200 dark:border-slate-700 mb-6">
-              <div className="flex justify-between items-start">
-                <div>
-                  <h1 className="text-3xl font-black text-blue-600 dark:text-blue-400">JAGDAMBA PROFILE</h1>
-                  <p className="text-sm font-bold text-slate-500 dark:text-slate-400 mt-1 uppercase tracking-widest">Quotation / Proforma Invoice</p>
-                </div>
-                <div className="text-right">
-                  <p className="text-sm font-bold text-slate-800 dark:text-slate-100">Quote #: {quoteNo}</p>
-                  <p className="text-sm font-medium text-slate-500 dark:text-slate-400">Date: {date}</p>
-                </div>
-              </div>
-              <div className="mt-8">
-                <p className="text-2xs font-bold text-slate-400 uppercase mb-1">To:</p>
-                <p className="text-lg font-bold text-slate-800 dark:text-slate-100 whitespace-pre-wrap">{partyName || 'Valued Customer'}</p>
-              </div>
-            </div>
-
-            <div className="p-4 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between bg-slate-50/50 dark:bg-slate-800/50 print:hidden">
-              <h2 className="text-sm font-bold text-slate-800 dark:text-slate-100 uppercase tracking-wider flex items-center gap-2">
-                <span className="w-1.5 h-5 bg-blue-600 rounded-full"></span>
-                Items & Shapes
-              </h2>
-              <button onClick={addItem} className="flex items-center gap-1.5 bg-blue-600 text-white px-3 py-1.5 rounded-lg text-xs font-bold hover:bg-blue-700 transition-all shadow-sm">
-                <Plus className="w-3.5 h-3.5" /> Add New Row
-              </button>
-            </div>
-
-            <div className="overflow-x-auto">
-              <table className="w-full text-left border-collapse min-w-[1050px]">
-                <thead>
-                  <tr className="bg-slate-50 dark:bg-slate-800/50 text-2xs uppercase font-black text-slate-500 dark:text-slate-400 print:bg-white dark:print:bg-white print:border-b-2 print:border-slate-300 dark:border-slate-600">
-                    <th className="p-4">Shape</th>
-                    <th className="p-4">Grade</th>
-                    <th className="p-4">Thk</th>
-                    <th className="p-4">Dimensions (mm)</th>
-                    <th className="p-4">Nos</th>
-                    <th className="p-4">Weight (Kg)</th>
-                    <th className="p-4 min-w-[160px]">Rate</th>
-                    <th className="p-4 text-blue-600 dark:text-blue-400">Rate / Nos</th>
-                    <th className="p-4 text-right">Amount</th>
-                    <th className="p-4 text-center w-10 print:hidden"></th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-50 print:divide-slate-200">
-                  {items.map((item: QuotationItem) => (
-                    <tr key={item.id} className="group hover:bg-blue-50/20 transition-all">
-                      <td className="p-3">
-                        <select 
-                          value={item.shape} 
-                          onChange={(e) => updateItem(item.id, 'shape', e.target.value)} 
-                          className="bg-transparent border-transparent focus:ring-0 text-sm font-bold text-slate-700 dark:text-slate-200 outline-none print:appearance-none"
-                        >
-                          <option value="Square" className="bg-white dark:bg-slate-800">Square / Rect</option>
-                          <option value="Ring" className="bg-white dark:bg-slate-800">Ring / Circle</option>
-                        </select>
-                      </td>
-                      <td className="p-3 min-w-[150px]">
-                        <EditableSelect
-                          value={item.grade}
-                          onChange={(v) => updateItem(item.id, 'grade', v)}
-                          options={MATERIAL_GRADES}
-                          placeholder="Select Grade"
-                          className="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded px-2 py-1 text-sm focus:ring-2 focus:ring-blue-500 outline-none"
-                        />
-                      </td>
-                      <td className="p-3 w-24">
-                        <input type="number" value={item.thickness ?? ''} onChange={(e) => updateItem(item.id, 'thickness', e.target.value)} className="w-full bg-transparent border-transparent focus:ring-0 text-sm font-bold text-blue-600 dark:text-blue-400" placeholder="0" />
-                      </td>
-                      <td className="p-3 w-72 min-w-[240px]">
-                        {item.shape === 'Ring' ? (
-                          <div className="flex items-center gap-2">
-                            <div className="flex flex-col">
-                              <span className="caption-3 uppercase">OD</span>
-                              <input type="number" value={item.od ?? ''} onChange={(e) => updateItem(item.id, 'od', e.target.value)} className="w-24 bg-slate-50 dark:bg-slate-800/50 rounded px-2 py-1 text-xs focus:ring-1 focus:ring-blue-500 outline-none print:bg-transparent print:font-bold" placeholder="OD" />
-                            </div>
-                            <span className="text-slate-300 mt-3">x</span>
-                            <div className="flex flex-col">
-                              <span className="caption-3 uppercase">ID</span>
-                              <input type="number" value={item.id_dim ?? ''} onChange={(e) => updateItem(item.id, 'id_dim', e.target.value)} className="w-24 bg-slate-50 dark:bg-slate-800/50 rounded px-2 py-1 text-xs focus:ring-1 focus:ring-blue-500 outline-none print:bg-transparent print:font-bold" placeholder="ID" />
-                            </div>
-                          </div>
-                        ) : (
-                          <div className="flex items-center gap-2">
-                            <input type="number" value={item.length ?? ''} onChange={(e) => updateItem(item.id, 'length', e.target.value)} className="w-24 bg-slate-50 dark:bg-slate-800/50 rounded px-2 py-1 text-xs focus:ring-1 focus:ring-blue-500 outline-none print:bg-transparent print:font-bold" placeholder="L" />
-                            <span className="text-slate-300">x</span>
-                            <input type="number" value={item.width ?? ''} onChange={(e) => updateItem(item.id, 'width', e.target.value)} className="w-24 bg-slate-50 dark:bg-slate-800/50 rounded px-2 py-1 text-xs focus:ring-1 focus:ring-blue-500 outline-none print:bg-transparent print:font-bold" placeholder="W" />
-                          </div>
-                        )}
-                      </td>
-                      <td className="p-3 w-20">
-                        <input type="number" value={item.nos ?? ''} onChange={(e) => updateItem(item.id, 'nos', e.target.value)} className="w-full bg-transparent border-transparent focus:ring-0 text-sm font-medium" placeholder="1" />
-                      </td>
-                      <td className="p-3">
-                        <span className="text-sm font-semibold text-slate-700 dark:text-slate-200">{item.weight} Kg</span>
-                      </td>
-                      <td className="p-3 w-44 min-w-[160px]">
-                        {item.shape === 'Ring' ? (
-                          <div className="flex flex-col gap-1.5">
-                            <div className="flex items-center gap-1">
-                              <span className="text-3xs font-bold text-slate-400 w-5 uppercase">OD</span>
-                              <input 
-                                type="number" 
-                                value={item.odRate ?? ''} 
-                                onChange={(e) => updateItem(item.id, 'odRate', e.target.value)} 
-                                className="w-full bg-blue-50/50 border border-blue-100 dark:border-blue-800 rounded px-2 py-0.5 text-xs font-bold text-blue-700 dark:text-blue-300 outline-none focus:bg-white dark:focus:bg-slate-900 focus:ring-1 focus:ring-blue-500" 
-                                placeholder="OD Rate" 
-                              />
-                            </div>
-                            <div className="flex items-center gap-1">
-                              <span className="text-3xs font-bold text-slate-400 w-5 uppercase">ID</span>
-                              <input 
-                                type="number" 
-                                value={item.idRate ?? ''} 
-                                onChange={(e) => updateItem(item.id, 'idRate', e.target.value)} 
-                                className="w-full bg-amber-50/50 dark:bg-amber-900/50 border border-amber-100 rounded px-2 py-0.5 text-xs font-bold text-amber-700 outline-none focus:bg-white dark:focus:bg-slate-900 focus:ring-1 focus:ring-amber-500" 
-                                placeholder="ID Rate" 
-                              />
-                            </div>
-                          </div>
-                        ) : (
-                          <input type="number" value={item.rate ?? ''} onChange={(e) => updateItem(item.id, 'rate', e.target.value)} className="w-full bg-transparent border-transparent focus:ring-0 text-sm font-bold text-emerald-600 dark:text-emerald-400" placeholder="0.00" />
-                        )}
-                      </td>
-                      <td className="p-3">
-                        <span className="text-sm font-bold text-blue-700 dark:text-blue-300">₹{(item.amount / (item.nos || 1)).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
-                      </td>
-                      <td className="p-3 text-right">
-                        <span className="text-sm font-bold text-slate-800 dark:text-slate-100">₹{item.amount.toLocaleString()}</span>
-                      </td>
-                      <td className="p-3 text-center print:hidden">
-                        <button onClick={() => removeItem(item.id)} className="p-1.5 text-slate-300 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-lg transition-all opacity-0 group-hover:opacity-100">
-                           <Trash2 className="w-4 h-4" />
-                        </button>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-                <tfoot className="bg-slate-50/50 dark:bg-slate-800/50 print:bg-white dark:print:bg-white text-slate-800 dark:text-slate-100">
-                  <tr className="border-t border-slate-200 dark:border-slate-700">
-                    <td colSpan={8} className="p-3 text-right text-2xs font-bold uppercase text-slate-400">Sub Total</td>
-                    <td className="p-3 text-right font-bold">₹ {totalAmount.toLocaleString()}</td>
-                    <td className="print:hidden"></td>
-                  </tr>
-                  <tr>
-                    <td colSpan={8} className="p-2 text-right text-2xs font-bold uppercase text-slate-400">Loading & Unloading Charges</td>
-                    <td className="p-2 text-right">
-                      <input 
-                        type="number" 
-                        value={loadingCharges || ''} 
-                        onChange={(e) => setLoadingCharges(parseFloat(e.target.value) || 0)} 
-                        className="w-24 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded px-2 py-1 text-right text-sm font-bold focus:ring-2 focus:ring-blue-500 outline-none print:border-none print:p-0 print:w-auto" 
-                        placeholder="0"
-                      />
-                    </td>
-                    <td className="print:hidden"></td>
-                  </tr>
-                  <tr>
-                    <td colSpan={8} className="p-2 text-right text-2xs font-bold uppercase text-slate-400">Transport Charges</td>
-                    <td className="p-2 text-right">
-                      <input 
-                        type="number" 
-                        value={transportCharges || ''} 
-                        onChange={(e) => setTransportCharges(parseFloat(e.target.value) || 0)} 
-                        className="w-24 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded px-2 py-1 text-right text-sm font-bold focus:ring-2 focus:ring-blue-500 outline-none print:border-none print:p-0 print:w-auto" 
-                        placeholder="0"
-                      />
-                    </td>
-                    <td className="print:hidden"></td>
-                  </tr>
-                  <tr>
-                    <td colSpan={8} className="p-2 text-right text-2xs font-bold uppercase text-slate-400 align-middle">
-                      GST 
-                      <select 
-                        value={gstRate} 
-                        onChange={(e) => setGstRate(parseInt(e.target.value))} 
-                        className="ml-2 bg-transparent border-none text-2xs font-bold focus:ring-0 outline-none cursor-pointer print:appearance-none"
-                      >
-                        <option value={0} className="bg-white dark:bg-slate-800">0%</option>
-                        <option value={5} className="bg-white dark:bg-slate-800">5%</option>
-                        <option value={12} className="bg-white dark:bg-slate-800">12%</option>
-                        <option value={18} className="bg-white dark:bg-slate-800">18%</option>
-                        <option value={28} className="bg-white dark:bg-slate-800">28%</option>
-                      </select>
-                    </td>
-                    <td className="p-2 text-right font-bold text-slate-600 dark:text-slate-300">₹ {Math.ceil((totalAmount + loadingCharges + transportCharges) * gstRate / 100).toLocaleString()}</td>
-                    <td className="print:hidden"></td>
-                  </tr>
-                  <tr className="bg-blue-50/50 print:bg-white dark:print:bg-white">
-                    <td colSpan={8} className="p-4 text-right text-xs font-black uppercase text-blue-600 dark:text-blue-400 tracking-wider">Grand Total Amount</td>
-                    <td className="p-4 text-right text-xl font-black text-slate-900 dark:text-slate-50 border-t-2 border-blue-600">
-                      ₹ {Math.ceil((totalAmount + loadingCharges + transportCharges) * (1 + gstRate / 100)).toLocaleString()}
-                    </td>
-                    <td className="print:hidden"></td>
-                  </tr>
-                </tfoot>
-              </table>
-            </div>
+          <div className="md:col-span-6">
+            <label className="pq-field-label">Party Name</label>
+            <PartyAutocomplete
+              value={partyName}
+              onChange={setPartyName}
+              onSelectParty={handleSelectParty}
+              placeholder="Select party..."
+              className={inp}
+            />
           </div>
         </div>
       </div>
 
-      <div id="quotation-print-area" className="hidden print:block fixed inset-0 bg-white dark:bg-slate-900 p-0 m-0 overflow-visible">
-        <style dangerouslySetInnerHTML={{ __html: `
-          @page { size: A4; margin: 15mm 15mm; }
-          body { font-family: Arial, sans-serif; color: #000; background: #fff; font-size: 10pt; line-height: 1.4; }
-          .print-utility { width: 100%; border-collapse: collapse; margin-bottom: 5px; }
-          .print-utility td { font-size: 8pt; color: #333; padding: 2px 0; }
-          .print-header-box { text-align: center; border: 1px solid #000; padding: 10px; margin-bottom: 15px; margin-top: 5px; }
-          .print-company-name { font-size: 22pt; font-weight: bold; letter-spacing: 1px; margin: 0 0 4px 0; }
-          .print-company-mfg { font-size: 9.5pt; font-weight: normal; margin: 0 0 6px 0; }
-          .print-company-address { font-size: 9.5pt; margin: 0 0 4px 0; }
-          .print-company-contact { font-size: 9pt; margin: 0; }
-          .print-doc-banner { text-align: center; font-weight: bold; font-size: 13pt; border: 1px solid #000; padding: 5px; background-color: #f2f2f2; margin-bottom: 15px; letter-spacing: 0.5px; }
-          .print-info-grid { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
-          .print-info-grid td { width: 50%; vertical-align: top; }
-          .print-inner-info { width: 100%; border-collapse: collapse; border: 1px solid #000; }
-          .print-inner-info td { padding: 6px 8px; font-size: 9.5pt; border-bottom: 1px solid #eee; }
-          .print-label { font-weight: bold; width: 35%; }
-          .print-data-grid { width: 100%; border-collapse: collapse; border: 1px solid #000; margin-bottom: 15px; }
-          .print-data-grid th { border: 1px solid #000; background-color: #f2f2f2; padding: 8px 6px; font-weight: bold; font-size: 9.5pt; text-align: left; }
-          .print-data-grid td { border: 1px solid #000; padding: 8px 6px; font-size: 9.5pt; vertical-align: top; }
-          .print-summary-wrapper { width: 100%; margin-bottom: 25px; overflow: hidden; }
-          .print-summary-block { width: 40%; float: right; border-collapse: collapse; border: 1px solid #000; }
-          .print-summary-block td { padding: 5px 8px; font-size: 9.5pt; border-bottom: 1px solid #ddd; text-align: right; }
-          .print-grand-total { background-color: #f9f9f9; font-weight: bold; font-size: 10.5pt; border-top: 1px solid #000; }
-          .print-remarks-box { width: 100%; border: 1px solid #000; padding: 8px; font-size: 9pt; margin-bottom: 60px; background-color: #fafafa; }
-          .print-sigs { width: 100%; border-collapse: collapse; margin-top: 40px; }
-          .print-sigs td { width: 50%; text-align: center; font-size: 10pt; vertical-align: bottom; }
-          .print-sig-line { margin-top: 55px; font-weight: bold; border-top: 1px dashed #000; display: inline-block; width: 200px; padding-top: 5px; }
-          .text-center { text-align: center !important; }
-          .text-right { text-align: right !important; }
-        `}} />
-
-        <table className="print-utility">
-          <tbody>
-            <tr>
-              <td>SINCE 2002W</td>
-              <td className="text-right font-bold">GSTIN: 24AJGPP9863R1Z5</td>
-            </tr>
-          </tbody>
-        </table>
-
-        <div className="print-header-box">
-          <div className="print-company-name">JAGDAMBA PROFILE</div>
-          <div className="print-company-mfg">Mfg.: M.S. & S.S., C.N.C. Profile Cutting Traders & Steel</div>
-          <div className="print-company-address">Office: 504/1, GIDC, Industrial Estate, Makarpura, Vadodara - 390010.</div>
-          <div className="print-company-contact">Ph: 9824917250, 9824025001, 8799617250, 8799617251 | Email: jagdambaprofile@gmail.com</div>
+      {/* Commercial Terms + Technical Requirement */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 print:hidden">
+        <div className="erp-card overflow-hidden">
+          <div className="pq-section-head">Commercial Terms</div>
+          <div className="p-4 grid grid-cols-2 gap-4">
+            <div>
+              <label className="pq-field-label">Payment Terms</label>
+              <select value={paymentTerms} onChange={e => setPaymentTerms(e.target.value)} className={inp}>
+                {PAYMENT_TERMS.map(t => <option key={t} value={t}>{t}</option>)}
+              </select>
+            </div>
+            <div>
+              <label className="pq-field-label">Loading Charge</label>
+              <input type="text" value={loadingChargeNote} onChange={e => setLoadingChargeNote(e.target.value)} className={inp} placeholder="Extra" />
+            </div>
+            <div>
+              <label className="pq-field-label">Transport Charge</label>
+              <input type="text" value={transportChargeNote} onChange={e => setTransportChargeNote(e.target.value)} className={inp} placeholder="Extra" />
+            </div>
+            <div>
+              <label className="pq-field-label">Validity of Quotation (Days)</label>
+              <div className="flex items-center gap-2">
+                <NumericInput value={validityDays} onChange={setValidityDays} className={inp} />
+                <span className="text-xs font-semibold text-slate-500 shrink-0">Days</span>
+              </div>
+            </div>
+          </div>
         </div>
 
-        <div className="print-doc-banner">QUOTATION ACKNOWLEDGEMENT</div>
+        <div className="erp-card overflow-hidden">
+          <div className="pq-section-head">Technical Requirement</div>
+          <div className="p-4">
+            <label className="pq-field-label">UT Level (Manual Entry)</label>
+            <input
+              type="text"
+              value={utLevel}
+              onChange={e => setUtLevel(e.target.value)}
+              className={inp}
+              placeholder="e.g. S1, E1, UT 578 Level B, IMP2, Pass, Fail etc."
+            />
+          </div>
+        </div>
+      </div>
 
-        <table className="print-info-grid">
-          <tbody>
-            <tr>
-              <td style={{ paddingRight: '10px' }}>
-                <table className="print-inner-info">
-                  <tbody>
-                    <tr><td className="print-label">Customer:</td><td>{partyName || '-'}</td></tr>
-                    <tr><td className="print-label">Contact Person:</td><td>{contactPerson || '-'}</td></tr>
-                    <tr><td className="print-label">Mobile No.:</td><td>{mobileNo || '-'}</td></tr>
-                    <tr><td className="print-label">Address:</td><td>{address || '-'}</td></tr>
-                  </tbody>
-                </table>
-              </td>
-              <td style={{ paddingLeft: '10px' }}>
-                <table className="print-inner-info">
-                  <tbody>
-                    <tr><td className="print-label">Quotation No.:</td><td className="font-bold">{quoteNo}</td></tr>
-                    <tr><td className="print-label">Quotation Date:</td><td>{date}</td></tr>
-                    <tr><td className="print-label">Valid Until:</td><td>{validUntil}</td></tr>
-                  </tbody>
-                </table>
-              </td>
-            </tr>
-          </tbody>
-        </table>
+      {/* Material Details table */}
+      <div className="erp-card overflow-hidden print:border-none">
+        <div className="pq-section-head flex items-center justify-between print:hidden">
+          <span>Material Details</span>
+          <button type="button" onClick={addItem} className="flex items-center gap-1 text-[11px] font-bold text-brand-blue border border-brand-blue rounded-lg px-3 py-1 hover:bg-blue-50 dark:hover:bg-blue-950/30">
+            <Plus className="w-3.5 h-3.5" /> Add New Row
+          </button>
+        </div>
 
-        <table className="print-data-grid">
-          <thead>
-            <tr>
-              <th className="text-center" style={{ width: '6%' }}>Sr.</th>
-              <th style={{ width: '26%' }}>Description of Material</th>
-              <th style={{ width: '10%' }}>Grade</th>
-              <th className="text-center" style={{ width: '8%' }}>Thk</th>
-              <th className="text-center" style={{ width: '10%' }}>Qty</th>
-              <th className="text-center" style={{ width: '12%' }}>Weight</th>
-              <th className="text-right" style={{ width: '14%' }}>Rate / Nos</th>
-              <th className="text-right" style={{ width: '14%' }}>Amount</th>
-            </tr>
-          </thead>
-          <tbody>
-            {items.map((item: QuotationItem, idx: number) => (
-              <tr key={item.id}>
-                <td className="text-center">{idx + 1}</td>
-                <td>
-                  <strong>{item.shape}</strong>
-                  <br />
-                  <small style={{ color: '#555' }}>
-                    {item.shape === 'Ring' 
-                      ? `Dimensions: OD: ${item.od} × ID: ${item.id_dim} mm`
-                      : `Dimensions: ${item.length} × ${item.width} mm`
-                    }
-                  </small>
-                </td>
-                <td>{item.grade}</td>
-                <td className="text-center">{item.thickness}</td>
-                <td className="text-center">{item.nos} Nos</td>
-                <td className="text-center">{item.weight} Kg</td>
-                <td className="text-right">₹{(item.amount / (item.nos || 1)).toLocaleString(undefined, { minimumFractionDigits: 2 })}</td>
-                <td className="text-right font-bold">₹{item.amount.toLocaleString()}</td>
+        <div className="overflow-x-auto">
+          <table className="w-full pq-material-table text-sm">
+            <thead>
+              <tr>
+                <th className="w-10">Sr No.</th>
+                <th>Grade</th>
+                <th>Make</th>
+                <th>Thickness (mm)</th>
+                <th>Width (mm)</th>
+                <th>Length (mm)</th>
+                <th className="w-14">Nos</th>
+                <th>Kg (Auto)</th>
+                <th>Rate (₹/Kg)</th>
+                <th>Amount (₹)</th>
+                <th className="w-10 print:hidden"></th>
               </tr>
-            ))}
-          </tbody>
-        </table>
-
-        <div className="print-summary-wrapper">
-          <table className="print-summary-block">
+            </thead>
             <tbody>
-              <tr><td className="text-right font-bold">Sub Total:</td><td>₹{totalAmount.toLocaleString()}</td></tr>
-              <tr><td className="text-right font-bold">Loading / Unloading:</td><td>₹{loadingCharges.toLocaleString()}</td></tr>
-              <tr><td className="text-right font-bold">Transport Charges:</td><td>₹{transportCharges.toLocaleString()}</td></tr>
-              <tr><td className="text-right font-bold">GST ({gstRate}%):</td><td>₹{Math.ceil((totalAmount + loadingCharges + transportCharges) * gstRate / 100).toLocaleString()}</td></tr>
-              <tr className="print-grand-total">
-                <td className="text-right uppercase">Grand Total:</td>
-                <td className="font-bold">₹{Math.ceil((totalAmount + loadingCharges + transportCharges) * (1 + gstRate / 100)).toLocaleString()}</td>
-              </tr>
+              {items.map((item, idx) => (
+                <tr key={item.id}>
+                  <td className="text-center text-xs font-bold text-slate-500">{idx + 1}</td>
+                  <td>
+                    <EditableSelect
+                      value={item.grade}
+                      onChange={v => updateItem(item.id, 'grade', v)}
+                      options={MATERIAL_GRADES}
+                      placeholder="Grade"
+                      className="pq-input text-xs py-1.5"
+                    />
+                  </td>
+                  <td>
+                    <select
+                      value={item.make || MAKES[0]}
+                      onChange={e => updateItem(item.id, 'make', e.target.value)}
+                      className="pq-input text-xs py-1.5"
+                    >
+                      {MAKES.map(m => <option key={m} value={m}>{m}</option>)}
+                    </select>
+                  </td>
+                  <td>
+                    <NumericInput value={item.thickness} onChange={v => updateItem(item.id, 'thickness', v)} className="pq-input text-xs py-1.5 text-center" placeholder="0" />
+                  </td>
+                  <td>
+                    <NumericInput value={item.width} onChange={v => updateItem(item.id, 'width', v)} className="pq-input text-xs py-1.5 text-center" placeholder="0" />
+                  </td>
+                  <td>
+                    <NumericInput value={item.length} onChange={v => updateItem(item.id, 'length', v)} className="pq-input text-xs py-1.5 text-center" placeholder="0" />
+                  </td>
+                  <td>
+                    <NumericInput value={item.nos} onChange={v => updateItem(item.id, 'nos', v)} className="pq-input text-xs py-1.5 text-center" placeholder="1" />
+                  </td>
+                  <td><div className="pq-readonly">{fmt(item.weight)}</div></td>
+                  <td>
+                    <NumericInput value={item.rate} onChange={v => updateItem(item.id, 'rate', v)} className="pq-input text-xs py-1.5 text-center" placeholder="0" />
+                  </td>
+                  <td><div className="pq-readonly">{fmt(item.amount)}</div></td>
+                  <td className="text-center print:hidden">
+                    <button type="button" onClick={() => removeItem(item.id)} className="p-1 text-red-400 hover:text-red-600 rounded">
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  </td>
+                </tr>
+              ))}
             </tbody>
           </table>
         </div>
+        <p className="px-4 py-2 text-xs font-semibold text-brand-blue print:hidden">
+          Note : Kg is calculated as per Thickness, Width, Length &amp; Nos.
+        </p>
+      </div>
 
-        <div className="print-remarks-box">
-          <div className="font-bold mb-1">Remarks:</div>
-          No special instructions. Rates are processed according to the technical profile parameters provided.
+      {/* Footer summary */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 print:hidden">
+        <div className="erp-card p-4 space-y-3">
+          <div className="flex items-center gap-3 text-sm">
+            <Truck className="w-4 h-4 text-slate-400 shrink-0" />
+            <span className="text-slate-500 w-36 shrink-0">Loading Charge</span>
+            <span className="font-semibold">{loadingChargeNote || '—'}</span>
+          </div>
+          <div className="flex items-center gap-3 text-sm">
+            <Truck className="w-4 h-4 text-slate-400 shrink-0" />
+            <span className="text-slate-500 w-36 shrink-0">Transport Charge</span>
+            <span className="font-semibold">{transportChargeNote || '—'}</span>
+          </div>
+          <div className="flex items-center gap-3 text-sm">
+            <CalendarClock className="w-4 h-4 text-slate-400 shrink-0" />
+            <span className="text-slate-500 w-36 shrink-0">Validity of Quotation</span>
+            <div className="flex items-center gap-2">
+              <NumericInput value={validityDays} onChange={setValidityDays} className="pq-input w-16 py-1 text-sm" />
+              <span className="text-xs font-semibold text-slate-500">Days</span>
+            </div>
+          </div>
+          <div className="flex items-center gap-3 text-sm">
+            <UserCircle className="w-4 h-4 text-slate-400 shrink-0" />
+            <span className="text-slate-500 w-36 shrink-0">Sales Person</span>
+            <select value={salesPerson} onChange={e => setSalesPerson(e.target.value)} className="pq-input flex-1 py-1.5 text-sm">
+              {EMPLOYEES.map(e => <option key={e} value={e}>{e}</option>)}
+            </select>
+          </div>
         </div>
 
-        <table className="print-sigs">
-          <tbody>
-            <tr>
-              <td><div className="print-sig-line">Customer Signature</div></td>
-              <td>
-                <div>For, <strong>JAGDAMBA PROFILE</strong></div>
-                <div className="print-sig-line" style={{ marginTop: '40px' }}>Authorized Signatory</div>
-              </td>
-            </tr>
-          </tbody>
-        </table>
+        <div className="pq-totals-box">
+          <div className="pq-totals-row"><span>Total Nos</span><span>{totalNos}</span></div>
+          <div className="pq-totals-row"><span>Total Kg</span><span>{fmt(totalKg)}</span></div>
+          <div className="pq-totals-row"><span>Amount (Before GST)</span><span>{fmt(totalAmount)}</span></div>
+          <div className="pq-totals-row items-center">
+            <span className="flex items-center gap-2">
+              GST %
+              <select value={gstRate} onChange={e => setGstRate(parseInt(e.target.value, 10))} className="pq-input w-16 py-0.5 text-xs">
+                <option value={0}>0%</option>
+                <option value={5}>5%</option>
+                <option value={12}>12%</option>
+                <option value={18}>18%</option>
+                <option value={28}>28%</option>
+              </select>
+            </span>
+            <span>{fmt(gstAmount)}</span>
+          </div>
+          <div className="pq-totals-row border-t border-slate-300 dark:border-slate-600 pt-3 mt-1">
+            <span className="font-bold text-slate-700 dark:text-slate-200">FINAL AMOUNT (₹)</span>
+            <span className="pq-final-amount">{fmt(finalAmount)}</span>
+          </div>
+        </div>
       </div>
+
+      {/* Fixed action toolbar */}
+      <div className="pq-action-bar print:hidden">
+        <button type="button" onClick={handleSaveAndPrint} className="erp-btn erp-btn-green">
+          <Printer className="w-4 h-4" /> Save &amp; Print <span className="text-[10px] opacity-80">(F9)</span>
+        </button>
+        <button type="button" {...erpHotkeyProps('save')} onClick={handleSave} className="erp-btn erp-btn-navy">
+          <Save className="w-4 h-4" /> Save <span className="text-[10px] opacity-80">(F10)</span>
+        </button>
+        <button type="button" {...erpHotkeyProps('whatsapp')} onClick={() => toast('WhatsApp share coming soon')} className="erp-btn erp-btn-orange">
+          <MessageSquare className="w-4 h-4" /> WhatsApp
+        </button>
+        <button type="button" onClick={() => toast('Email share coming soon')} className="erp-btn erp-btn-teal">
+          <Mail className="w-4 h-4" /> Email
+        </button>
+        <button type="button" {...erpHotkeyProps('print')} onClick={handlePdf} className="erp-btn erp-btn-red">
+          <FileDown className="w-4 h-4" /> PDF
+        </button>
+        <button type="button" onClick={handleReset} className="erp-btn erp-btn-ghost border border-slate-300">
+          <X className="w-4 h-4" /> Clear
+        </button>
+        <button type="button" onClick={() => setViewMode('list')} className="erp-btn erp-btn-ghost">
+          <List className="w-4 h-4" /> Saved List
+        </button>
+      </div>
+
+      {/* Print area */}
+      <div className="hidden print:block">
+        <PlateQuotationPrint data={buildPrintData()} />
+      </div>
+
+      <style>{`
+        @media print {
+          body * { visibility: hidden !important; }
+          #${PLATE_QUOTATION_PRINT_AREA_ID}, #${PLATE_QUOTATION_PRINT_AREA_ID} * { visibility: visible !important; }
+          #${PLATE_QUOTATION_PRINT_AREA_ID} { position: fixed !important; inset: 0 !important; z-index: 99999 !important; background: #fff !important; padding: 0 !important; }
+        }
+      `}</style>
     </div>
   );
 };

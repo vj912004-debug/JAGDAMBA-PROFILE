@@ -1,9 +1,19 @@
-import React, { useState, useMemo } from 'react';
-import { Calculator, Plus, Trash2, Printer, RotateCcw, User, Ruler, Scissors, Search, List } from 'lucide-react';
-import { useAppContext, type CNCQuotationRecord, MATERIAL_GRADES } from '../store/AppContext';
+import React, { useState, useMemo, useEffect } from 'react';
+import {
+  Plus, Trash2, Printer, RotateCcw, Search, List, Download, Save, FileDown,
+  MessageSquare, Mail, Pencil,
+} from 'lucide-react';
+import { generateCNCQuotationPDF } from '../utils/cncQuotationDownload';
+import { useAppContext, type CNCQuotationRecord } from '../store/AppContext';
 import toast from 'react-hot-toast';
-import { EditableSelect } from '../components/EditableSelect';
+import { PartyAutocomplete } from '../components/PartyAutocomplete';
+import { NumericInput, parseNum } from '../components/NumericInput';
 import { upper } from '../utils/textCase';
+import type { PartyMaster } from '../store/AppContext';
+import { CNCQuotationPrint } from '../components/CNCQuotationPrint';
+import { erpHotkeyProps } from '../utils/erpHotkeys';
+import { ErpHotkeyLabel } from '../components/ErpHotkeyLabel';
+import { useSearchParams, useNavigate } from 'react-router-dom';
 
 interface CNCItem {
   id: string;
@@ -16,6 +26,7 @@ interface CNCItem {
   plateNos: number;
   plateRate: number;
   partOfNos: number;
+  scrapPerNos?: number;
   finishGoodWeight: number;
   mtr: number;
   piercing: number;
@@ -29,166 +40,179 @@ interface CNCItem {
   plateWeight: number;
 }
 
+const fmtNum = (n: number, dec = 2) =>
+  (isFinite(n) ? n : 0).toLocaleString('en-IN', { minimumFractionDigits: dec, maximumFractionDigits: dec });
+
+const req = <span className="text-red-500">*</span>;
+
+const getFinancialYear = (dateStr: string) => {
+  const d = new Date(dateStr);
+  const y = d.getFullYear();
+  const m = d.getMonth();
+  const start = m >= 3 ? y : y - 1;
+  return `${start}-${String(start + 1).slice(-2)}`;
+};
+
+const nextInquiryNo = (dateStr: string) => {
+  const fy = getFinancialYear(dateStr);
+  const [a, b] = fy.split('-');
+  const seq = String(Math.floor(Math.random() * 900) + 100).padStart(3, '0');
+  return `JP${a.slice(-2)}/${b}/${seq}`;
+};
+
+const defaultItem = (id = '1'): CNCItem => ({
+  id,
+  shape: 'CNC Profile',
+  drawingNo: '',
+  grade: 'IS 2062',
+  thickness: 0,
+  width: 0,
+  length: 0,
+  plateNos: 1,
+  plateRate: 0,
+  partOfNos: 1,
+  scrapPerNos: 0,
+  finishGoodWeight: 0,
+  mtr: 0,
+  piercing: 0,
+  piercingType: 'Full',
+  burningLossFactor: 3,
+  scrapRate: 0,
+  meterFactor: 1.5,
+  piercingRate: 0,
+  amount: 0,
+  finalRate: 0,
+  plateWeight: 0,
+});
+
+const calcDisplay = (item: CNCItem) => {
+  const t = parseNum(item.thickness);
+  const w = parseNum(item.width);
+  const l = parseNum(item.length);
+  const plateRate = parseNum(item.plateRate);
+  const scrapPerNos = parseNum(item.scrapPerNos ?? 0);
+  const scrapRate = parseNum(item.scrapRate);
+  const nos = parseNum(item.partOfNos) || 1;
+  const weightPerNos = (t * w * l * 8) / 1_000_000;
+  const ratePerNos = weightPerNos * plateRate;
+  const scrapAmtPerNos = scrapPerNos * scrapRate;
+  const finalRatePerNos = Math.max(0, ratePerNos - scrapAmtPerNos);
+  const lineTotal = Math.ceil(finalRatePerNos * nos);
+  return { weightPerNos, ratePerNos, scrapAmtPerNos, finalRatePerNos, lineTotal, nos };
+};
+
+const SectionHead: React.FC<{ num: number; title: string; variant: 'blue' | 'green' | 'purple' | 'orange' }> = ({ num, title, variant }) => (
+  <div className={`cnc-quote-section-head ${variant}`}>
+    <span className="cnc-quote-section-num">{num}</span>
+    <span>{title}</span>
+  </div>
+);
+
 export const CNCQuotation: React.FC = () => {
-  const { cncQuotations, addCNCQuotation, deleteCNCQuotation } = useAppContext();
-  
+  const { cncQuotations, addCNCQuotation, updateCNCQuotation, deleteCNCQuotation, user, persistErpNow } = useAppContext();
+  const [searchParams] = useSearchParams();
+  const navigate = useNavigate();
+  const editId = searchParams.get('edit');
+  const [editingId, setEditingId] = useState<string | null>(editId);
+
   const [viewMode, setViewMode] = useState<'create' | 'list'>('create');
   const [search, setSearch] = useState('');
 
   const [partyName, setPartyName] = useState('');
   const [mobileNo, setMobileNo] = useState('');
   const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
+  const [inquiryNo, setInquiryNo] = useState(() => nextInquiryNo(new Date().toISOString().split('T')[0]));
   const [quoteNo, setQuoteNo] = useState(`CNC-${Date.now().toString().slice(-6)}`);
-  
-  const getBurningLossFactor = (thk: number): number => {
-    if (thk <= 12) return 3;
-    if (thk <= 35) return 4;
-    if (thk <= 100) return 6;
-    if (thk <= 150) return 8;
-    return 10;
-  };
+  const [quoteRemarks, setQuoteRemarks] = useState('');
 
-  const [items, setItems] = useState<CNCItem[]>([
-    { 
-      id: '1', shape: 'CNC Profile', drawingNo: '', grade: 'IS 2062', thickness: 0, width: 0, length: 0, 
-      plateNos: 1, plateRate: 0, partOfNos: 1, finishGoodWeight: 0, mtr: 0, 
-      piercing: 0, piercingType: 'Full', burningLossFactor: 3, scrapRate: 0, meterFactor: 1.5, piercingRate: 0, amount: 0, finalRate: 0, plateWeight: 0
-    }
-  ]);
+  const [items, setItems] = useState<CNCItem[]>([defaultItem()]);
+  const [activeItemId, setActiveItemId] = useState('1');
 
   const [loadingCharges, setLoadingCharges] = useState(0);
   const [transportCharges, setTransportCharges] = useState(0);
   const [gstRate, setGstRate] = useState(18);
 
-  const calculateItem = (item: CNCItem): { finalRate: number, amount: number, plateWeight: number } => {
-    const thickness = parseFloat(item.thickness as any) || 0;
-    const width = parseFloat(item.width as any) || 0;
-    const length = parseFloat(item.length as any) || 0;
-    const plateRate = parseFloat(item.plateRate as any) || 0;
-    const plateNos = parseInt(item.plateNos as any) || 0;
-    const partOfNos = parseInt(item.partOfNos as any) || 0;
-    const finishGoodWeight = parseFloat(item.finishGoodWeight as any) || 0;
-    const mtr = parseFloat(item.mtr as any) || 0;
-    const burningLossFactor = parseFloat(item.burningLossFactor as any) || 0;
-    const scrapRate = parseFloat(item.scrapRate as any) || 0;
-    const meterFactor = parseFloat(item.meterFactor as any) || 0;
-    const piercing = parseInt(item.piercing as any) || 0;
-    const piercingRate = parseFloat(item.piercingRate as any) || 0;
+  const [revisionOldRate, setRevisionOldRate] = useState('');
+  const [revisionType, setRevisionType] = useState<'Increase' | 'Decrease'>('Increase');
+  const [revisionValue, setRevisionValue] = useState('');
+  const [revisionNewRate, setRevisionNewRate] = useState('');
+  const [revisionEffectiveFrom, setRevisionEffectiveFrom] = useState(new Date().toISOString().split('T')[0]);
+  const [revisionReason, setRevisionReason] = useState('');
 
-    const plateWeight = (thickness * width * length * 8) / 1000000;
-    
-    if (item.shape === 'Square') {
-      // Normal Quotation Square Formula: Weight * Rate
-      const totalAmount = plateWeight * plateRate * plateNos;
-      const finalRatePerPart = partOfNos > 0 ? (plateWeight * plateRate) / partOfNos : 0;
-      
-      return {
-        finalRate: Math.ceil(finalRatePerPart),
-        amount: Math.ceil(totalAmount),
-        plateWeight: parseFloat(plateWeight.toFixed(3))
-      };
-    }
+  const activeItem = useMemo(
+    () => items.find(i => i.id === activeItemId) ?? items[0],
+    [items, activeItemId],
+  );
 
-    // CNC Profile Calculation
-    const plateCost = plateWeight * plateRate;
-    
-    // Burning Loss: (Mtr * Thickness * Burning Loss Factor * Density) / 1000 (Density = 8)
-    const burningLoss = (mtr * thickness * burningLossFactor * 8) / 1000;
-    
-    // Final Scrap Weight: Plate Weight - FG Weight - Burning Loss
-    const scrapWeight = Math.max(0, plateWeight - finishGoodWeight - burningLoss);
-    // Round scrap amount to 0 decimals as per user's Excel (11770.88 -> 11771)
-    const scrapCredit = Math.round(scrapWeight * scrapRate);
-    
-    // New CNC Labour Formula: (Thickness * Meter Factor * Mtr) + (Piercing Qty * Piercing Rate)
-    const effectiveMeterRate = thickness * meterFactor;
-    
-    let effectivePiercingRate = 0;
-    if (item.piercingType === 'Full') {
-      effectivePiercingRate = thickness;
-    } else if (item.piercingType === 'Half') {
-      effectivePiercingRate = thickness / 2;
-    } else {
-      effectivePiercingRate = piercingRate;
-    }
+  const activeCalc = useMemo(() => (activeItem ? calcDisplay(activeItem) : null), [activeItem]);
 
-    const cuttingCost = Math.round((mtr * effectiveMeterRate) + (piercing * effectivePiercingRate));
-    
-    const totalCostPerPlate = plateCost + cuttingCost - scrapCredit;
-    const finalRatePerPart = partOfNos > 0 ? totalCostPerPlate / partOfNos : 0;
-    const totalAmount = totalCostPerPlate * plateNos;
-
-    return {
-      finalRate: Math.ceil(finalRatePerPart),
-      amount: Math.ceil(totalAmount), // Match user's 70122
-      plateWeight: parseFloat(plateWeight.toFixed(3))
-    };
-  };
-
-  const updateItem = (id: string, field: keyof CNCItem, value: any) => {
+  const updateItem = (id: string, field: keyof CNCItem, value: unknown) => {
     const enumFields: (keyof CNCItem)[] = ['shape', 'piercingType'];
-    const normalized = typeof value === 'string' && !enumFields.includes(field) ? upper(value) : value;
-    setItems(prev => prev.map((item: CNCItem) => {
-      if (item.id === id) {
-        let updated = { ...item, [field]: normalized };
-        
-        // Auto-update burning loss factor when thickness changes
-        if (field === 'thickness') {
-          updated.burningLossFactor = getBurningLossFactor(parseFloat(value) || 0);
-        }
-
-        const { finalRate, amount, plateWeight } = calculateItem(updated);
-        updated.finalRate = finalRate;
-        updated.amount = amount;
-        updated.plateWeight = plateWeight;
-        return updated;
-      }
-      return item;
+    const numericFields = new Set([
+      'thickness', 'width', 'length', 'plateNos', 'plateRate', 'partOfNos', 'scrapPerNos', 'finishGoodWeight',
+      'mtr', 'piercing', 'burningLossFactor', 'scrapRate', 'meterFactor', 'piercingRate',
+      'amount', 'finalRate', 'plateWeight',
+    ]);
+    const normalized = typeof value === 'string' && !enumFields.includes(field) && !numericFields.has(field) ? upper(value) : value;
+    setItems(prev => prev.map(item => {
+      if (item.id !== id) return item;
+      const updated = { ...item, [field]: normalized } as CNCItem;
+      const { finalRatePerNos, lineTotal, weightPerNos } = calcDisplay(updated);
+      updated.finalRate = Math.ceil(finalRatePerNos);
+      updated.amount = lineTotal;
+      updated.plateWeight = parseFloat(weightPerNos.toFixed(3));
+      return updated;
     }));
   };
 
   const addItem = () => {
-    setItems((prev: CNCItem[]) => [
-      ...prev,
-      { 
-        id: Date.now().toString(), shape: 'CNC Profile', drawingNo: '', grade: 'IS 2062', thickness: 0, width: 0, length: 0, 
-        plateNos: 1, plateRate: 0, partOfNos: 1, finishGoodWeight: 0, mtr: 0, 
-        piercing: 0, piercingType: 'Full', burningLossFactor: 3, scrapRate: 0, meterFactor: 1.5, piercingRate: 0, amount: 0, finalRate: 0, plateWeight: 0
-      }
-    ]);
+    const id = Date.now().toString();
+    setItems(prev => [...prev, defaultItem(id)]);
+    setActiveItemId(id);
   };
 
   const removeItem = (id: string) => {
     if (items.length === 1) return;
-    setItems((prev: CNCItem[]) => prev.filter((item: CNCItem) => item.id !== id));
+    setItems(prev => prev.filter(item => item.id !== id));
+    if (activeItemId === id) {
+      const remaining = items.filter(i => i.id !== id);
+      setActiveItemId(remaining[0]?.id ?? '1');
+    }
   };
 
-  const totalAmount = useMemo(() => items.reduce((sum: number, item: CNCItem) => sum + item.amount, 0), [items]);
+  const totalAmount = useMemo(() => items.reduce((sum, item) => sum + item.amount, 0), [items]);
+  const totalNos = useMemo(() => items.reduce((sum, item) => sum + (parseNum(item.partOfNos) || 0), 0), [items]);
 
   const handleReset = () => {
+    const today = new Date().toISOString().split('T')[0];
+    setEditingId(null);
     setPartyName('');
     setMobileNo('');
-    setDate(new Date().toISOString().split('T')[0]);
+    setDate(today);
+    setInquiryNo(nextInquiryNo(today));
     setQuoteNo(`CNC-${Date.now().toString().slice(-6)}`);
-    setItems([{ 
-      id: '1', shape: 'CNC Profile', drawingNo: '', grade: 'IS 2062', thickness: 0, width: 0, length: 0, 
-      plateNos: 1, plateRate: 0, partOfNos: 1, finishGoodWeight: 0, mtr: 0, 
-      piercing: 0, piercingType: 'Full', burningLossFactor: 3, scrapRate: 0, meterFactor: 1.5, piercingRate: 0, amount: 0, finalRate: 0, plateWeight: 0
-    }]);
+    setQuoteRemarks('');
+    setItems([defaultItem()]);
+    setActiveItemId('1');
     setLoadingCharges(0);
     setTransportCharges(0);
     setGstRate(18);
+    setRevisionOldRate('');
+    setRevisionValue('');
+    setRevisionNewRate('');
+    setRevisionReason('');
     toast.success('CNC Quotation reset');
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
     if (!partyName) { toast.error('Enter party name'); return; }
-    
+
     const grandTotal = Math.ceil((totalAmount + loadingCharges + transportCharges) * (1 + gstRate / 100));
-    
+
     const record: CNCQuotationRecord = {
-      id: Date.now().toString(),
+      id: editingId || Date.now().toString(),
       quoteNo,
+      inquiryNo,
       date,
       partyName,
       mobileNo,
@@ -197,12 +221,39 @@ export const CNCQuotation: React.FC = () => {
       transportCharges,
       gstRate,
       totalAmount,
-      grandTotal
+      grandTotal,
+      status: editingId ? (cncQuotations.find(q => q.id === editingId)?.status || 'Pending') : 'Pending',
     };
-    
-    addCNCQuotation(record);
-    toast.success('CNC Quotation saved successfully');
-    setViewMode('list');
+
+    try {
+      if (editingId) {
+        updateCNCQuotation(record);
+        await persistErpNow({
+          cncQuotations: cncQuotations.map(q => q.id === record.id ? record : q),
+        });
+        toast.success('CNC Quotation updated successfully');
+      } else {
+        addCNCQuotation(record);
+        await persistErpNow({ cncQuotations: [record, ...cncQuotations] });
+        toast.success('CNC Quotation saved successfully');
+      }
+      setEditingId(record.id);
+    } catch {
+      toast.error('Saved locally but server sync failed — retry Save');
+    }
+  };
+
+  const handleDeleteCNC = async (id: string) => {
+    if (!window.confirm('Delete this CNC Quotation 2?')) return;
+    const next = cncQuotations.filter(q => q.id !== id);
+    deleteCNCQuotation(id);
+    if (editingId === id) setEditingId(null);
+    try {
+      await persistErpNow({ cncQuotations: next });
+      toast.success('CNC Quotation 2 deleted');
+    } catch {
+      toast.error('Deleted locally but server sync failed');
+    }
   };
 
   const filteredQuotations = useMemo(() => {
@@ -216,11 +267,14 @@ export const CNCQuotation: React.FC = () => {
   }, [cncQuotations, search]);
 
   const loadQuotation = (q: CNCQuotationRecord) => {
+    setEditingId(q.id);
     setQuoteNo(q.quoteNo);
+    setInquiryNo(q.inquiryNo || q.quoteNo);
     setDate(q.date);
     setPartyName(q.partyName);
     setMobileNo(q.mobileNo);
-    setItems(q.items);
+    setItems(q.items.map(it => ({ ...defaultItem(it.id), ...it, scrapPerNos: (it as CNCItem).scrapPerNos ?? 0 })));
+    setActiveItemId(q.items[0]?.id ?? '1');
     setLoadingCharges(q.loadingCharges);
     setTransportCharges(q.transportCharges);
     setGstRate(q.gstRate);
@@ -228,16 +282,86 @@ export const CNCQuotation: React.FC = () => {
     toast.success('CNC Quotation loaded');
   };
 
+  useEffect(() => {
+    if (!editId) return;
+    const existing = cncQuotations.find(q => q.id === editId);
+    if (existing) loadQuotation(existing);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [editId, cncQuotations]);
+
+  const taxableBase = totalAmount + loadingCharges + transportCharges;
+  const gstAmount = Math.ceil(taxableBase * gstRate / 100);
+  const grandTotal = Math.ceil(taxableBase * (1 + gstRate / 100));
+
+  const buildCurrentQuote = (): CNCQuotationRecord => ({
+    id: editingId || 'preview',
+    quoteNo,
+    inquiryNo,
+    date,
+    partyName,
+    mobileNo,
+    items,
+    loadingCharges,
+    transportCharges,
+    gstRate,
+    totalAmount,
+    grandTotal,
+  });
+
+  const handlePrint = () => window.print();
+
+  const handlePdf = async (quote: CNCQuotationRecord) => {
+    toast.loading('Generating PDF...', { id: 'cnc-quote-pdf' });
+    try {
+      await generateCNCQuotationPDF(quote, user?.displayName || user?.username);
+      toast.success(`PDF downloaded: ${quote.quoteNo}`, { id: 'cnc-quote-pdf' });
+    } catch {
+      toast.error('PDF generation failed', { id: 'cnc-quote-pdf' });
+    }
+  };
+
+  const handleSelectParty = (party: PartyMaster) => {
+    setPartyName(party.partyName);
+    if (party.mobileNumber) setMobileNo(party.mobileNumber);
+    toast.success('Details auto-filled from Party Master', { icon: '✨' });
+  };
+
+  const handleApplyRevision = () => {
+    if (!activeItem) return;
+    const base = parseNum(revisionOldRate) || parseNum(activeItem.plateRate);
+    const delta = parseNum(revisionValue);
+    if (!delta) { toast.error('Enter revision value'); return; }
+    const newRate = Math.max(0, revisionType === 'Increase' ? base + delta : base - delta);
+    updateItem(activeItem.id, 'plateRate', newRate);
+    setRevisionNewRate(String(newRate));
+    toast.success('Plate rate revision applied');
+  };
+
+  const handleConvert = async () => {
+    if (!partyName) { toast.error('Enter party name'); return; }
+    if (!editingId) {
+      toast.error('Save quotation first, then convert to order');
+      return;
+    }
+    navigate(`/cnc-quotation-convert?id=${editingId}`);
+  };
+
+  useEffect(() => {
+    if (!activeItem) return;
+    setRevisionOldRate(String(activeItem.plateRate || ''));
+    setRevisionNewRate(String(activeItem.plateRate || ''));
+  }, [activeItem?.id, activeItem?.plateRate]);
+
   if (viewMode === 'list') {
     return (
-      <div className="max-w-[1200px] mx-auto space-y-6 fade-in pb-20 px-4">
+      <div className="max-w-[1200px] mx-auto space-y-6 fade-in pb-20">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-2xl font-bold text-slate-800 dark:text-slate-100">Saved CNC Quotations</h1>
+            <h1 className="text-2xl font-bold text-slate-800 dark:text-slate-100">Saved CNC Quotation 2</h1>
             <p className="text-sm text-slate-500 dark:text-slate-400">{cncQuotations.length} records found</p>
           </div>
-          <button onClick={() => setViewMode('create')} className="bg-blue-600 text-white px-5 py-2 rounded-xl text-sm font-semibold hover:bg-blue-700 transition-all shadow-md">
-            + New CNC Quote
+          <button onClick={() => setViewMode('create')} className="erp-btn erp-btn-orange">
+            <Plus className="w-4 h-4" /> New CNC Quotation 2
           </button>
         </div>
 
@@ -248,11 +372,11 @@ export const CNCQuotation: React.FC = () => {
             placeholder="Search by Quote No, Party, Mobile..." 
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full sm:w-96 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl pl-10 pr-4 py-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none shadow-sm"
+            className="w-full sm:w-96 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl pl-10 pr-4 py-2 text-sm focus:ring-2 focus:ring-brand-blue outline-none shadow-sm"
           />
         </div>
 
-        <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-800 overflow-hidden">
+        <div className="erp-card">
           <table className="w-full text-left border-collapse whitespace-nowrap">
             <thead>
               <tr className="bg-slate-50 dark:bg-slate-800/50 text-2xs uppercase font-black text-slate-500 dark:text-slate-400">
@@ -267,7 +391,7 @@ export const CNCQuotation: React.FC = () => {
             <tbody className="divide-y divide-slate-50">
               {filteredQuotations.map((q: CNCQuotationRecord) => (
                 <tr key={q.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-all">
-                  <td className="p-4 font-mono font-bold text-blue-600 dark:text-blue-400">{q.quoteNo}</td>
+                  <td className="p-4 font-mono font-bold text-brand-blue">{q.quoteNo}</td>
                   <td className="p-4">
                     <p className="font-bold text-slate-800 dark:text-slate-100">{q.partyName}</p>
                     <p className="text-2xs text-slate-400">{q.mobileNo}</p>
@@ -276,14 +400,15 @@ export const CNCQuotation: React.FC = () => {
                   <td className="p-4 text-sm text-slate-600 dark:text-slate-300">{q.items.length} Parts</td>
                   <td className="p-4 font-bold text-slate-800 dark:text-slate-100">₹{q.grandTotal.toLocaleString()}</td>
                   <td className="p-4 text-right space-x-2">
+                    <button onClick={() => handlePdf(q)} title="Download PDF" className="text-purple-600 dark:text-purple-400 hover:bg-purple-50 dark:hover:bg-purple-900/30 px-2 py-1 rounded text-xs font-bold transition-all inline-flex items-center gap-1"><Download className="w-3.5 h-3.5" /> PDF</button>
                     <button onClick={() => loadQuotation(q)} className="text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/30 px-2 py-1 rounded text-xs font-bold transition-all">Edit</button>
-                    <button onClick={() => deleteCNCQuotation(q.id)} className="text-red-500 hover:bg-red-50 dark:hover:bg-red-900/30 px-2 py-1 rounded text-xs font-bold transition-all">Delete</button>
+                    <button onClick={() => void handleDeleteCNC(q.id)} className="text-red-500 hover:bg-red-50 dark:hover:bg-red-900/30 px-2 py-1 rounded text-xs font-bold transition-all">Delete</button>
                   </td>
                 </tr>
               ))}
               {filteredQuotations.length === 0 && (
                 <tr>
-                  <td colSpan={6} className="p-10 text-center text-slate-400 italic">No CNC quotations found</td>
+                  <td colSpan={6} className="p-10 text-center text-slate-400 italic">No CNC Quotation 2 records found</td>
                 </tr>
               )}
             </tbody>
@@ -294,455 +419,348 @@ export const CNCQuotation: React.FC = () => {
   }
 
   return (
-    <div className="max-w-full mx-auto space-y-6 fade-in pb-20 print:p-0">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 print:hidden px-4">
-        <div>
-          <h1 className="text-2xl font-bold text-slate-800 dark:text-slate-100 flex items-center gap-2">
-            <Scissors className="w-7 h-7 text-blue-600 dark:text-blue-400" />
-            CNC Quotation Module
-          </h1>
-          <p className="text-sm text-slate-500 dark:text-slate-400 mt-0.5">Specialized pricing for CNC Profile cutting</p>
+    <>
+    <style>{`
+      @media print {
+        body * { visibility: hidden !important; }
+        #cnc-quotation-print-area, #cnc-quotation-print-area * { visibility: visible !important; }
+        #cnc-quotation-print-area {
+          position: absolute !important;
+          left: 0 !important;
+          top: 0 !important;
+          width: 210mm !important;
+          height: 297mm !important;
+          max-width: 210mm !important;
+          margin: 0 !important;
+          padding: 0 !important;
+          z-index: 99999 !important;
+        }
+      }
+    `}</style>
+    <div className="cnc-quote-page fade-in print:hidden">
+      <div className="cnc-quote-page-toolbar">
+        <button type="button" onClick={() => setViewMode('list')} className="cnc-quote-saved-link">
+          <List className="w-3.5 h-3.5" /> Saved Quotations
+        </button>
+      </div>
+
+      {/* §1 Entry + §2 Auto Calculation */}
+      <div className="grid grid-cols-1 xl:grid-cols-[1fr_300px] gap-3">
+        <div className="cnc-quote-panel">
+          <SectionHead num={1} title="Entry Section (Fill Below Details)" variant="blue" />
+          <div className="p-4 grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-3">
+            <div>
+              <label className="cnc-quote-label">Party Name {req}</label>
+              <PartyAutocomplete
+                value={partyName}
+                onChange={setPartyName}
+                onSelectParty={handleSelectParty}
+                placeholder="Select party..."
+                className="cnc-quote-input"
+              />
+            </div>
+            <div>
+              <label className="cnc-quote-label">Width (mm) {req}</label>
+              <NumericInput
+                value={activeItem?.width ?? 0}
+                onChange={(v) => activeItem && updateItem(activeItem.id, 'width', v)}
+                className="cnc-quote-input"
+              />
+            </div>
+            <div>
+              <label className="cnc-quote-label">Inquiry No {req}</label>
+              <input
+                type="text"
+                value={inquiryNo}
+                onChange={(e) => setInquiryNo(upper(e.target.value))}
+                className="cnc-quote-input font-mono"
+              />
+            </div>
+            <div>
+              <label className="cnc-quote-label">Nos (Quantity) {req}</label>
+              <NumericInput
+                value={activeItem?.partOfNos ?? 0}
+                onChange={(v) => activeItem && updateItem(activeItem.id, 'partOfNos', v)}
+                className="cnc-quote-input"
+              />
+            </div>
+            <div>
+              <label className="cnc-quote-label">Inquiry Date {req}</label>
+              <input type="date" value={date} onChange={(e) => setDate(e.target.value)} className="cnc-quote-input" />
+            </div>
+            <div>
+              <label className="cnc-quote-label">Plate Rate (₹/Kg) {req}</label>
+              <NumericInput
+                value={activeItem?.plateRate ?? 0}
+                onChange={(v) => activeItem && updateItem(activeItem.id, 'plateRate', v)}
+                className="cnc-quote-input"
+              />
+            </div>
+            <div>
+              <label className="cnc-quote-label">Drawing / Part No {req}</label>
+              <input
+                type="text"
+                value={activeItem?.drawingNo ?? ''}
+                onChange={(e) => activeItem && updateItem(activeItem.id, 'drawingNo', e.target.value)}
+                className="cnc-quote-input"
+              />
+            </div>
+            <div>
+              <label className="cnc-quote-label">Scrap Per Nos (Kg) {req}</label>
+              <NumericInput
+                value={activeItem?.scrapPerNos ?? 0}
+                onChange={(v) => activeItem && updateItem(activeItem.id, 'scrapPerNos', v)}
+                className="cnc-quote-input"
+              />
+            </div>
+            <div>
+              <label className="cnc-quote-label">Thickness (mm) {req}</label>
+              <NumericInput
+                value={activeItem?.thickness ?? 0}
+                onChange={(v) => activeItem && updateItem(activeItem.id, 'thickness', v)}
+                className="cnc-quote-input"
+              />
+            </div>
+            <div>
+              <label className="cnc-quote-label">Scrap Rate (₹/Kg) {req}</label>
+              <NumericInput
+                value={activeItem?.scrapRate ?? 0}
+                onChange={(v) => activeItem && updateItem(activeItem.id, 'scrapRate', v)}
+                className="cnc-quote-input"
+              />
+            </div>
+            <div>
+              <label className="cnc-quote-label">Length (mm) {req}</label>
+              <NumericInput
+                value={activeItem?.length ?? 0}
+                onChange={(v) => activeItem && updateItem(activeItem.id, 'length', v)}
+                className="cnc-quote-input"
+              />
+            </div>
+            <div className="md:row-span-2">
+              <label className="cnc-quote-label">Remarks</label>
+              <textarea
+                value={quoteRemarks}
+                onChange={(e) => setQuoteRemarks(e.target.value)}
+                placeholder="Enter remarks (optional)"
+                rows={4}
+                className="cnc-quote-input cnc-quote-textarea resize-none"
+              />
+            </div>
+          </div>
         </div>
-        <div className="flex gap-2">
-          <button onClick={() => setViewMode('list')} className="flex items-center gap-2 bg-slate-100 text-slate-600 dark:text-slate-300 px-4 py-2 rounded-xl text-sm font-semibold hover:bg-slate-200 dark:bg-slate-700 transition-all">
-            <List className="w-4 h-4" /> Saved Quotes
-          </button>
-          <button onClick={handleReset} className="flex items-center gap-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 px-4 py-2 rounded-xl text-sm font-semibold hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-all">
-            <RotateCcw className="w-4 h-4" /> Reset
-          </button>
-          <button onClick={handleSave} className="flex items-center gap-2 bg-emerald-600 text-white px-5 py-2 rounded-xl text-sm font-semibold hover:bg-emerald-700 transition-all shadow-md">
-            Save
-          </button>
-          <button onClick={() => window.print()} className="flex items-center gap-2 bg-blue-600 text-white px-5 py-2 rounded-xl text-sm font-semibold hover:bg-blue-700 transition-all shadow-md shadow-blue-100">
-            <Printer className="w-4 h-4" /> Print Quotation
-          </button>
+
+        <div className="cnc-quote-panel cnc-quote-calc-panel">
+          <SectionHead num={2} title="Auto Calculation (Auto Generated)" variant="green" />
+          <div className="cnc-quote-calc-body p-4">
+            <div className="cnc-quote-calc-row">
+              <span className="cnc-quote-calc-label">Weight Per Nos (Kg)</span>
+              <span className="cnc-quote-calc-val">{fmtNum(activeCalc?.weightPerNos ?? 0, 3)}</span>
+            </div>
+            <div className="cnc-quote-calc-row">
+              <span className="cnc-quote-calc-label">Rate Per Nos (₹)</span>
+              <span className="cnc-quote-calc-val-green">{fmtNum(activeCalc?.ratePerNos ?? 0)}</span>
+            </div>
+            <div className="cnc-quote-calc-row">
+              <span className="cnc-quote-calc-label">Scrap Amount Per Nos (₹)</span>
+              <span className="cnc-quote-calc-val-orange">{fmtNum(activeCalc?.scrapAmtPerNos ?? 0)}</span>
+            </div>
+            <div className="cnc-quote-calc-row border-b-0">
+              <span className="cnc-quote-calc-label">Final Rate Per Nos (₹)</span>
+              <span className="cnc-quote-calc-val-blue">{fmtNum(activeCalc?.finalRatePerNos ?? 0)}</span>
+            </div>
+            <div className="cnc-quote-total-box">
+              <div className="cnc-quote-total-box-label">Total Amount (₹)</div>
+              <div className="cnc-quote-total-box-val">{fmtNum(activeCalc?.lineTotal ?? 0)}</div>
+            </div>
+          </div>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-5 gap-6 px-4">
-        {/* Sidebar: Details */}
-        <div className="lg:col-span-1 space-y-6 print:hidden">
-          <div className="bg-white dark:bg-slate-900 rounded-2xl p-6 shadow-sm border border-slate-100 dark:border-slate-800">
-            <h2 className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-6 flex items-center gap-2">
-              <User className="w-4 h-4 text-blue-600 dark:text-blue-400" />
-              Customer Info
-            </h2>
-            <div className="space-y-4">
-              <div>
-                <label className="field-label-sm mb-1">Customer Name</label>
-                <input type="text" value={partyName} onChange={(e) => setPartyName(upper(e.target.value))} className="w-full bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-lg px-3 py-2 text-sm" placeholder="Party Name" />
-              </div>
-              <div>
-                <label className="field-label-sm mb-1">Contact / Mobile</label>
-                <input type="text" value={mobileNo} onChange={(e) => setMobileNo(e.target.value)} className="w-full bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-lg px-3 py-2 text-sm no-uppercase" placeholder="7359604778" />
-              </div>
-              <div>
-                <label className="field-label-sm mb-1">Quotation No</label>
-                <input type="text" value={quoteNo} onChange={(e) => setQuoteNo(upper(e.target.value))} className="w-full bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-lg px-3 py-2 text-sm font-mono" />
-              </div>
-              <div>
-                <label className="field-label-sm mb-1">Date</label>
-                <input type="date" value={date} onChange={(e) => setDate(e.target.value)} className="w-full bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-lg px-3 py-2 text-sm" />
-              </div>
-            </div>
-          </div>
-
-          <div className="card-primary-dark rounded-2xl p-6 text-white shadow-lg">
-            <div className="flex items-center gap-3 mb-6">
-              <div className="w-10 h-10 bg-white dark:bg-slate-900/10 rounded-xl flex items-center justify-center">
-                <Calculator className="w-6 h-6" />
-              </div>
-              <div>
-                <h3 className="text-sm font-bold uppercase tracking-wider">Summary</h3>
-                <p className="text-2xs opacity-60">Final CNC Quote</p>
-              </div>
-            </div>
-            <div className="space-y-4">
-              <div className="flex justify-between text-xs">
-                <span className="opacity-60">Sub Total</span>
-                <span className="font-bold">₹ {totalAmount.toLocaleString()}</span>
-              </div>
-              <div className="flex justify-between text-xs border-t border-white/5 pt-4">
-                <span className="opacity-60 font-bold uppercase">Grand Total</span>
-                <span className="text-xl font-black text-blue-400">₹ {Math.ceil((totalAmount + loadingCharges + transportCharges) * (1 + gstRate / 100)).toLocaleString()}</span>
-              </div>
-            </div>
-          </div>
+      {/* §3 Item Details */}
+      <div className="cnc-quote-panel">
+        <div className="flex items-center justify-between">
+          <SectionHead num={3} title="Item Details" variant="blue" />
+          <button type="button" onClick={addItem} className="cnc-quote-add-row mr-3 shrink-0">
+            <Plus className="w-3.5 h-3.5" /> Add Row
+          </button>
         </div>
-
-        {/* Main Table */}
-        <div className="lg:col-span-4">
-          <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-800 overflow-x-auto print:border-none">
-            <div className="p-4 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between bg-slate-50/50 dark:bg-slate-800/50 print:hidden">
-              <h2 className="text-sm font-bold text-slate-800 dark:text-slate-100 uppercase flex items-center gap-2">
-                <Ruler className="w-4 h-4 text-blue-600 dark:text-blue-400" />
-                Material & Cutting Parameters
-              </h2>
-              <button onClick={addItem} className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-xl text-sm font-bold hover:bg-blue-700 shadow-lg shadow-blue-100 transition-all">
-                <Plus className="w-4 h-4" /> Add New Part
-              </button>
-            </div>
-
-            <table className="w-full text-left border-collapse min-w-[1200px]">
-              <thead>
-                <tr className="bg-slate-50 dark:bg-slate-800/50 text-slate-500 dark:text-slate-400 uppercase font-black">
-                  <th className="p-3 border-r w-12 text-center text-sm font-bold">Sr</th>
-                  <th className="p-3 border-r text-sm font-bold min-w-[160px]">Shape / Drawing</th>
-                  <th className="p-3 border-r text-sm font-bold min-w-[280px]">Plate Details</th>
-                  <th className="p-3 border-r text-sm font-bold min-w-[110px]">Plate Weight (Kg)</th>
-                  <th className="p-3 border-r text-sm font-bold min-w-[160px]">Plate Rate / Nos</th>
-                  <th className="p-3 border-r text-sm font-bold min-w-[100px]">Part of Nos</th>
-                  <th className="p-3 border-r text-sm font-bold min-w-[160px]">FG Total Weight (Kg)</th>
-                  <th className="p-3 border-r text-sm font-bold text-blue-600 dark:text-blue-400 min-w-[280px]">Cutting</th>
-                  <th className="p-3 border-r text-sm font-bold min-w-[280px]">Scrap Rate</th>
-                  <th className="p-3 border-r text-sm font-bold text-emerald-600 dark:text-emerald-400 min-w-[120px]">Final Rate</th>
-                  <th className="p-3 text-right text-sm font-bold min-w-[120px]">Amount</th>
-                  <th className="p-3 w-10 print:hidden"></th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-50">
-                {items.map((item: CNCItem, idx: number) => (
-                  <tr key={item.id} className="hover:bg-blue-50/20 transition-all text-xs border-b border-slate-100 dark:border-slate-800">
-                    <td className="p-3 border-r text-center font-black text-slate-500 dark:text-slate-400 text-sm">
-                      {idx + 1}
-                    </td>
-                    <td className="p-3 border-r">
-                      <select 
-                        value={item.shape} 
-                        onChange={(e) => updateItem(item.id, 'shape', e.target.value)}
-                        className="text-xs font-bold text-blue-600 dark:text-blue-400 bg-transparent outline-none mb-1 cursor-pointer"
-                      >
-                        <option value="CNC Profile">CNC Profile</option>
-                      </select>
-                      <input type="text" value={item.drawingNo} onChange={(e) => updateItem(item.id, 'drawingNo', e.target.value)} className="w-full bg-transparent font-bold outline-none" placeholder="DRW-001" />
-                    </td>
-                    <td className="p-3 border-r">
-                      <div className="flex flex-col gap-1">
-                        <div className="flex items-center gap-1">
-                          <input type="number" value={item.length ?? ''} onChange={(e) => updateItem(item.id, 'length', e.target.value)} className="w-20 bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded px-2 py-1 text-sm font-bold" placeholder="L" />
-                          <span className="text-slate-400 font-bold">x</span>
-                          <input type="number" value={item.width ?? ''} onChange={(e) => updateItem(item.id, 'width', e.target.value)} className="w-20 bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded px-2 py-1 text-sm font-bold" placeholder="W" />
-                          <span className="text-slate-400 font-bold">x</span>
-                          <input type="number" value={item.thickness ?? ''} onChange={(e) => updateItem(item.id, 'thickness', e.target.value)} className="w-16 bg-blue-50 dark:bg-blue-900/30 border border-blue-200 dark:border-blue-700 text-blue-700 dark:text-blue-300 font-black rounded px-2 py-1 text-sm" placeholder="T" />
-                        </div>
-                        <EditableSelect 
-                          value={item.grade} 
-                          onChange={(v) => updateItem(item.id, 'grade', v)} 
-                          options={MATERIAL_GRADES}
-                          placeholder="GRADE"
-                          className="w-28 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded px-1.5 py-0.5 text-2xs uppercase font-bold text-slate-700 dark:text-slate-200 outline-none"
-                        />
+        <div className="overflow-x-auto">
+          <table className="cnc-quote-table">
+            <thead>
+              <tr>
+                <th>Sr. No.</th>
+                <th>Drawing / Part No</th>
+                <th>Thickness (mm)</th>
+                <th>Length (mm)</th>
+                <th>Width (mm)</th>
+                <th>Nos (Qty)</th>
+                <th>Final Rate Per Nos (₹)</th>
+                <th>Total Amount (₹)</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              {items.map((item, idx) => {
+                const row = calcDisplay(item);
+                const isActive = item.id === activeItemId;
+                return (
+                  <tr key={item.id} className={isActive ? 'bg-blue-50/60 dark:bg-blue-950/20' : ''}>
+                    <td>{idx + 1}</td>
+                    <td className="text-left">{item.drawingNo || '—'}</td>
+                    <td>{item.thickness || '—'}</td>
+                    <td>{item.length || '—'}</td>
+                    <td>{item.width || '—'}</td>
+                    <td>{item.partOfNos || '—'}</td>
+                    <td className="text-brand-blue">{fmtNum(row.finalRatePerNos)}</td>
+                    <td className="font-bold">{fmtNum(row.lineTotal)}</td>
+                    <td>
+                      <div className="flex items-center justify-center gap-1">
+                        <button
+                          type="button"
+                          onClick={() => setActiveItemId(item.id)}
+                          className="p-1 rounded text-brand-blue hover:bg-blue-100 dark:hover:bg-blue-900/40"
+                          title="Edit row"
+                        >
+                          <Pencil className="w-3.5 h-3.5" />
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => removeItem(item.id)}
+                          disabled={items.length === 1}
+                          className="p-1 rounded text-red-500 hover:bg-red-50 dark:hover:bg-red-900/30 disabled:opacity-30"
+                          title="Delete row"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </button>
                       </div>
-                    </td>
-                    <td className="p-3 border-r font-black text-slate-800 dark:text-slate-100 text-sm">
-                      {item.plateWeight.toFixed(3)}
-                    </td>
-                    <td className="p-3 border-r">
-                      <div className="flex flex-col gap-1">
-                        <div className="flex items-center gap-1">
-                          <span className="text-2xs font-bold text-slate-400">QTY</span>
-                          <input type="number" value={item.plateNos ?? ''} onChange={(e) => updateItem(item.id, 'plateNos', e.target.value)} className="w-16 bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded px-2 py-1 text-sm font-bold" />
-                        </div>
-                        <div className="flex items-center gap-1">
-                          <span className="text-2xs font-bold text-slate-400">RATE</span>
-                          <input type="number" value={item.plateRate ?? ''} onChange={(e) => updateItem(item.id, 'plateRate', e.target.value)} className="w-full bg-emerald-50 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 font-bold rounded px-1.5 py-0.5" />
-                        </div>
-                      </div>
-                    </td>
-                    <td className="p-3 border-r">
-                      <input type="number" value={item.partOfNos ?? ''} onChange={(e) => updateItem(item.id, 'partOfNos', e.target.value)} className="w-16 bg-blue-50/50 rounded px-2 py-1 font-bold text-center" placeholder="1" />
-                    </td>
-                    <td className="p-3 border-r">
-                      {item.shape === 'Square' ? (
-                        <span className="text-slate-400 font-medium italic">Included in Square</span>
-                      ) : (
-                        <div className="flex flex-col gap-1.5">
-                          <input type="number" value={item.finishGoodWeight ?? ''} onChange={(e) => updateItem(item.id, 'finishGoodWeight', e.target.value)} className="w-24 bg-slate-50 dark:bg-slate-800/50 rounded px-2 py-1 font-bold text-right" placeholder="0.00" />
-                          <div className="flex flex-col gap-1 text-xs text-slate-500 dark:text-slate-400 font-bold border-t border-slate-100 dark:border-slate-800 pt-1">
-                            <div className="flex justify-between">
-                              <span>Per Part:</span>
-                              <span className="text-slate-700 dark:text-slate-200">{(item.partOfNos > 0 ? item.finishGoodWeight / item.partOfNos : 0).toFixed(2)} Kg</span>
-                            </div>
-                            <div className="flex justify-between">
-                              <span>Rate/Kg:</span>
-                              <span className="text-blue-700 dark:text-blue-300">₹{(item.finishGoodWeight > 0 ? (item.finalRate * item.partOfNos) / item.finishGoodWeight : 0).toFixed(2)}</span>
-                            </div>
-                          </div>
-                        </div>
-                      )}
-                    </td>
-                    <td className="p-3 border-r">
-                      {item.shape === 'Square' ? (
-                        <span className="text-slate-500 dark:text-slate-400 font-medium italic text-center block">-</span>
-                      ) : (
-                        <div className="flex flex-col gap-1.5">
-                          <div className="flex items-center gap-1">
-                            <span className="text-xs font-bold text-slate-500 dark:text-slate-400 w-12 uppercase">MTR</span>
-                            <input type="number" value={item.mtr ?? ''} onChange={(e) => updateItem(item.id, 'mtr', e.target.value)} className="w-24 bg-blue-50 dark:bg-blue-900/30 border border-blue-100 dark:border-blue-800 rounded px-2 py-1 text-sm font-bold" />
-                            <div className="flex flex-col ml-1">
-                              <span className="text-xs font-black text-slate-500 dark:text-slate-400">FACTOR</span>
-                              <input type="number" value={item.meterFactor ?? ''} onChange={(e) => updateItem(item.id, 'meterFactor', e.target.value)} className="w-14 bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded px-1 text-xs font-bold" />
-                            </div>
-                          </div>
-                          <div className="border-t border-slate-100 dark:border-slate-800 my-1"></div>
-                          <div className="flex flex-col gap-1.5">
-                            <div className="flex items-center gap-1">
-                              <span className="text-xs font-bold text-slate-500 dark:text-slate-400 w-12 uppercase">PIER QTY</span>
-                              <input type="number" value={item.piercing ?? ''} onChange={(e) => updateItem(item.id, 'piercing', e.target.value)} className="w-24 bg-blue-50 dark:bg-blue-900/30 border border-blue-100 dark:border-blue-800 rounded px-2 py-1 text-sm font-bold" />
-                            </div>
-                            <div className="flex items-center gap-1">
-                              <span className="text-xs font-black text-slate-500 dark:text-slate-400 w-12 uppercase">TYPE</span>
-                              <select 
-                                value={item.piercingType} 
-                                onChange={(e) => updateItem(item.id, 'piercingType', e.target.value)}
-                                className="w-24 bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 text-xs font-black rounded px-1 py-1"
-                              >
-                                <option value="Full">Full (Thk)</option>
-                                <option value="Half">Half (Thk/2)</option>
-                                <option value="Manual">Manual</option>
-                              </select>
-                            </div>
-                            {item.piercingType === 'Manual' && (
-                              <div className="flex items-center gap-1">
-                                <span className="text-xs font-black text-slate-500 dark:text-slate-400 w-12 uppercase">RATE</span>
-                                <input type="number" value={item.piercingRate ?? ''} onChange={(e) => updateItem(item.id, 'piercingRate', e.target.value)} className="w-24 bg-amber-50 dark:bg-amber-900/30 border border-amber-200 dark:border-amber-800 rounded px-2 py-1 text-sm font-bold text-amber-700" />
-                              </div>
-                            )}
-                          </div>
-                          <div className="flex justify-between border-t border-slate-100 dark:border-slate-800 pt-1 mt-1 font-bold">
-                            <span className="text-xs text-slate-500 dark:text-slate-400 font-bold uppercase">Total Labour:</span>
-                            <span className="text-blue-700 dark:text-blue-300 text-sm font-bold">₹{Math.round((item.mtr * (item.thickness * item.meterFactor)) + (item.piercing * (item.piercingType === 'Full' ? item.thickness : item.piercingType === 'Half' ? item.thickness / 2 : item.piercingRate))).toLocaleString()}</span>
-                          </div>
-                        </div>
-                      )}
-                    </td>
-                    <td className="p-3 border-r">
-                      {item.shape === 'Square' ? (
-                        <span className="text-slate-500 dark:text-slate-400 font-medium italic text-center block">-</span>
-                      ) : (
-                        <div className="flex flex-col gap-1.5">
-                          <div className="flex items-center gap-1">
-                            <span className="text-xs font-bold text-slate-500 dark:text-slate-400 w-14 uppercase">Scrap Rate</span>
-                            <input type="number" value={item.scrapRate ?? ''} onChange={(e) => updateItem(item.id, 'scrapRate', e.target.value)} className="w-24 bg-amber-50 dark:bg-amber-900/30 border border-amber-200 dark:border-amber-800 rounded px-2 py-1 font-black text-amber-700 text-sm" />
-                          </div>
-                          <div className="flex items-center gap-1">
-                            <span className="text-xs font-bold text-slate-500 dark:text-slate-400 w-14 uppercase">Loss Factor</span>
-                            <input type="number" value={item.burningLossFactor ?? ''} onChange={(e) => updateItem(item.id, 'burningLossFactor', e.target.value)} className="w-24 bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded px-2 py-1 font-black text-slate-700 dark:text-slate-200 text-sm" />
-                          </div>
-                          <div className="flex flex-col gap-1 text-xs text-slate-500 dark:text-slate-400 font-bold border-t border-slate-100 dark:border-slate-800 pt-1">
-                            <div className="flex justify-between">
-                              <span>Loss:</span>
-                              <span className="text-red-500">{( (item.mtr * item.thickness * item.burningLossFactor * 8) / 1000 ).toFixed(2)} Kg</span>
-                            </div>
-                            <div className="flex justify-between">
-                              <span>Scrap Wt:</span>
-                              <span className="text-amber-600">{( Math.max(0, item.plateWeight - item.finishGoodWeight - ((item.mtr * item.thickness * item.burningLossFactor * 8) / 1000)) ).toFixed(2)} Kg</span>
-                            </div>
-                            <div className="flex justify-between border-t border-slate-100 dark:border-slate-800 pt-1 mt-1 font-bold">
-                              <span>Scrap Amt:</span>
-                              <span className="text-amber-700 font-bold">₹{Math.round(Math.max(0, item.plateWeight - item.finishGoodWeight - ((item.mtr * item.thickness * item.burningLossFactor * 8) / 1000)) * item.scrapRate).toLocaleString()}</span>
-                            </div>
-                          </div>
-                        </div>
-                      )}
-                    </td>
-                    <td className="p-3 border-r bg-emerald-50/30 dark:bg-emerald-900/30">
-                      <span className="text-sm font-black text-emerald-700 dark:text-emerald-400">₹{item.finalRate.toLocaleString()}</span>
-                      <p className="text-2xs text-slate-400 uppercase font-bold">Per Part</p>
-                    </td>
-                    <td className="p-3 text-right font-black">
-                      ₹{item.amount.toLocaleString()}
-                    </td>
-                    <td className="p-3 text-center print:hidden">
-                      <button 
-                        onClick={() => removeItem(item.id)} 
-                        className="p-2 text-slate-400 hover:text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-xl transition-all shadow-sm group"
-                        title="Remove Item"
-                      >
-                        <Trash2 className="w-5 h-5 group-hover:scale-110 transition-transform" />
-                      </button>
                     </td>
                   </tr>
-                ))}
-              </tbody>
-              <tfoot className="bg-slate-50 dark:bg-slate-800/50 font-bold border-t border-slate-200 dark:border-slate-700">
-                <tr>
-                  <td colSpan={9} className="p-3 text-right text-xs uppercase text-slate-400">Loading & Unloading</td>
-                  <td colSpan={2} className="p-3 text-right">
-                    <input type="number" value={loadingCharges || ''} onChange={(e) => setLoadingCharges(parseFloat(e.target.value) || 0)} className="w-24 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded px-2 py-1 text-right" />
-                  </td>
-                  <td className="print:hidden"></td>
-                </tr>
-                <tr>
-                  <td colSpan={9} className="p-3 text-right text-xs uppercase text-slate-400">Transport Charges</td>
-                  <td colSpan={2} className="p-3 text-right">
-                    <input type="number" value={transportCharges || ''} onChange={(e) => setTransportCharges(parseFloat(e.target.value) || 0)} className="w-24 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded px-2 py-1 text-right" />
-                  </td>
-                  <td className="print:hidden"></td>
-                </tr>
-                <tr>
-                  <td colSpan={9} className="p-3 text-right text-xs uppercase text-slate-400">GST Rate (%)</td>
-                  <td colSpan={2} className="p-3 text-right">
-                    <select value={gstRate} onChange={(e) => setGstRate(parseInt(e.target.value))} className="w-24 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded px-2 py-1">
-                      <option value={0}>0%</option>
-                      <option value={5}>5%</option>
-                      <option value={12}>12%</option>
-                      <option value={18}>18%</option>
-                      <option value={28}>28%</option>
-                    </select>
-                  </td>
-                  <td className="print:hidden"></td>
-                </tr>
-                <tr className="bg-blue-600 text-white">
-                  <td colSpan={9} className="p-4 text-right text-xs uppercase tracking-widest font-black">Grand Total Amount</td>
-                  <td colSpan={2} className="p-4 text-right text-xl font-black">
-                    ₹{Math.ceil((totalAmount + loadingCharges + transportCharges) * (1 + gstRate / 100)).toLocaleString()}
-                  </td>
-                  <td className="print:hidden"></td>
-                </tr>
-              </tfoot>
-            </table>
+                );
+              })}
+            </tbody>
+            <tfoot>
+              <tr>
+                <td colSpan={5} className="text-left font-bold">Total Nos (Qty) : {totalNos}</td>
+                <td colSpan={4} className="text-right font-bold text-brand-blue">Grand Total (₹) : {fmtNum(totalAmount)}</td>
+              </tr>
+            </tfoot>
+          </table>
+        </div>
+      </div>
+
+      {/* §4 Rate Revision + §5 Summary */}
+      <div className="grid grid-cols-1 xl:grid-cols-2 gap-3">
+        <div className="cnc-quote-panel">
+          <SectionHead num={4} title="Rate Revision" variant="purple" />
+          <div className="p-4">
+            <div className="cnc-quote-revision-row">
+              <div className="cnc-quote-revision-field">
+                <label className="cnc-quote-label">Old Rate (₹/Kg)</label>
+                <NumericInput value={revisionOldRate} onChange={setRevisionOldRate} className="cnc-quote-input" />
+              </div>
+              <div className="cnc-quote-revision-field">
+                <label className="cnc-quote-label">Revision Type</label>
+                <select
+                  value={revisionType}
+                  onChange={(e) => setRevisionType(e.target.value as 'Increase' | 'Decrease')}
+                  className="cnc-quote-input"
+                >
+                  <option value="Increase">Increase (+)</option>
+                  <option value="Decrease">Decrease (−)</option>
+                </select>
+              </div>
+              <div className="cnc-quote-revision-field">
+                <label className="cnc-quote-label">Revision Value (₹/Kg)</label>
+                <NumericInput value={revisionValue} onChange={setRevisionValue} className="cnc-quote-input" />
+              </div>
+              <div className="cnc-quote-revision-field">
+                <label className="cnc-quote-label">New Rate (₹/Kg)</label>
+                <input type="text" readOnly value={revisionNewRate} className="cnc-quote-input cnc-quote-input-readonly" />
+              </div>
+              <div className="cnc-quote-revision-field">
+                <label className="cnc-quote-label">Effective From</label>
+                <input type="date" value={revisionEffectiveFrom} onChange={(e) => setRevisionEffectiveFrom(e.target.value)} className="cnc-quote-input" />
+              </div>
+              <div className="cnc-quote-revision-field cnc-quote-revision-field-wide">
+                <label className="cnc-quote-label">Reason / Remark</label>
+                <input type="text" value={revisionReason} onChange={(e) => setRevisionReason(e.target.value)} className="cnc-quote-input" placeholder="Optional" />
+              </div>
+              <div className="cnc-quote-revision-field cnc-quote-revision-btn-wrap">
+                <button type="button" onClick={handleApplyRevision} className="cnc-quote-apply-revision">
+                  Apply Revision
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="cnc-quote-panel">
+          <SectionHead num={5} title="Summary (Auto Generated)" variant="orange" />
+          <div className="cnc-quote-summary-grid">
+            <div className="cnc-quote-summary-cell">
+              <div className="cnc-quote-summary-cell-label">Total Amount (₹)</div>
+              <div className="cnc-quote-summary-cell-val">{fmtNum(totalAmount)}</div>
+            </div>
+            <div className="cnc-quote-summary-cell">
+              <div className="cnc-quote-summary-cell-label">Total Nos (Qty)</div>
+              <div className="cnc-quote-summary-cell-val">{totalNos}</div>
+            </div>
+            <div className="cnc-quote-summary-cell">
+              <div className="cnc-quote-summary-cell-label">Grand Total (₹)</div>
+              <div className="cnc-quote-summary-cell-val blue">{fmtNum(totalAmount)}</div>
+            </div>
+            <div className="cnc-quote-summary-cell">
+              <div className="cnc-quote-summary-cell-label">GST %</div>
+              <select value={gstRate} onChange={(e) => setGstRate(parseInt(e.target.value))} className="cnc-quote-gst-select">
+                <option value={0}>0 %</option>
+                <option value={5}>5 %</option>
+                <option value={12}>12 %</option>
+                <option value={18}>18 %</option>
+                <option value={28}>28 %</option>
+              </select>
+            </div>
+            <div className="cnc-quote-summary-cell">
+              <div className="cnc-quote-summary-cell-label">GST Amount (₹)</div>
+              <div className="cnc-quote-summary-cell-val">{fmtNum(gstAmount)}</div>
+            </div>
+            <div className="cnc-quote-summary-cell highlight-red">
+              <div className="cnc-quote-summary-cell-label">Grand Total With GST (₹)</div>
+              <div className="cnc-quote-summary-cell-val red">{fmtNum(grandTotal)}</div>
+            </div>
           </div>
         </div>
       </div>
 
-      {/* Formal Print Format for CNC */}
-      <div id="cnc-quotation-print-area" className="hidden print:block fixed inset-0 bg-white dark:bg-slate-900 p-0 m-0 overflow-visible">
-        <style dangerouslySetInnerHTML={{ __html: `
-          @page { size: A4 landscape; margin: 10mm 10mm; }
-          body { font-family: Arial, sans-serif; color: #000; background: #fff; font-size: 9pt; line-height: 1.3; }
-          .print-utility { width: 100%; border-collapse: collapse; margin-bottom: 5px; }
-          .print-utility td { font-size: 8pt; color: #333; padding: 2px 0; }
-          .print-header-box { text-align: center; border: 1px solid #000; padding: 8px; margin-bottom: 12px; margin-top: 5px; }
-          .print-company-name { font-size: 20pt; font-weight: bold; letter-spacing: 1px; margin: 0 0 2px 0; }
-          .print-company-mfg { font-size: 9pt; font-weight: normal; margin: 0 0 4px 0; }
-          .print-company-address { font-size: 9pt; margin: 0 0 2px 0; }
-          .print-doc-banner { text-align: center; font-weight: bold; font-size: 12pt; border: 1px solid #000; padding: 4px; background-color: #f2f2f2; margin-bottom: 12px; }
-          .print-info-grid { width: 100%; border-collapse: collapse; margin-bottom: 15px; }
-          .print-info-grid td { width: 50%; vertical-align: top; }
-          .print-inner-info { width: 100%; border-collapse: collapse; border: 1px solid #000; }
-          .print-inner-info td { padding: 4px 6px; font-size: 9pt; border-bottom: 1px solid #eee; }
-          .print-label { font-weight: bold; width: 30%; }
-          .print-data-grid { width: 100%; border-collapse: collapse; border: 1px solid #000; margin-bottom: 12px; }
-          .print-data-grid th { border: 1px solid #000; background-color: #f2f2f2; padding: 6px 4px; font-weight: bold; font-size: 8.5pt; text-align: center; }
-          .print-data-grid td { border: 1px solid #000; padding: 6px 4px; font-size: 8.5pt; vertical-align: middle; }
-          .print-summary-wrapper { width: 100%; margin-bottom: 20px; overflow: hidden; }
-          .print-summary-block { width: 35%; float: right; border-collapse: collapse; border: 1px solid #000; }
-          .print-summary-block td { padding: 4px 6px; font-size: 9pt; border-bottom: 1px solid #ddd; text-align: right; }
-          .print-grand-total { background-color: #f9f9f9; font-weight: bold; font-size: 10pt; border-top: 1px solid #000; }
-          .print-remarks-box { width: 100%; border: 1px solid #000; padding: 6px; font-size: 8.5pt; margin-bottom: 40px; background-color: #fafafa; }
-          .print-sigs { width: 100%; border-collapse: collapse; margin-top: 30px; }
-          .print-sigs td { width: 50%; text-align: center; font-size: 9.5pt; vertical-align: bottom; }
-          .print-sig-line { margin-top: 45px; font-weight: bold; border-top: 1px dashed #000; display: inline-block; width: 180px; padding-top: 4px; }
-          .text-center { text-align: center !important; }
-          .text-right { text-align: right !important; }
-        `}} />
-
-        <table className="print-utility">
-          <tbody>
-            <tr>
-              <td>SINCE 2002W</td>
-              <td className="text-right font-bold">GSTIN: 24AJGPP9863R1Z5</td>
-            </tr>
-          </tbody>
-        </table>
-
-        <div className="print-header-box">
-          <div className="print-company-name">JAGDAMBA PROFILE</div>
-          <div className="print-company-mfg">Mfg.: M.S. & S.S., C.N.C. Profile Cutting Traders & Steel</div>
-          <div className="print-company-address">Office: 504/1, GIDC, Industrial Estate, Makarpura, Vadodara - 390010.</div>
-        </div>
-
-        <div className="print-doc-banner">CNC PROFILE CUTTING QUOTATION</div>
-
-        <table className="print-info-grid">
-          <tbody>
-            <tr>
-              <td style={{ paddingRight: '10px' }}>
-                <table className="print-inner-info">
-                  <tbody>
-                    <tr><td className="print-label">Customer:</td><td>{partyName || '-'}</td></tr>
-                    <tr><td className="print-label">Mobile No.:</td><td>{mobileNo || '-'}</td></tr>
-                  </tbody>
-                </table>
-              </td>
-              <td style={{ paddingLeft: '10px' }}>
-                <table className="print-inner-info">
-                  <tbody>
-                    <tr><td className="print-label">Quote No.:</td><td className="font-bold">{quoteNo}</td></tr>
-                    <tr><td className="print-label">Quote Date:</td><td>{date}</td></tr>
-                  </tbody>
-                </table>
-              </td>
-            </tr>
-          </tbody>
-        </table>
-
-        <table className="print-data-grid">
-          <thead>
-            <tr>
-              <th>Sr</th>
-              <th>Shape / Drawing</th>
-              <th>Details (L x W x T)</th>
-              <th>Plate Wt</th>
-              <th>Nos</th>
-              <th>Rate/Kg</th>
-              <th>FG Total Wt</th>
-              <th>Scrap</th>
-              <th className="text-right">Final Rate</th>
-              <th className="text-right">Amount</th>
-            </tr>
-          </thead>
-          <tbody>
-            {items.map((item: CNCItem, idx: number) => (
-              <tr key={item.id}>
-                <td className="text-center">{idx + 1}</td>
-                <td className="text-center font-bold">{item.shape} {item.drawingNo && `(${item.drawingNo})`}</td>
-                <td className="text-center">{item.length}x{item.width}x{item.thickness} ({item.grade})</td>
-                <td className="text-center">{item.plateWeight} Kg</td>
-                <td className="text-center">{item.plateNos}</td>
-                <td className="text-center">₹{item.plateRate}</td>
-                <td className="text-center">{item.shape === 'Square' ? '-' : `${item.finishGoodWeight} Kg`}</td>
-                <td className="text-center">{item.shape === 'Square' ? '-' : `₹${item.scrapRate}`}</td>
-                <td className="text-right font-bold">₹{item.finalRate}</td>
-                <td className="text-right font-bold">₹{item.amount.toLocaleString()}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-
-        <div className="print-summary-wrapper">
-          <table className="print-summary-block">
-            <tbody>
-              <tr><td className="text-right font-bold">Sub Total:</td><td>₹{totalAmount.toLocaleString()}</td></tr>
-              <tr><td className="text-right font-bold">Charges:</td><td>₹{(loadingCharges + transportCharges).toLocaleString()}</td></tr>
-              <tr><td className="text-right font-bold">GST ({gstRate}%):</td><td>₹{Math.ceil((totalAmount + loadingCharges + transportCharges) * gstRate / 100).toLocaleString()}</td></tr>
-              <tr className="print-grand-total">
-                <td className="text-right uppercase">Grand Total:</td>
-                <td className="font-bold">₹{Math.ceil((totalAmount + loadingCharges + transportCharges) * (1 + gstRate / 100)).toLocaleString()}</td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-
-        <div className="print-remarks-box">
-          <div className="font-bold mb-1">Remarks:</div>
-          Rates are processed according to the technical profile parameters provided.
-        </div>
-
-        <table className="print-sigs">
-          <tbody>
-            <tr>
-              <td><div className="print-sig-line">Customer Signature</div></td>
-              <td>
-                <div>For, <strong>JAGDAMBA PROFILE</strong></div>
-                <div className="print-sig-line">Authorized Signatory</div>
-              </td>
-            </tr>
-          </tbody>
-        </table>
+      {/* Footer actions */}
+      <div className="cnc-quote-footer-actions">
+        <button type="button" {...erpHotkeyProps('save')} onClick={() => void handleSave()} className="cnc-quote-foot-btn bg-emerald-600">
+          <Save className="w-4 h-4" /> Save <ErpHotkeyLabel action="save" />
+        </button>
+        <button type="button" {...erpHotkeyProps('print')} onClick={handlePrint} className="cnc-quote-foot-btn bg-blue-600">
+          <Printer className="w-4 h-4" /> Print <ErpHotkeyLabel action="print" />
+        </button>
+        <button type="button" {...erpHotkeyProps('pdf')} onClick={() => void handlePdf(buildCurrentQuote())} className="cnc-quote-foot-btn bg-red-600">
+          <FileDown className="w-4 h-4" /> PDF <ErpHotkeyLabel action="pdf" />
+        </button>
+        <button type="button" onClick={() => toast('WhatsApp share coming soon')} className="cnc-quote-foot-btn bg-green-600">
+          <MessageSquare className="w-4 h-4" /> WhatsApp
+        </button>
+        <button type="button" onClick={() => toast('Email share coming soon')} className="cnc-quote-foot-btn bg-sky-600">
+          <Mail className="w-4 h-4" /> Email
+        </button>
+        <button type="button" onClick={() => void handleConvert()} className="cnc-quote-foot-btn bg-orange-600">
+          Convert to Order <span className="erp-hotkey-label">(F5)</span>
+        </button>
+        <button type="button" onClick={handleReset} className="cnc-quote-foot-btn bg-slate-600">
+          <RotateCcw className="w-4 h-4" /> Clear
+        </button>
       </div>
     </div>
+
+    <div className="hidden print:block">
+      <CNCQuotationPrint quote={buildCurrentQuote()} userName={user?.displayName || user?.username} />
+    </div>
+    </>
   );
 };

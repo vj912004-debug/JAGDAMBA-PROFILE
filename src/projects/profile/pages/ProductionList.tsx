@@ -1,7 +1,9 @@
 import React, { useState, useMemo } from 'react';
 import { useAppContext, EMPLOYEES } from '../store/AppContext';
 import { LayoutList, Search, CheckCircle2, Clock, User, ClipboardList, AlertCircle, Download, FileText } from 'lucide-react';
-import { generateOrderEntryPDF, generateSalesOrderPDF } from '../utils/pdfGenerator';
+import { generateOrderEntryPDF } from '../utils/pdfGenerator';
+import { generateSalesOrderPDF } from '../utils/salesOrderDownload';
+import { NumericInput, parseNum } from '../components/NumericInput';
 
 export const ProductionList: React.FC = () => {
    const { t, orders, updateItemCompletedQty, updateItemWorker, role, parties } = useAppContext();
@@ -245,12 +247,9 @@ export const ProductionList: React.FC = () => {
                   {canEdit && (
                     <td className="p-4 text-center">
                       <div className="flex justify-center items-center gap-2" onClick={(e) => e.stopPropagation()}>
-                        <input
-                          type="number"
-                          min="0"
-                          max={item.quantity}
+                        <NumericInput
                           value={item.completedQty || 0}
-                          onChange={(e) => updateItemCompletedQty(orderId, item.id, Number(e.target.value))}
+                          onChange={(v) => updateItemCompletedQty(orderId, item.id, parseNum(v))}
                           className="w-16 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg px-2 py-1 text-xs font-bold text-slate-700 dark:text-slate-200 focus:ring-2 focus:ring-blue-500 outline-none"
                         />
                         {item.completedQty < item.quantity && (
@@ -377,12 +376,9 @@ export const ProductionList: React.FC = () => {
                       </td>
                       {canEdit && (
                         <td className="p-3 text-center">
-                          <input
-                            type="number"
-                            min="0"
-                            max={item.quantity}
+                          <NumericInput
                             value={item.completedQty || 0}
-                            onChange={(e) => updateItemCompletedQty(selectedOrder.id, item.id, Number(e.target.value))}
+                            onChange={(v) => updateItemCompletedQty(selectedOrder.id, item.id, parseNum(v))}
                             className="w-14 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg px-2 py-1 text-xs font-bold text-slate-700 dark:text-slate-200 focus:ring-2 focus:ring-blue-500 outline-none shadow-sm"
                           />
                         </td>

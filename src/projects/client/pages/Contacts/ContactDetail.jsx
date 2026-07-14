@@ -61,7 +61,7 @@ export default function ContactDetail() {
         {/* Left Panel */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
           <div className="card" style={{ textAlign: 'center' }}>
-            <div style={{ width: 80, height: 80, borderRadius: 20, background: 'linear-gradient(135deg, var(--gold), #d97706)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 28, fontWeight: 800, color: '#000', margin: '0 auto 16px' }}>
+            <div style={{ width: 80, height: 80, borderRadius: 20, background: 'linear-gradient(135deg, var(--gold), #2347c5)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 28, fontWeight: 800, color: '#fff', margin: '0 auto 16px' }}>
               {initials}
             </div>
             <div style={{ fontSize: 20, fontWeight: 700 }}>{contact.contactPerson}</div>

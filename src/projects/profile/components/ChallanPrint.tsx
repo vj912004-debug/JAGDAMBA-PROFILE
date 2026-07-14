@@ -1,11 +1,7 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { useAppContext, type ChallanRecord, type Order } from '../store/AppContext';
-import {
-  buildChallanPrintData,
-  ChallanDuplicatePrintView,
-  ChallanOriginalPrintView,
-  ChallanPrintStyles,
-} from './ChallanPrintViews';
+import { DeliveryChallanPrint } from './DeliveryChallanPrint';
+import { buildDeliveryChallanPrintData } from '../utils/deliveryChallanHelpers';
 
 interface ChallanPrintProps {
   challan: ChallanRecord;
@@ -13,12 +9,10 @@ interface ChallanPrintProps {
 }
 
 export const ChallanPrint: React.FC<ChallanPrintProps> = ({ challan, order }) => {
-  const { dispatches, parties } = useAppContext();
-  const printData = buildChallanPrintData(challan, order, parties, dispatches);
-  const [printMode, setPrintMode] = useState<'both' | 'original'>('both');
+  const { dispatches, parties, companyProfile } = useAppContext();
+  const printData = buildDeliveryChallanPrintData(challan, order, parties, dispatches, companyProfile);
 
-  const handlePrint = (mode: 'both' | 'original') => {
-    setPrintMode(mode);
+  const handlePrint = () => {
     setTimeout(() => window.print(), 100);
   };
 
@@ -26,27 +20,16 @@ export const ChallanPrint: React.FC<ChallanPrintProps> = ({ challan, order }) =>
     <div className="flex flex-col items-center w-full pb-10 bg-gray-100 min-h-screen">
       <div className="no-print flex gap-4 my-6">
         <button
-          onClick={() => handlePrint('original')}
+          type="button"
+          onClick={handlePrint}
           className="bg-blue-600 text-white px-6 py-2 rounded shadow-md hover:bg-blue-700 font-bold transition-colors cursor-pointer"
         >
-          Print Original Only
-        </button>
-        <button
-          onClick={() => handlePrint('both')}
-          className="bg-amber-500 text-white px-6 py-2 rounded shadow-md hover:bg-amber-600 font-bold transition-colors cursor-pointer"
-        >
-          Print Original & Duplicate
+          Print Delivery Challan
         </button>
       </div>
 
-      <div id="challan-print-area" className="challan-print-root flex flex-col items-center">
-        <ChallanPrintStyles />
-        <ChallanOriginalPrintView {...printData} />
-        <div className={`cut-line ${printMode === 'original' ? 'print-hide-duplicate' : ''}`} />
-        <ChallanDuplicatePrintView
-          {...printData}
-          className={printMode === 'original' ? 'print-hide-duplicate' : ''}
-        />
+      <div id="challan-print-area" className="flex flex-col items-center">
+        <DeliveryChallanPrint data={printData} />
       </div>
     </div>
   );

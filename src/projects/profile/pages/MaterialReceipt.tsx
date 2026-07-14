@@ -1,49 +1,90 @@
-import React, { useState, useMemo, useEffect } from 'react';
-import { ClipboardCheck, Search, AlertCircle } from 'lucide-react';
+import React, { useState, useMemo, useEffect, useCallback } from 'react';
+import { Plus, Printer, X, RefreshCw, Save, Trash2 } from 'lucide-react';
 import { useAppContext, type PurchaseReceipt, type PurchaseOrder } from '../store/AppContext';
 import toast from 'react-hot-toast';
 import { upper } from '../utils/textCase';
+import { ErpPageHeader, ErpNumberedSection, ErpSummaryTiles } from '../components/ErpPageShell';
+import { NumericInput, parseNum } from '../components/NumericInput';
+import { erpHotkeyProps } from '../utils/erpHotkeys';
+import { nextGRNNumberFromExisting } from '../utils/grnNumber';
+
+const kg = (n: number) => n.toLocaleString('en-IN', { minimumFractionDigits: 3, maximumFractionDigits: 3 });
+const rs = (n: number) => `₹${n.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+const itemAmt = (weightKg: number, rate: string | number | null | undefined) => weightKg * parseNum(rate);
+const poLineItems = (po?: PurchaseOrder | null) => po?.items ?? [];
 
 export const MaterialReceipt: React.FC = () => {
-  const { t, purchaseOrders, setPurchaseOrders, purchaseReceipts, setPurchaseReceipts, role } = useAppContext();
+  const { purchaseOrders, setPurchaseOrders, purchaseReceipts, setPurchaseReceipts, role, persistErpNow } = useAppContext();
 
+  const [supplierName, setSupplierName] = useState('');
   const [selectedPOId, setSelectedPOId] = useState('');
-  const [itemQuantities, setItemQuantities] = useState<Record<string, number>>({});
+  const [grnNumber, setGrnNumber] = useState('');
+  const [itemQuantities, setItemQuantities] = useState<Record<string, string>>({});
   const [remark, setRemark] = useState('');
   const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
-  const [billNo, setBillNo] = useState('');
+  const [invoiceNo, setInvoiceNo] = useState('');
   const [transporterName, setTransporterName] = useState('');
   const [vehicleNo, setVehicleNo] = useState('');
-  const [tcAvailable, setTcAvailable] = useState<'Yes' | 'No'>('No');
+  const [tcAvailable] = useState<'Yes' | 'No'>('No');
 
-  const selectedPO = useMemo(() => 
-    purchaseOrders.find(po => po.id === selectedPOId), 
-    [selectedPOId, purchaseOrders]
-  );
+  const activePOs = useMemo(() => (purchaseOrders ?? []).filter(po => po.status !== 'Complete'), [purchaseOrders]);
 
-  const getTotalNos = (po: PurchaseOrder) => {
-    return po.items.reduce((sum, item) => sum + (item.nos || 0), 0);
-  };
+  const supplierOptions = useMemo(() =>
+    Array.from(new Set(activePOs.map(po => po.supplierName))).sort(),
+  [activePOs]);
 
-  const getItemReceivedBefore = (itemId: string) => {
-    return purchaseReceipts
-      .filter(pr => pr.poId === selectedPOId)
+  const supplierPOs = useMemo(() =>
+    supplierName ? activePOs.filter(po => po.supplierName === supplierName) : [],
+  [activePOs, supplierName]);
+
+  const selectedPO = useMemo(() =>
+    (purchaseOrders ?? []).find(po => po.id === selectedPOId),
+  [selectedPOId, purchaseOrders]);
+
+  const getItemReceivedBefore = useCallback((itemId: string, poId = selectedPOId) =>
+    (purchaseReceipts ?? [])
+      .filter(pr => pr.poId === poId)
       .reduce((sum, pr) => {
         if (pr.items) {
           const matchingItem = pr.items.find(i => i.itemId === itemId);
           return sum + (matchingItem ? matchingItem.receivedQty : 0);
         }
         return sum;
-      }, 0);
-  };
+      }, 0),
+  [selectedPOId, purchaseReceipts]);
+
+  const pendingOrderRows = useMemo(() => {
+    const rows: { po: PurchaseOrder; item: PurchaseOrder['items'][0]; pendingNos: number; pendingKg: number }[] = [];
+    supplierPOs.forEach(po => {
+      poLineItems(po).forEach(item => {
+        const prev = getItemReceivedBefore(item.id, po.id);
+        const pendingNos = Math.max(0, (item.nos || 0) - prev);
+        if (pendingNos <= 0) return;
+        const perPiece = item.nos ? item.kg / item.nos : 0;
+        rows.push({ po, item, pendingNos, pendingKg: perPiece * pendingNos });
+      });
+    });
+    return rows;
+  }, [supplierPOs, getItemReceivedBefore]);
+
+  useEffect(() => {
+    if (supplierPOs.length === 1 && !selectedPOId) {
+      setSelectedPOId(supplierPOs[0].id);
+    }
+  }, [supplierPOs, selectedPOId]);
 
   useEffect(() => {
     if (selectedPO) {
-      const initial: Record<string, number> = {};
-      selectedPO.items.forEach(item => {
-        const prevRecd = getItemReceivedBefore(item.id);
-        const pending = Math.max(0, (item.nos || 0) - prevRecd);
-        initial[item.id] = pending;
+      setTransporterName(selectedPO.transportName || transporterName);
+      setVehicleNo(selectedPO.transportNumber || vehicleNo);
+    }
+  }, [selectedPOId]);
+
+  useEffect(() => {
+    if (selectedPO) {
+      const initial: Record<string, string> = {};
+      poLineItems(selectedPO).forEach(item => {
+        initial[item.id] = '';
       });
       setItemQuantities(initial);
     } else {
@@ -51,30 +92,78 @@ export const MaterialReceipt: React.FC = () => {
     }
   }, [selectedPOId, purchaseReceipts]);
 
-  const totalReceivedBefore = useMemo(() => {
-    if (!selectedPOId) return 0;
-    return purchaseReceipts
-      .filter(pr => pr.poId === selectedPOId)
-      .reduce((sum, pr) => sum + pr.receivedQty, 0);
-  }, [selectedPOId, purchaseReceipts]);
+  const totals = useMemo(() => {
+    let pendingNos = 0;
+    let receivedNos = 0;
+    let pendingKg = 0;
+    let receivedKg = 0;
+    let pendingAmt = 0;
+    let receivedAmt = 0;
+    if (!selectedPO) {
+      return {
+        pendingNos, receivedNos, balanceNos: 0,
+        pendingKg, receivedKg, balanceKg: 0,
+        pendingAmt, receivedAmt, balanceAmt: 0,
+      };
+    }
+    poLineItems(selectedPO).forEach(item => {
+      const prev = getItemReceivedBefore(item.id);
+      const pending = Math.max(0, (item.nos || 0) - prev);
+      const perPiece = item.nos ? item.kg / item.nos : 0;
+      const cur = parseNum(itemQuantities[item.id] ?? '');
+      const pKg = perPiece * pending;
+      const rKg = perPiece * cur;
+      pendingNos += pending;
+      receivedNos += cur;
+      pendingKg += pKg;
+      receivedKg += rKg;
+      pendingAmt += itemAmt(pKg, item.rate);
+      receivedAmt += itemAmt(rKg, item.rate);
+    });
+    return {
+      pendingNos,
+      receivedNos,
+      balanceNos: pendingNos - receivedNos,
+      pendingKg,
+      receivedKg,
+      balanceKg: pendingKg - receivedKg,
+      pendingAmt,
+      receivedAmt,
+      balanceAmt: pendingAmt - receivedAmt,
+    };
+  }, [selectedPO, itemQuantities, getItemReceivedBefore]);
 
-  const currentTotalReceived = useMemo(() => {
-    return Object.values(itemQuantities).reduce((sum, qty) => sum + qty, 0);
-  }, [itemQuantities]);
+  const handleNewGrn = () => {
+    setSupplierName('');
+    setSelectedPOId('');
+    setRemark('');
+    setInvoiceNo('');
+    setTransporterName('');
+    setVehicleNo('');
+    setDate(new Date().toISOString().split('T')[0]);
+    setGrnNumber(nextGRNNumberFromExisting(purchaseReceipts));
+    setItemQuantities({});
+  };
 
-  const pendingQty = useMemo(() => {
-    if (!selectedPO) return 0;
-    return getTotalNos(selectedPO) - totalReceivedBefore;
-  }, [selectedPO, totalReceivedBefore]);
+  useEffect(() => {
+    if (!grnNumber) setGrnNumber(nextGRNNumberFromExisting(purchaseReceipts));
+  }, []);
 
-  const newPendingQty = useMemo(() => {
-    return pendingQty - currentTotalReceived;
-  }, [pendingQty, currentTotalReceived]);
+  const handleAutoMatch = () => {
+    if (!selectedPO) return;
+    const next: Record<string, string> = {};
+    poLineItems(selectedPO).forEach(item => {
+      const prev = getItemReceivedBefore(item.id);
+      const pending = Math.max(0, (item.nos || 0) - prev);
+      next[item.id] = pending > 0 ? String(pending) : '';
+    });
+    setItemQuantities(next);
+    toast.success('Auto matched pending quantities');
+  };
 
-  const handleSave = () => {
-    if (!selectedPOId) { toast.error('Please select a Purchase Order'); return; }
-    
-    const totalCurrentReceived = Object.values(itemQuantities).reduce((sum, qty) => sum + qty, 0);
+  const handleSave = async (andPrint = false) => {
+    if (!selectedPOId) { toast.error('Select supplier and PO'); return; }
+    const totalCurrentReceived = Object.values(itemQuantities).reduce((sum, qty) => sum + parseNum(qty), 0);
     if (totalCurrentReceived <= 0) {
       toast.error('Total received quantity must be greater than 0');
       return;
@@ -86,267 +175,247 @@ export const MaterialReceipt: React.FC = () => {
       receivedQty: totalCurrentReceived,
       date,
       remark: remark.trim(),
-      billNo: billNo.trim(),
+      grnNumber: grnNumber.trim() || nextGRNNumberFromExisting(purchaseReceipts),
+      invoiceNo: invoiceNo.trim(),
       transporterName: transporterName.trim(),
       vehicleNo: vehicleNo.trim(),
       tcAvailable,
-      items: Object.entries(itemQuantities).map(([itemId, qty]) => ({
-        itemId,
-        receivedQty: qty
-      }))
+      items: Object.entries(itemQuantities)
+        .filter(([, qty]) => parseNum(qty) > 0)
+        .map(([itemId, qty]) => ({ itemId, receivedQty: parseNum(qty) })),
     };
 
-    setPurchaseReceipts(prev => [...prev, newReceipt]);
-
-    // Update PO Status
-    const totalOrdered = getTotalNos(selectedPO!);
+    const totalOrdered = poLineItems(selectedPO).reduce((sum, item) => sum + (item.nos || 0), 0);
+    const totalReceivedBefore = (purchaseReceipts ?? [])
+      .filter(pr => pr.poId === selectedPOId)
+      .reduce((sum, pr) => sum + pr.receivedQty, 0);
     const totalNow = totalReceivedBefore + totalCurrentReceived;
-    let newStatus: PurchaseOrder['status'] = 'Partial';
-    if (totalNow >= totalOrdered) {
-      newStatus = 'Complete';
+    const newStatus: PurchaseOrder['status'] = totalNow >= totalOrdered ? 'Complete' : 'Partial';
+
+    const nextReceipts = [...(purchaseReceipts ?? []), newReceipt];
+    const nextPOs = (purchaseOrders ?? []).map(po =>
+      po.id === selectedPOId ? { ...po, status: newStatus } : po,
+    );
+
+    setPurchaseReceipts(nextReceipts);
+    setPurchaseOrders(nextPOs);
+
+    try {
+      await persistErpNow({ purchaseReceipts: nextReceipts, purchaseOrders: nextPOs });
+      toast.success('GRN saved successfully!', { icon: '✅' });
+      if (andPrint) window.print();
+      handleNewGrn();
+    } catch {
+      toast.error('Saved locally but server sync failed — retry Save');
     }
-
-    setPurchaseOrders(prev => prev.map(po => 
-      po.id === selectedPOId ? { ...po, status: newStatus } : po
-    ));
-
-    toast.success('Material receipt recorded successfully!', { icon: '✅' });
-    
-    // Reset fields
-    setSelectedPOId('');
-    setItemQuantities({});
-    setRemark('');
-    setBillNo('');
-    setTransporterName('');
-    setVehicleNo('');
-    setTcAvailable('No');
   };
 
-  const activePOs = purchaseOrders.filter(po => po.status !== 'Complete');
   const canEntry = role === 'Admin' || role === 'Office Entry';
 
   return (
-    <div className="max-w-[1000px] mx-auto space-y-6 fade-in">
-      {/* Header */}
-      <div>
-        <h1 className="text-2xl font-bold text-slate-800 dark:text-slate-100">{t('materialReceipt')}</h1>
-        <p className="text-sm text-slate-500 dark:text-slate-400 mt-0.5">Record goods received against purchase orders (GRN)</p>
-      </div>
+    <div className="max-w-[1680px] mx-auto p-3 sm:p-4 space-y-4 fade-in pb-8">
+      <ErpPageHeader
+        title="GRN Entry (Against Purchase Order)"
+        extra={
+          <div className="flex flex-wrap gap-2">
+            <button type="button" onClick={handleNewGrn} className="erp-btn erp-btn-ghost"><Plus className="w-4 h-4" /> New GRN</button>
+            <button type="button" onClick={() => window.print()} className="erp-btn erp-btn-ghost"><Printer className="w-4 h-4" /> Print</button>
+          </div>
+        }
+      />
 
       {!canEntry && (
-        <div className="bg-amber-50 dark:bg-amber-900/30 border border-amber-200 dark:border-amber-800 rounded-xl px-4 py-3 text-sm text-amber-800 dark:text-amber-200 font-medium">
-          ⚠️ Only Admin or Office Entry role can record material receipts.
+        <div className="bg-amber-50 border border-amber-200 rounded-lg px-4 py-2 text-xs text-amber-800 font-medium">
+          Only Admin or Office Entry role can record GRNs.
         </div>
       )}
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Selection & Form */}
-        <div className="lg:col-span-2 space-y-6">
-          <div className="bg-white dark:bg-slate-900 rounded-2xl p-6 shadow-sm border border-slate-100 dark:border-slate-800">
-            <h2 className="text-base font-semibold text-slate-800 dark:text-slate-100 mb-6 flex items-center gap-2">
-              <Search className="w-5 h-5 text-blue-600 dark:text-blue-400" />
-              Select Purchase Order
-            </h2>
-            
-            <div className="space-y-4">
-              <div>
-                <label className="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1.5 uppercase tracking-wider">Purchase Order *</label>
-                <select 
-                  value={selectedPOId} 
-                  onChange={(e) => setSelectedPOId(e.target.value)}
-                  className="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-100 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
-                >
-                  <option value="">-- Select Pending PO --</option>
-                  {activePOs.map(po => (
-                    <option key={po.id} value={po.id}>{po.poNumber} - {po.supplierName} ({po.items[0]?.grade || 'N/A'}{po.items.length > 1 ? '...' : ''})</option>
-                  ))}
-                </select>
-              </div>
-
-              {selectedPO && (
-                <div className="space-y-4 pt-2">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                      <label className="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1.5 uppercase tracking-wider">Received Date</label>
-                      <input type="date" value={date} onChange={(e) => setDate(e.target.value)} className="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-100 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
-                    </div>
-                    <div>
-                      <label className="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1.5 uppercase tracking-wider">Bill No</label>
-                      <input type="text" value={billNo} onChange={(e) => setBillNo(upper(e.target.value))} className="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-100 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Enter Bill No" />
-                    </div>
-                  </div>
-
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                      <label className="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1.5 uppercase tracking-wider">Transporter Name</label>
-                      <input type="text" value={transporterName} onChange={(e) => setTransporterName(upper(e.target.value))} className="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-100 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Enter Transporter Name" />
-                    </div>
-                    <div>
-                      <label className="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1.5 uppercase tracking-wider">Vehicle No</label>
-                      <input type="text" value={vehicleNo} onChange={(e) => setVehicleNo(upper(e.target.value))} className="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-100 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="GJ-06-XX-XXXX" />
-                    </div>
-                  </div>
-
-                  <div>
-                    <label className="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1.5 uppercase tracking-wider">TC (Test Certificate) Available?</label>
-                    <div className="flex gap-3">
-                      <button
-                        type="button"
-                        onClick={() => setTcAvailable('Yes')}
-                        className={`flex-1 py-2.5 rounded-lg border text-sm font-bold transition-all duration-300 ${
-                          tcAvailable === 'Yes'
-                            ? 'bg-emerald-600 border-emerald-600 text-white shadow-md shadow-emerald-100'
-                            : 'bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800/50'
-                        }`}
-                      >
-                        Yes
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => setTcAvailable('No')}
-                        className={`flex-1 py-2.5 rounded-lg border text-sm font-bold transition-all duration-300 ${
-                          tcAvailable === 'No'
-                            ? 'bg-rose-600 border-rose-600 text-white shadow-md shadow-rose-100'
-                            : 'bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800/50'
-                        }`}
-                      >
-                        No
-                      </button>
-                    </div>
-                  </div>
-
-                  <div className="space-y-1.5">
-                    <label className="field-label-sm">Item Details & Received Quantities *</label>
-                    <div className="border border-slate-100 dark:border-slate-800 rounded-xl overflow-hidden bg-slate-50/20 dark:bg-slate-800/20">
-                      <table className="w-full text-left border-collapse text-xs">
-                        <thead>
-                          <tr className="bg-slate-50 dark:bg-slate-800/50 border-b border-slate-100 dark:border-slate-800">
-                            <th className="p-3 font-semibold text-slate-500 dark:text-slate-400">Item Specifications</th>
-                            <th className="p-3 font-semibold text-slate-500 dark:text-slate-400 text-center">Ordered</th>
-                            <th className="p-3 font-semibold text-slate-500 dark:text-slate-400 text-center">Prev. Recd</th>
-                            <th className="p-3 font-semibold text-slate-500 dark:text-slate-400 text-center">Pending</th>
-                            <th className="p-3 font-semibold text-slate-500 dark:text-slate-400 text-center w-28">Recd Qty (Nos)</th>
-                          </tr>
-                        </thead>
-                        <tbody className="divide-y divide-slate-100 bg-white dark:bg-slate-900">
-                          {selectedPO.items.map((item) => {
-                            const prevRecd = getItemReceivedBefore(item.id);
-                            const pending = Math.max(0, (item.nos || 0) - prevRecd);
-                            const curQty = itemQuantities[item.id] ?? 0;
-
-                            return (
-                              <tr key={item.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/50 transition-colors">
-                                <td className="p-3 font-medium text-slate-700 dark:text-slate-200">
-                                  <div className="flex flex-col">
-                                    <span className="font-bold text-slate-800 dark:text-slate-100">{item.grade}</span>
-                                    <span className="text-slate-400 text-2xs">{item.thickness}mm • {item.width}x{item.length}mm</span>
-                                  </div>
-                                </td>
-                                <td className="p-3 text-center font-semibold text-slate-600 dark:text-slate-300">{item.nos} Nos</td>
-                                <td className="p-3 text-center text-emerald-600 dark:text-emerald-400 font-semibold">{prevRecd} Nos</td>
-                                <td className="p-3 text-center text-blue-600 dark:text-blue-400 font-bold">{pending} Nos</td>
-                                <td className="p-3 text-center">
-                                  <input
-                                    type="number"
-                                    min="0"
-                                    step="1"
-                                    value={curQty || ''}
-                                    onChange={(e) => {
-                                      const val = Number(e.target.value);
-                                      setItemQuantities(prev => ({
-                                        ...prev,
-                                        [item.id]: val
-                                      }));
-                                    }}
-                                    className="w-20 bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-lg px-2 py-1 text-center font-bold text-slate-700 dark:text-slate-200 focus:bg-white dark:focus:bg-slate-900 focus:ring-2 focus:ring-blue-500 outline-none"
-                                    placeholder="0"
-                                  />
-                                </td>
-                              </tr>
-                            );
-                          })}
-                        </tbody>
-                      </table>
-                    </div>
-                  </div>
-
-                  <div>
-                    <label className="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1.5 uppercase tracking-wider">Remark / Batch Info</label>
-                    <input 
-                      type="text" 
-                      value={remark} 
-                      onChange={(e) => setRemark(upper(e.target.value))} 
-                      className="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-100 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                      placeholder="Heat No, Vehicle No, etc."
-                    />
-                  </div>
-                </div>
-              )}
-            </div>
-
-            {selectedPO && (
-              <div className="mt-8">
-                <button 
-                  onClick={handleSave}
-                  disabled={!canEntry || currentTotalReceived <= 0}
-                  className="w-full flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-5 py-3 rounded-xl font-semibold shadow-md shadow-blue-100 transition-all disabled:opacity-50"
-                >
-                  <ClipboardCheck className="w-5 h-5" /> Record Receipt
-                </button>
-              </div>
-            )}
+      <div className="tc-mgmt-panel">
+        <div className="p-3 grid grid-cols-2 md:grid-cols-4 gap-3">
+          <div>
+            <label className="tc-mgmt-label">Supplier Name *</label>
+            <select value={supplierName} onChange={e => { setSupplierName(e.target.value); setSelectedPOId(''); }} className="tc-mgmt-input">
+              <option value="">Select Supplier...</option>
+              {supplierOptions.map(s => <option key={s} value={s}>{s}</option>)}
+            </select>
           </div>
+          <div>
+            <label className="tc-mgmt-label">GRN No *</label>
+            <input value={grnNumber} onChange={e => setGrnNumber(upper(e.target.value))} className="tc-mgmt-input font-mono" />
+          </div>
+          <div>
+            <label className="tc-mgmt-label">GRN Date *</label>
+            <input type="date" value={date} onChange={e => setDate(e.target.value)} className="tc-mgmt-input" />
+          </div>
+          <div>
+            <label className="tc-mgmt-label">Vehicle No</label>
+            <input value={vehicleNo} onChange={e => setVehicleNo(upper(e.target.value))} className="tc-mgmt-input" placeholder="GJ01AB1234" />
+          </div>
+          <div>
+            <label className="tc-mgmt-label">Transport Name</label>
+            <input value={transporterName} onChange={e => setTransporterName(upper(e.target.value))} className="tc-mgmt-input" />
+          </div>
+          <div>
+            <label className="tc-mgmt-label">Invoice No.</label>
+            <input value={invoiceNo} onChange={e => setInvoiceNo(upper(e.target.value))} className="tc-mgmt-input" placeholder="INV/1245/25-26" />
+          </div>
+          <div className="col-span-2">
+            <label className="tc-mgmt-label">Remark / Note</label>
+            <textarea value={remark} onChange={e => setRemark(e.target.value)} rows={2} className="tc-mgmt-input resize-y min-h-[38px]" placeholder="Enter note here..." />
+          </div>
+          {supplierPOs.length > 1 && (
+            <div className="col-span-2 md:col-span-4">
+              <label className="tc-mgmt-label">Purchase Order *</label>
+              <select value={selectedPOId} onChange={e => setSelectedPOId(e.target.value)} className="tc-mgmt-input">
+                <option value="">Select PO</option>
+                {supplierPOs.map(po => <option key={po.id} value={po.id}>{po.poNumber} — {po.date}</option>)}
+              </select>
+            </div>
+          )}
         </div>
+      </div>
 
-        {/* Status Card */}
-        <div className="space-y-6">
-          <div className="bg-white dark:bg-slate-900 rounded-2xl p-6 shadow-sm border border-slate-100 dark:border-slate-800 sticky top-6">
-            <h2 className="text-base font-semibold text-slate-800 dark:text-slate-100 mb-4 border-b border-slate-100 dark:border-slate-800 pb-2">PO Status Summary</h2>
-            
-            {selectedPO ? (
-              <div className="space-y-4">
-                <div className="flex justify-between text-sm">
-                  <span className="text-slate-500 dark:text-slate-400">Ordered Qty:</span>
-                  <span className="font-bold text-slate-800 dark:text-slate-100">{getTotalNos(selectedPO)} Nos</span>
-                </div>
-                <div className="flex justify-between text-sm">
-                  <span className="text-slate-500 dark:text-slate-400">Previously Received:</span>
-                  <span className="font-bold text-emerald-600 dark:text-emerald-400">{totalReceivedBefore} Nos</span>
-                </div>
-                <div className="flex justify-between text-sm border-t border-slate-100 dark:border-slate-800 pt-2">
-                  <span className="text-slate-500 dark:text-slate-400">Currently Pending:</span>
-                  <span className="font-bold text-blue-600 dark:text-blue-400">{pendingQty} Nos</span>
-                </div>
-                
-                {currentTotalReceived > 0 && (
-                  <div className={`p-3 rounded-lg text-xs font-medium flex gap-2 ${newPendingQty < 0 ? 'bg-red-50 dark:bg-red-900/30 text-red-700 border border-red-100 dark:border-red-800' : 'bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 border border-blue-100 dark:border-blue-800'}`}>
-                    <AlertCircle className="w-4 h-4 shrink-0" />
-                    <div>
-                      {newPendingQty < 0 ? (
-                        <p>ALERT: You are receiving {Math.abs(newPendingQty)} Nos more than ordered!</p>
-                      ) : newPendingQty === 0 ? (
-                        <p>This will COMPLETE the purchase order.</p>
-                      ) : (
-                        <p>Remaining Pending after this: {newPendingQty} Nos</p>
-                      )}
-                    </div>
-                  </div>
-                )}
+      <ErpNumberedSection number={1} title="PENDING ORDERS">
+        <div className="overflow-x-auto">
+          <table className="w-full erp-report-table text-xs">
+            <thead>
+              <tr>
+                <th>PO No</th><th>PO Date</th><th>Grade</th><th>Thickness (mm)</th><th>Width (mm)</th><th>Length (mm)</th>
+                <th className="text-right">PO Nos</th><th className="text-right">Pending Nos</th><th className="text-right">Pending Kg</th>
+                <th className="text-right">PO Rate</th><th className="text-right">Pending Amount</th>
+              </tr>
+            </thead>
+            <tbody>
+              {!supplierName ? (
+                <tr><td colSpan={11} className="text-center py-8 text-slate-400 italic">Select supplier to view pending orders</td></tr>
+              ) : pendingOrderRows.length === 0 ? (
+                <tr><td colSpan={11} className="text-center py-8 text-slate-400 italic">No pending orders for this supplier</td></tr>
+              ) : pendingOrderRows.map(({ po, item, pendingNos, pendingKg }) => (
+                <tr
+                  key={`${po.id}-${item.id}`}
+                  className={selectedPOId === po.id ? 'bg-blue-50/60 cursor-pointer' : 'cursor-pointer hover:bg-slate-50'}
+                  onClick={() => setSelectedPOId(po.id)}
+                >
+                  <td className="font-semibold text-brand-blue">{po.poNumber}</td>
+                  <td>{po.date}</td>
+                  <td>{item.grade}</td>
+                  <td>{item.thickness}</td><td>{item.width}</td><td>{item.length}</td>
+                  <td className="text-right">{item.nos}</td>
+                  <td className="text-right font-bold text-brand-blue">{pendingNos}</td>
+                  <td className="text-right">{kg(pendingKg)}</td>
+                  <td className="text-right font-semibold text-orange-600">{parseNum(item.rate).toFixed(2)}</td>
+                  <td className="text-right">{rs(itemAmt(pendingKg, item.rate))}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </ErpNumberedSection>
 
-                <div className="pt-2">
-                  <div className="text-2xs uppercase font-bold text-slate-400 mb-1">Details</div>
-                  <div className="text-xs text-slate-600 dark:text-slate-300 space-y-1">
-                    <p><strong>Supplier:</strong> {selectedPO.supplierName}</p>
-                    <p><strong>Items:</strong> {selectedPO.items.map(i => i.grade).join(', ')}</p>
-                  </div>
-                </div>
-              </div>
-            ) : (
-              <div className="text-center py-8 text-slate-400">
-                <ClipboardCheck className="w-12 h-12 mx-auto mb-3 opacity-20" />
-                <p className="text-sm">Select a PO to see status</p>
-              </div>
-            )}
+      <ErpNumberedSection
+        number={2}
+        title="RECEIVE QUANTITY"
+        actions={
+          <button type="button" onClick={handleAutoMatch} disabled={!selectedPO} className="erp-btn erp-btn-ghost py-1 text-xs">
+            <RefreshCw className="w-3.5 h-3.5" /> Auto Match
+          </button>
+        }
+      >
+        {selectedPO ? (
+          <div className="overflow-x-auto">
+            <table className="w-full erp-report-table text-xs">
+              <thead>
+                <tr>
+                  <th>Sr No.</th><th>Grade</th><th>Thickness (mm)</th><th>Width (mm)</th><th>Length (mm)</th>
+                  <th className="text-right">Pending Nos</th><th className="text-right">Pending Kg</th>
+                  <th className="text-right">Rate</th>
+                  <th className="text-right">Received Nos *</th><th className="text-right">Received Kg (Auto)</th>
+                  <th className="text-right">Received Amount</th>
+                  <th className="text-right">Balance Nos</th><th className="text-right">Balance Kg</th>
+                  <th className="text-right">Balance Amount</th>
+                  <th className="text-center w-10">Action</th>
+                </tr>
+              </thead>
+              <tbody>
+                {poLineItems(selectedPO).filter(item => {
+                  const prev = getItemReceivedBefore(item.id);
+                  return Math.max(0, (item.nos || 0) - prev) > 0;
+                }).map((item, idx) => {
+                  const prev = getItemReceivedBefore(item.id);
+                  const pendingNos = Math.max(0, (item.nos || 0) - prev);
+                  const perPiece = item.nos ? item.kg / item.nos : 0;
+                  const received = parseNum(itemQuantities[item.id] ?? '');
+                  const pendingKg = perPiece * pendingNos;
+                  const receivedKg = perPiece * received;
+                  const balanceNos = pendingNos - received;
+                  const balanceKg = perPiece * balanceNos;
+                  return (
+                    <tr key={item.id}>
+                      <td>{idx + 1}</td>
+                      <td>
+                        <input readOnly value={item.grade} className="tc-mgmt-input py-1 text-xs min-w-[90px] bg-slate-50" />
+                      </td>
+                      <td>
+                        <input readOnly value={item.thickness} className="tc-mgmt-input py-1 text-xs min-w-[70px] bg-slate-50" />
+                      </td>
+                      <td>{item.width}</td><td>{item.length}</td>
+                      <td className="text-right">{pendingNos}</td>
+                      <td className="text-right">{kg(pendingKg)}</td>
+                      <td className="text-right font-semibold text-orange-600">{parseNum(item.rate).toFixed(2)}</td>
+                      <td className="text-right">
+                        <NumericInput
+                          value={itemQuantities[item.id] ?? ''}
+                          onChange={v => setItemQuantities(prev => ({ ...prev, [item.id]: v }))}
+                          className="tc-mgmt-input w-16 text-center ml-auto py-1"
+                          placeholder="0"
+                        />
+                      </td>
+                      <td className="text-right text-green-600 font-semibold">{kg(receivedKg)}</td>
+                      <td className="text-right font-semibold text-green-600">{rs(itemAmt(receivedKg, item.rate))}</td>
+                      <td className="text-right font-bold text-brand-blue">{balanceNos}</td>
+                      <td className="text-right">{kg(balanceKg)}</td>
+                      <td className="text-right text-orange-600">{rs(itemAmt(balanceKg, item.rate))}</td>
+                      <td className="text-center">
+                        <button
+                          type="button"
+                          title="Clear row"
+                          onClick={() => setItemQuantities(prev => ({ ...prev, [item.id]: '' }))}
+                          className="p-1 rounded text-red-500 hover:bg-red-50 hover:text-red-700"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </button>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        ) : (
+          <p className="text-center py-8 text-slate-400 italic">Select a PO from pending orders</p>
+        )}
+      </ErpNumberedSection>
+
+      <div className="tc-mgmt-panel">
+        <div className="p-3 space-y-3 overflow-x-auto">
+          <ErpSummaryTiles
+            columns={9}
+            items={[
+              { label: 'Total Pending Nos', value: totals.pendingNos, tone: 'blue' },
+              { label: 'Total Received Nos', value: totals.receivedNos, tone: 'green' },
+              { label: 'Total Balance Nos', value: totals.balanceNos, tone: 'orange' },
+              { label: 'Total Pending Kg', value: kg(totals.pendingKg), tone: 'blue' },
+              { label: 'Total Received Kg', value: kg(totals.receivedKg), tone: 'green' },
+              { label: 'Total Balance Kg', value: kg(totals.balanceKg), tone: 'orange' },
+              { label: 'Pending Amount', value: rs(totals.pendingAmt), tone: 'blue' },
+              { label: 'Received Amount', value: rs(totals.receivedAmt), tone: 'green' },
+              { label: 'Balance Amount', value: rs(totals.balanceAmt), tone: 'orange' },
+            ]}
+          />
+          <div className="flex flex-wrap justify-end gap-2 pt-1">
+            <button type="button" {...erpHotkeyProps('save')} onClick={() => handleSave(false)} disabled={!canEntry || !selectedPO || totals.receivedNos <= 0} className="erp-btn erp-btn-navy uppercase tracking-wide"><Save className="w-4 h-4" /> Save</button>
+            <button type="button" onClick={() => handleSave(true)} disabled={!canEntry || !selectedPO || totals.receivedNos <= 0} className="erp-btn erp-btn-green uppercase tracking-wide"><Printer className="w-4 h-4" /> Save & Print</button>
+            <button type="button" onClick={handleNewGrn} className="erp-btn erp-btn-ghost uppercase tracking-wide"><X className="w-4 h-4" /> Cancel</button>
           </div>
         </div>
       </div>

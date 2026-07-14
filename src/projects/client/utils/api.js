@@ -1,23 +1,23 @@
-import { sampleContacts, sampleEmployees, sampleCandidates, STEEL_GRADES } from '../data/seedData';
+import { STEEL_GRADES } from '../data/seedData';
 
+// v2 keys — fresh start, no sample data
 const KEYS = {
-  CONTACTS: 'steelconnect_contacts',
-  EMPLOYEES: 'steelconnect_employees',
-  CANDIDATES: 'steelconnect_candidates',
-  GRADES: 'steelconnect_grades',
+  CONTACTS: 'steelconnect_v2_contacts',
+  EMPLOYEES: 'steelconnect_v2_employees',
+  CANDIDATES: 'steelconnect_v2_candidates',
+  GRADES: 'steelconnect_v2_grades',
 };
 
-// Helper to initialize localStorage if empty
 const initStore = (key, initialData) => {
   if (!localStorage.getItem(key)) {
     localStorage.setItem(key, JSON.stringify(initialData));
   }
 };
 
-// Initialize everything
-initStore(KEYS.CONTACTS, sampleContacts);
-initStore(KEYS.EMPLOYEES, sampleEmployees);
-initStore(KEYS.CANDIDATES, sampleCandidates);
+// Initialize with empty lists — no demo data
+initStore(KEYS.CONTACTS, []);
+initStore(KEYS.EMPLOYEES, []);
+initStore(KEYS.CANDIDATES, []);
 initStore(KEYS.GRADES, STEEL_GRADES.map(name => ({ name })));
 
 const get = (key) => JSON.parse(localStorage.getItem(key) || '[]');
@@ -41,6 +41,20 @@ export const api = {
   deleteContact: async (id) => {
     const items = get(KEYS.CONTACTS);
     set(KEYS.CONTACTS, items.filter(item => item.id !== id));
+    return true;
+  },
+  bulkCreateContacts: async (contacts) => {
+    const items = get(KEYS.CONTACTS);
+    const newItems = contacts.map((c, i) => ({
+      ...c,
+      id: `csv_${Date.now()}_${i}`,
+      createdAt: new Date().toISOString(),
+    }));
+    set(KEYS.CONTACTS, [...newItems, ...items]);
+    return newItems;
+  },
+  clearContacts: async () => {
+    set(KEYS.CONTACTS, []);
     return true;
   },
 

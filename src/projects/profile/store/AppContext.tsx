@@ -3,6 +3,14 @@
 import React, { createContext, useContext, useState, useEffect, useCallback, useRef, type ReactNode } from 'react';
 import { fetchErpData, saveErpData, ERP_VERSION, type ErpStoredData } from '../services/erpApi';
 import toast from 'react-hot-toast';
+import { nextPONumberFromExisting } from '../utils/poNumber';
+import type { JobWorkOutwardRecord, JobWorkInwardRecord } from '../utils/jobWorkHelpers';
+import type { WeighbridgeRecord } from '../utils/weightBridgeHelpers';
+import type { RejectMaterialReturnRecord } from '../utils/rejectMaterialReturnHelpers';
+import type { AnmsMtcRecord } from '../utils/anmsMtcHelpers';
+import { mergeItemCatalog, seedItems } from '../utils/itemMasterSeed';
+import { mergeSectionCatalog, seedSections } from '../utils/sectionMasterSeed';
+export type { AnmsMtcRecord, AnmsHeatAnalysis, AnmsMechanicalProperty } from '../utils/anmsMtcHelpers';
 
 // ─── Enums & Types ────────────────────────────────────────────
 export type Role = 'Admin' | 'Office Entry' | 'Production Supervisor' | 'Nesting Operator' | 'Dispatch' | 'Accounts User';
@@ -35,8 +43,8 @@ export const ALL_STAGES: Stage[] = [
   'Payment Received',
 ];
 
-export type CuttingType = 'CNC Profile' | 'Circle' | 'Square' | 'Ring' | 'Plate' | 'Scrap';
-export const CUTTING_TYPES: CuttingType[] = ['CNC Profile', 'Circle', 'Square', 'Ring', 'Plate', 'Scrap'];
+export type CuttingType = 'CNC Profile' | 'Circle' | 'Square' | 'Ring' | 'Plate' | 'Laser' | 'Waterjet' | 'Scrap';
+export const CUTTING_TYPES: CuttingType[] = ['CNC Profile', 'Circle', 'Square', 'Ring', 'Plate', 'Laser', 'Waterjet', 'Scrap'];
 
 export type MaterialType = 'MS' | 'SS' | 'Alloy' | 'Other';
 export const MATERIAL_TYPES: MaterialType[] = ['MS', 'SS', 'Alloy', 'Other'];
@@ -181,6 +189,8 @@ export interface ChallanRecord {
 
 export interface POItem {
   id: string;
+  itemMasterId?: string;
+  itemName?: string;
   grade: string;
   thickness: string;
   width: string;
@@ -191,6 +201,9 @@ export interface POItem {
   amount: number;
   heatNo?: string;
   actualWeight?: number;
+  make?: string;
+  sizeSection?: string;
+  rateBasis?: string;
 }
 
 export interface PurchaseOrder {
@@ -203,6 +216,7 @@ export interface PurchaseOrder {
   supplierEmail?: string;
   supplierMobile?: string;
   deliveryAddress?: string;
+  deliveryLocation?: string;
   transportName?: string;
   transportNumber?: string;
   driverMobile?: string;
@@ -214,10 +228,22 @@ export interface PurchaseOrder {
   invoiceNo?: string;
   customer?: string;
   location?: string;
+  inspection?: string;
+  loading?: string;
+  transport?: string;
   items: POItem[];
   totalKg: number;
   totalAmount: number;
   status: 'Pending' | 'Partial' | 'Complete';
+  attachments?: POAttachment[];
+}
+
+export interface POAttachment {
+  id: string;
+  name: string;
+  type: string;
+  size: number;
+  dataUrl: string;
 }
 
 
@@ -232,7 +258,91 @@ export interface PurchaseReceipt {
   vehicleNo?: string;
   tcAvailable?: 'Yes' | 'No';
   items?: { itemId: string; receivedQty: number }[];
+  grnNumber?: string;
+  challanNo?: string;
+  invoiceNo?: string;
+  transportBillId?: string;
 }
+
+export interface TransportBillRecord {
+  id: string;
+  billNo: string;
+  billDate: string;
+  transportName: string;
+  vehicleNo: string;
+  billAgainst: string;
+  remark?: string;
+  receiptIds: string[];
+  totalWeightKg: number;
+}
+
+export interface CompanyProfileData {
+  name: string;
+  gst: string;
+  pan: string;
+  address: string;
+  mobile: string;
+  email: string;
+}
+
+export interface ErpPreferencesData {
+  fy: string;
+  currency: string;
+  gst: string;
+  dateFmt: string;
+  decimals: string;
+  prefix: string;
+}
+
+export interface CuttingAllocationRow {
+  id: string;
+  itemType: string;
+  grade: string;
+  thickness: string;
+  widthOd: string;
+  lengthId: string;
+  drawingNo: string;
+  nos: number;
+  karigar: string;
+  readyQty: number;
+}
+
+export interface CuttingAllocationRecord {
+  id: string;
+  entryNo: string;
+  entryDate: string;
+  orderNo: string;
+  partyName: string;
+  remark: string;
+  rows: CuttingAllocationRow[];
+}
+
+export interface CNCRateCalculationRecord {
+  id: string;
+  inquiryNo: string;
+  inquiryDate: string;
+  partyName: string;
+  form: Record<string, string>;
+  savedAt: string;
+}
+
+export const DEFAULT_COMPANY_PROFILE: CompanyProfileData = {
+  name: 'Jagdamba Profile',
+  gst: '24ABCDE1234F1Z5',
+  pan: 'ABCDE1234F',
+  address: '',
+  mobile: '9876543210',
+  email: 'info@jagdambaprofile.com',
+};
+
+export const DEFAULT_ERP_PREFERENCES: ErpPreferencesData = {
+  fy: '2026-2027',
+  currency: 'INR - Indian Rupee',
+  gst: '18%',
+  dateFmt: 'DD/MM/YYYY',
+  decimals: '2',
+  prefix: 'INV/2627/',
+};
 
 export interface ActivityLog {
   id: string;
@@ -279,6 +389,14 @@ export interface TCRecord {
   emailStatus: 'Sent' | 'Not Sent';
   pdfData?: string;
   pdfName?: string;
+  platePhotoData?: string;
+  platePhotoName?: string;
+  heatMarkingPhotoData?: string;
+  heatMarkingPhotoName?: string;
+  labReportData?: string;
+  labReportName?: string;
+  supplierName?: string;
+  nos?: string;
   dispatchHistory: DispatchHistoryItem[];
 }
 
@@ -286,6 +404,7 @@ export interface QuotationItem {
   id: string;
   shape: 'Square' | 'Ring' | 'CNC Profile';
   grade: string;
+  make?: string;
   thickness: number;
   width: number;
   length: number;
@@ -298,6 +417,29 @@ export interface QuotationItem {
   idRate: number;
   amount: number;
   remark: string;
+}
+
+export interface QuotationRecord {
+  id: string;
+  quoteNo: string;
+  date: string;
+  validUntil: string;
+  partyName: string;
+  contactPerson: string;
+  mobileNo: string;
+  address: string;
+  paymentTerms?: string;
+  loadingChargeNote?: string;
+  transportChargeNote?: string;
+  validityDays?: number;
+  utLevel?: string;
+  salesPerson?: string;
+  items: QuotationItem[];
+  loadingCharges: number;
+  transportCharges: number;
+  gstRate: number;
+  totalAmount: number;
+  grandTotal: number;
 }
 
 export interface CNCItem {
@@ -324,26 +466,10 @@ export interface CNCItem {
   plateWeight: number;
 }
 
-export interface QuotationRecord {
-  id: string;
-  quoteNo: string;
-  date: string;
-  validUntil: string;
-  partyName: string;
-  contactPerson: string;
-  mobileNo: string;
-  address: string;
-  items: QuotationItem[];
-  loadingCharges: number;
-  transportCharges: number;
-  gstRate: number;
-  totalAmount: number;
-  grandTotal: number;
-}
-
 export interface CNCQuotationRecord {
   id: string;
   quoteNo: string;
+  inquiryNo?: string;
   date: string;
   partyName: string;
   mobileNo: string;
@@ -352,6 +478,47 @@ export interface CNCQuotationRecord {
   transportCharges: number;
   gstRate: number;
   totalAmount: number;
+  grandTotal: number;
+  status?: 'Pending' | 'Order Received';
+  poNo?: string;
+  poDate?: string;
+  orderQty?: number;
+  deliveryDate?: string;
+  orderRemark?: string;
+}
+
+export interface RingQuotationItem {
+  id: string;
+  grade: string;
+  thickness: string;
+  od: string;
+  id_: string;
+  odRate: string;
+  idRate: string;
+  nos: string;
+  ringWeight: number;
+  ringRateKg: number;
+  ringRateNos: number;
+  amount: number;
+}
+
+export interface RingQuotationRecord {
+  id: string;
+  quoteNo: string;
+  inquiryNo: string;
+  date: string;
+  partyName: string;
+  partyAddress?: string;
+  partyAddressLine2?: string;
+  partyGst?: string;
+  partyEmail?: string;
+  partyPhone?: string;
+  remark?: string;
+  gstRate: number;
+  items: RingQuotationItem[];
+  totalNos: number;
+  totalAmount: number;
+  gstAmount: number;
   grandTotal: number;
 }
 
@@ -368,6 +535,84 @@ export interface PartyMaster {
   address?: string;
   supplierAddress?: string;
   reference?: string;
+  partyCode?: string;
+  category?: string;
+  mobile2?: string;
+  whatsappNumber?: string;
+  city?: string;
+  state?: string;
+  country?: string;
+  pincode?: string;
+  panNumber?: string;
+  msmeNumber?: string;
+  salesPerson?: string;
+  followupPerson?: string;
+  remark?: string;
+  partyStatus?: string;
+  /** Grades linked to this party — used in PO item grade dropdown when this supplier is selected */
+  grades?: string[];
+}
+
+export interface GradeMasterRecord {
+  id: string;
+  code: string;
+  name: string;
+  density: string;
+  standard: string;
+  description: string;
+  status: string;
+}
+
+export interface ItemMasterRecord {
+  id: string;
+  code: string;
+  name: string;
+  type: string;
+  grade: string;
+  unit: string;
+  hsn: string;
+}
+
+export type SectionWeightMode = 'per_meter' | 'pipe' | 'plate';
+
+export interface SectionMasterRecord {
+  id: string;
+  code: string;
+  category: string;
+  size: string;
+  kgPerMeter: string;
+  weightMode: SectionWeightMode;
+  status: string;
+}
+
+export interface WorkerMasterRecord {
+  id: string;
+  code: string;
+  name: string;
+  mobile: string;
+  skill: string;
+  rate: string;
+  status: string;
+}
+
+export interface TransportMasterRecord {
+  id: string;
+  code: string;
+  name: string;
+  contact: string;
+  mobile: string;
+  phone?: string;
+  altMobile?: string;
+  address?: string;
+  gst: string;
+  city: string;
+  state?: string;
+  pincode?: string;
+  email?: string;
+  vehicleCapacity?: string;
+  vehicleType?: string;
+  ratePerKg?: string;
+  remark?: string;
 }
 
 // ─── Context Type ─────────────────────────────────────────────
@@ -394,6 +639,7 @@ interface AppContextType {
   orders: Order[];
   setOrders: React.Dispatch<React.SetStateAction<Order[]>>;
   addOrder: (order: Order) => Promise<void>;
+  deleteOrder: (id: string) => Promise<void>;
   updateOrderStage: (id: string, stage: Stage) => Promise<void>;
   updateItemStatus: (orderId: string, itemId: string, status: 'Pending' | 'In Progress' | 'Completed') => Promise<void>;
   updateItemCompletedQty: (orderId: string, itemId: string, qty: number) => Promise<void>;
@@ -417,7 +663,7 @@ interface AppContextType {
 
   purchaseOrders: PurchaseOrder[];
   setPurchaseOrders: React.Dispatch<React.SetStateAction<PurchaseOrder[]>>;
-  deletePurchaseOrder: (id: string) => void;
+  deletePurchaseOrder: (id: string) => Promise<void>;
   purchaseReceipts: PurchaseReceipt[];
   setPurchaseReceipts: React.Dispatch<React.SetStateAction<PurchaseReceipt[]>>;
 
@@ -430,12 +676,47 @@ interface AppContextType {
   quotations: QuotationRecord[];
   setQuotations: React.Dispatch<React.SetStateAction<QuotationRecord[]>>;
   addQuotation: (q: QuotationRecord) => void;
+  updateQuotation: (q: QuotationRecord) => void;
   deleteQuotation: (id: string) => void;
 
   cncQuotations: CNCQuotationRecord[];
   setCNCQuotations: React.Dispatch<React.SetStateAction<CNCQuotationRecord[]>>;
   addCNCQuotation: (q: CNCQuotationRecord) => void;
+  updateCNCQuotation: (q: CNCQuotationRecord) => void;
   deleteCNCQuotation: (id: string) => void;
+
+  ringQuotations: RingQuotationRecord[];
+  setRingQuotations: React.Dispatch<React.SetStateAction<RingQuotationRecord[]>>;
+  addRingQuotation: (q: RingQuotationRecord) => void;
+  updateRingQuotation: (q: RingQuotationRecord) => void;
+  deleteRingQuotation: (id: string) => void;
+
+  transportBills: TransportBillRecord[];
+  addTransportBill: (bill: TransportBillRecord) => void;
+
+  companyProfile: CompanyProfileData;
+  setCompanyProfile: React.Dispatch<React.SetStateAction<CompanyProfileData>>;
+  preferences: ErpPreferencesData;
+  setPreferences: React.Dispatch<React.SetStateAction<ErpPreferencesData>>;
+  cuttingAllocations: CuttingAllocationRecord[];
+  setCuttingAllocations: React.Dispatch<React.SetStateAction<CuttingAllocationRecord[]>>;
+  cncRateCalculations: CNCRateCalculationRecord[];
+  setCNCRateCalculations: React.Dispatch<React.SetStateAction<CNCRateCalculationRecord[]>>;
+  jobWorkOutwards: JobWorkOutwardRecord[];
+  setJobWorkOutwards: React.Dispatch<React.SetStateAction<JobWorkOutwardRecord[]>>;
+  jobWorkInwards: JobWorkInwardRecord[];
+  setJobWorkInwards: React.Dispatch<React.SetStateAction<JobWorkInwardRecord[]>>;
+  weighbridgeEntries: WeighbridgeRecord[];
+  setWeighbridgeEntries: React.Dispatch<React.SetStateAction<WeighbridgeRecord[]>>;
+
+  rejectMaterialReturns: RejectMaterialReturnRecord[];
+  setRejectMaterialReturns: React.Dispatch<React.SetStateAction<RejectMaterialReturnRecord[]>>;
+
+  anmsMtcRecords: AnmsMtcRecord[];
+  setAnmsMtcRecords: React.Dispatch<React.SetStateAction<AnmsMtcRecord[]>>;
+
+  /** Immediately persist ERP data to browser cache and server (skip debounce) */
+  persistErpNow: (override?: Partial<StoredData>) => Promise<void>;
 
   nextOrderNo: () => string;
   nextChallanNo: () => string;
@@ -446,6 +727,32 @@ interface AppContextType {
   addParty: (party: Omit<PartyMaster, 'id'>) => Promise<PartyMaster>;
   updateParty: (party: PartyMaster) => Promise<void>;
   deleteParty: (id: string) => Promise<void>;
+  importParties: (rows: Omit<PartyMaster, 'id'>[]) => Promise<{ saved: number; skipped: number }>;
+
+  grades: GradeMasterRecord[];
+  addGrade: (grade: Omit<GradeMasterRecord, 'id'>) => Promise<GradeMasterRecord>;
+  updateGrade: (grade: GradeMasterRecord) => Promise<void>;
+  deleteGrade: (id: string) => Promise<void>;
+
+  items: ItemMasterRecord[];
+  addItem: (item: Omit<ItemMasterRecord, 'id'>) => Promise<ItemMasterRecord>;
+  updateItem: (item: ItemMasterRecord) => Promise<void>;
+  deleteItem: (id: string) => Promise<void>;
+
+  sections: SectionMasterRecord[];
+  addSection: (section: Omit<SectionMasterRecord, 'id'>) => Promise<SectionMasterRecord>;
+  updateSection: (section: SectionMasterRecord) => Promise<void>;
+  deleteSection: (id: string) => Promise<void>;
+
+  workers: WorkerMasterRecord[];
+  addWorker: (worker: Omit<WorkerMasterRecord, 'id'>) => Promise<WorkerMasterRecord>;
+  updateWorker: (worker: WorkerMasterRecord) => Promise<void>;
+  deleteWorker: (id: string) => Promise<void>;
+
+  transports: TransportMasterRecord[];
+  addTransport: (transport: Omit<TransportMasterRecord, 'id'>) => Promise<TransportMasterRecord>;
+  updateTransport: (transport: TransportMasterRecord) => Promise<void>;
+  deleteTransport: (id: string) => Promise<void>;
 }
 
 // ─── Translations ─────────────────────────────────────────────
@@ -484,6 +791,12 @@ const translations: Record<Language, Record<string, string>> = {
     paymentReceived: 'Payment Received',
     purchaseOrder: 'Purchase Order',
     materialReceipt: 'Material Receipt',
+    materialReceiptReport: 'Material Receipt Report',
+    materialPendingReport: 'Material Pending Report',
+    ringRate: 'Ring Rate Entry',
+    plateQuotation: 'Plate Quotation',
+    cuttingAllocation: 'Cutting Allocation',
+    workerCutting: 'Worker Cutting List',
     purchaseReports: 'Purchase Reports',
     pendingPurchase: 'Pending Purchase',
     supplierWise: 'Supplier Wise',
@@ -535,7 +848,7 @@ const translations: Record<Language, Record<string, string>> = {
     advancedSearch: 'Advanced Search',
     duplicateAlert: 'Duplicate Alert',
     quotation: 'Quotation',
-    cncQuotation: 'CNC Quotation',
+    cncQuotation: 'CNC Quotation 2',
     partyMaster: 'Party Master',
   },
   Gujarati: {
@@ -570,6 +883,12 @@ const translations: Record<Language, Record<string, string>> = {
     paymentReceived: 'પેમેન્ટ મળ્યું',
     purchaseOrder: 'ખરીદી ઓર્ડર',
     materialReceipt: 'મટીરીયલ રિસીપ્ટ',
+    materialReceiptReport: 'મટીરીયલ રિસીપ્ટ રિપોર્ટ',
+    materialPendingReport: 'મટીરીયલ પેન્ડિંગ રિપોર્ટ',
+    ringRate: 'રિંગ રેટ એન્ટ્રી',
+    plateQuotation: 'પ્લેટ ક્વોટેશન',
+    cuttingAllocation: 'કટિંગ એલોકેશન',
+    workerCutting: 'વર્કર કટિંગ લિસ્ટ',
     purchaseReports: 'ખરીદી રિપોર્ટ્સ',
     pendingPurchase: 'બાકી ખરીદી',
     supplierWise: 'સપ્લાયર મુજબ',
@@ -591,7 +910,7 @@ const translations: Record<Language, Record<string, string>> = {
     plateWeight: 'પ્લેટ વજન',
     make: 'કંપની / મેક',
     quotation: 'કોટેશન',
-    cncQuotation: 'CNC ક્વોટેશન',
+    cncQuotation: 'CNC Quotation 2',
     partyMaster: 'પાર્ટી માસ્ટર',
   },
 };
@@ -721,6 +1040,16 @@ const seedParties: PartyMaster[] = [
   }
 ];
 
+const seedGrades: GradeMasterRecord[] = MATERIAL_GRADES.slice(0, 5).map((name, i) => ({
+  id: `grade-${i + 1}`,
+  code: `GR-${String(i + 1).padStart(2, '0')}`,
+  name,
+  density: '7850',
+  standard: 'IS',
+  description: '',
+  status: 'Active',
+}));
+
 // ─── LocalStorage Helpers ─────────────────────────────────────
 
 const STORAGE_KEY = 'jagdamba_erp_data';
@@ -739,8 +1068,24 @@ interface StoredData {
   tcRecords: TCRecord[];
   quotations: QuotationRecord[];
   cncQuotations: CNCQuotationRecord[];
+  ringQuotations: RingQuotationRecord[];
+  transportBills: TransportBillRecord[];
   logs: ActivityLog[];
   parties: PartyMaster[];
+  grades: GradeMasterRecord[];
+  items: ItemMasterRecord[];
+  sections: SectionMasterRecord[];
+  workers: WorkerMasterRecord[];
+  transports: TransportMasterRecord[];
+  companyProfile: CompanyProfileData;
+  preferences: ErpPreferencesData;
+  cuttingAllocations: CuttingAllocationRecord[];
+  cncRateCalculations: CNCRateCalculationRecord[];
+  jobWorkOutwards: JobWorkOutwardRecord[];
+  jobWorkInwards: JobWorkInwardRecord[];
+  weighbridgeEntries: WeighbridgeRecord[];
+  rejectMaterialReturns: RejectMaterialReturnRecord[];
+  anmsMtcRecords: AnmsMtcRecord[];
 }
 
 function loadAuth(): User | null {
@@ -763,14 +1108,11 @@ function loadFromStorage(): StoredData | null {
   if (typeof window === 'undefined') return null;
   try {
     const version = localStorage.getItem(STORAGE_VERSION_KEY);
-    if (version !== CURRENT_VERSION) {
-      localStorage.removeItem(STORAGE_KEY);
-      localStorage.removeItem(AUTH_KEY);
-      localStorage.removeItem('jagdamba_erp_token');
-      localStorage.setItem(STORAGE_VERSION_KEY, CURRENT_VERSION);
-      return null;
-    }
     const raw = localStorage.getItem(STORAGE_KEY);
+    if (version !== CURRENT_VERSION) {
+      // Keep saved data — only bump version (do not wipe parties/orders on app update)
+      localStorage.setItem(STORAGE_VERSION_KEY, CURRENT_VERSION);
+    }
     if (raw) return JSON.parse(raw);
   } catch { /* ignore */ }
   return null;
@@ -780,7 +1122,25 @@ function saveToStorage(data: StoredData) {
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
     localStorage.setItem(STORAGE_VERSION_KEY, CURRENT_VERSION);
-  } catch { /* ignore */ }
+    return;
+  } catch (err) {
+    console.warn('localStorage full — saving without TC attachments', err);
+  }
+  try {
+    const lite: StoredData = {
+      ...data,
+      tcRecords: data.tcRecords.map((tc) => {
+        const { pdfData, platePhotoData, heatMarkingPhotoData, labReportData, ...rest } = tc;
+        return rest;
+      }),
+    };
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(lite));
+    localStorage.setItem(STORAGE_VERSION_KEY, CURRENT_VERSION);
+    toast.error('Browser storage full — TC attachments kept in memory; saving full data to server.');
+  } catch (err) {
+    console.error('localStorage save failed:', err);
+    toast.error('Browser storage full — save to server may still work. Try removing large TC attachments.');
+  }
 }
 
 function getSeedData(): StoredData {
@@ -795,8 +1155,24 @@ function getSeedData(): StoredData {
     tcRecords: seedTCRecords,
     quotations: [],
     cncQuotations: [],
+    ringQuotations: [],
+    transportBills: [],
     logs: [],
     parties: seedParties,
+    grades: seedGrades,
+    items: seedItems,
+    sections: seedSections,
+    workers: [],
+    transports: [],
+    companyProfile: DEFAULT_COMPANY_PROFILE,
+    preferences: DEFAULT_ERP_PREFERENCES,
+    cuttingAllocations: [],
+    cncRateCalculations: [],
+    jobWorkOutwards: [],
+    jobWorkInwards: [],
+    weighbridgeEntries: [],
+    rejectMaterialReturns: [],
+    anmsMtcRecords: [],
   };
 }
 
@@ -813,22 +1189,77 @@ function applyStoredData(
     setTCRecords: React.Dispatch<React.SetStateAction<TCRecord[]>>;
     setQuotations: React.Dispatch<React.SetStateAction<QuotationRecord[]>>;
     setCNCQuotations: React.Dispatch<React.SetStateAction<CNCQuotationRecord[]>>;
+    setRingQuotations: React.Dispatch<React.SetStateAction<RingQuotationRecord[]>>;
+    setTransportBills: React.Dispatch<React.SetStateAction<TransportBillRecord[]>>;
     setLogs: React.Dispatch<React.SetStateAction<ActivityLog[]>>;
     setParties: React.Dispatch<React.SetStateAction<PartyMaster[]>>;
+    setGrades: React.Dispatch<React.SetStateAction<GradeMasterRecord[]>>;
+    setItems: React.Dispatch<React.SetStateAction<ItemMasterRecord[]>>;
+    setSections: React.Dispatch<React.SetStateAction<SectionMasterRecord[]>>;
+    setWorkers: React.Dispatch<React.SetStateAction<WorkerMasterRecord[]>>;
+    setTransports: React.Dispatch<React.SetStateAction<TransportMasterRecord[]>>;
+    setCompanyProfile: React.Dispatch<React.SetStateAction<CompanyProfileData>>;
+    setPreferences: React.Dispatch<React.SetStateAction<ErpPreferencesData>>;
+    setCuttingAllocations: React.Dispatch<React.SetStateAction<CuttingAllocationRecord[]>>;
+    setCNCRateCalculations: React.Dispatch<React.SetStateAction<CNCRateCalculationRecord[]>>;
+    setJobWorkOutwards: React.Dispatch<React.SetStateAction<JobWorkOutwardRecord[]>>;
+    setJobWorkInwards: React.Dispatch<React.SetStateAction<JobWorkInwardRecord[]>>;
+    setWeighbridgeEntries: React.Dispatch<React.SetStateAction<WeighbridgeRecord[]>>;
+    setRejectMaterialReturns: React.Dispatch<React.SetStateAction<RejectMaterialReturnRecord[]>>;
+    setAnmsMtcRecords: React.Dispatch<React.SetStateAction<AnmsMtcRecord[]>>;
   }
 ) {
-  setters.setOrders(stored.orders ?? []);
-  setters.setPlates(stored.plates ?? []);
-  setters.setUsages(stored.usages ?? []);
-  setters.setDispatches(stored.dispatches ?? []);
-  setters.setChallans(stored.challans ?? []);
-  setters.setPurchaseOrders(stored.purchaseOrders ?? []);
-  setters.setPurchaseReceipts(stored.purchaseReceipts ?? []);
-  setters.setTCRecords(stored.tcRecords ?? []);
-  setters.setQuotations(stored.quotations ?? []);
-  setters.setCNCQuotations(stored.cncQuotations ?? []);
-  setters.setLogs(stored.logs ?? []);
-  setters.setParties(stored.parties?.length ? stored.parties : seedParties);
+  const local = loadFromStorage();
+
+  // getArray: prefer server data if non-empty; fall back to local cache to prevent
+  // empty server arrays (e.g. after a DB reset) from clobbering valid client-side data.
+  const getArray = <T,>(server: T[] | undefined, localRows: T[] | undefined): T[] => {
+    if (Array.isArray(server) && server.length > 0) return server;
+    if (Array.isArray(localRows) && localRows.length > 0) return localRows;
+    return [];
+  };
+
+  const mergeMaster = <T extends { id: string }>(server: T[] | undefined, localRows: T[] | undefined, fallback: T[]): T[] => {
+    const base = Array.isArray(server) ? server : (Array.isArray(localRows) ? localRows : fallback);
+    if (!localRows?.length) return base.length ? base : fallback;
+    const map = new Map(base.map(x => [x.id, x]));
+    for (const row of localRows) map.set(row.id, row);
+    return Array.from(map.values());
+  };
+
+  // Transactional arrays: use getArray so a blank server never wipes local cache
+  setters.setOrders(getArray(stored.orders, local?.orders));
+  setters.setPlates(getArray(stored.plates, local?.plates));
+  setters.setUsages(getArray(stored.usages, local?.usages));
+  setters.setDispatches(getArray(stored.dispatches, local?.dispatches));
+  setters.setChallans(getArray(stored.challans, local?.challans));
+  setters.setPurchaseOrders(getArray(stored.purchaseOrders, local?.purchaseOrders));
+  setters.setPurchaseReceipts(getArray(stored.purchaseReceipts, local?.purchaseReceipts));
+  setters.setTCRecords(getArray(stored.tcRecords, local?.tcRecords));
+  setters.setQuotations(getArray(stored.quotations, local?.quotations));
+  setters.setCNCQuotations(
+    mergeMaster(stored.cncQuotations, local?.cncQuotations, []),
+  );
+  setters.setRingQuotations(
+    mergeMaster(stored.ringQuotations, local?.ringQuotations, []),
+  );
+  setters.setTransportBills(getArray(stored.transportBills, local?.transportBills));
+  setters.setLogs(getArray(stored.logs, local?.logs));
+  setters.setParties(mergeMaster(stored.parties, local?.parties, seedParties));
+  setters.setGrades(mergeMaster(stored.grades, local?.grades, seedGrades));
+  setters.setItems(mergeItemCatalog(mergeMaster(stored.items, local?.items, seedItems)));
+  setters.setSections(mergeSectionCatalog(mergeMaster(stored.sections, local?.sections, seedSections)));
+  setters.setWorkers(mergeMaster(stored.workers, local?.workers, []));
+  setters.setTransports(mergeMaster(stored.transports, local?.transports, []));
+  setters.setCompanyProfile(stored.companyProfile ?? local?.companyProfile ?? DEFAULT_COMPANY_PROFILE);
+  setters.setPreferences(stored.preferences ?? local?.preferences ?? DEFAULT_ERP_PREFERENCES);
+  setters.setCuttingAllocations(getArray(stored.cuttingAllocations, local?.cuttingAllocations));
+  setters.setCNCRateCalculations(getArray(stored.cncRateCalculations, local?.cncRateCalculations));
+  setters.setJobWorkOutwards(getArray(stored.jobWorkOutwards, local?.jobWorkOutwards));
+  setters.setJobWorkInwards(getArray(stored.jobWorkInwards, local?.jobWorkInwards));
+  setters.setWeighbridgeEntries(getArray(stored.weighbridgeEntries, local?.weighbridgeEntries));
+  setters.setRejectMaterialReturns(getArray(stored.rejectMaterialReturns, local?.rejectMaterialReturns));
+  setters.setAnmsMtcRecords(getArray(stored.anmsMtcRecords, local?.anmsMtcRecords));
 }
 
 // ─── Context ──────────────────────────────────────────────────
@@ -873,8 +1304,24 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   const [tcRecords, setTCRecords] = useState<TCRecord[]>([]);
   const [quotations, setQuotations] = useState<QuotationRecord[]>([]);
   const [cncQuotations, setCNCQuotations] = useState<CNCQuotationRecord[]>([]);
+  const [ringQuotations, setRingQuotations] = useState<RingQuotationRecord[]>([]);
+  const [transportBills, setTransportBills] = useState<TransportBillRecord[]>([]);
   const [logs, setLogs] = useState<ActivityLog[]>([]);
   const [parties, setParties] = useState<PartyMaster[]>([]);
+  const [grades, setGrades] = useState<GradeMasterRecord[]>([]);
+  const [items, setItems] = useState<ItemMasterRecord[]>([]);
+  const [sections, setSections] = useState<SectionMasterRecord[]>([]);
+  const [workers, setWorkers] = useState<WorkerMasterRecord[]>([]);
+  const [transports, setTransports] = useState<TransportMasterRecord[]>([]);
+  const [companyProfile, setCompanyProfile] = useState<CompanyProfileData>(DEFAULT_COMPANY_PROFILE);
+  const [preferences, setPreferences] = useState<ErpPreferencesData>(DEFAULT_ERP_PREFERENCES);
+  const [cuttingAllocations, setCuttingAllocations] = useState<CuttingAllocationRecord[]>([]);
+  const [cncRateCalculations, setCNCRateCalculations] = useState<CNCRateCalculationRecord[]>([]);
+  const [jobWorkOutwards, setJobWorkOutwards] = useState<JobWorkOutwardRecord[]>([]);
+  const [jobWorkInwards, setJobWorkInwards] = useState<JobWorkInwardRecord[]>([]);
+  const [weighbridgeEntries, setWeighbridgeEntries] = useState<WeighbridgeRecord[]>([]);
+  const [rejectMaterialReturns, setRejectMaterialReturns] = useState<RejectMaterialReturnRecord[]>([]);
+  const [anmsMtcRecords, setAnmsMtcRecords] = useState<AnmsMtcRecord[]>([]);
   const dataReadyRef = useRef(false);
   const saveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -882,7 +1329,10 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     const setters = {
       setOrders, setPlates, setUsages, setDispatches, setChallans,
       setPurchaseOrders, setPurchaseReceipts, setTCRecords,
-      setQuotations, setCNCQuotations, setLogs, setParties,
+      setQuotations, setCNCQuotations, setRingQuotations, setTransportBills, setLogs, setParties,
+      setGrades, setItems, setSections, setWorkers, setTransports,
+      setCompanyProfile, setPreferences, setCuttingAllocations, setCNCRateCalculations,
+      setJobWorkOutwards, setJobWorkInwards, setWeighbridgeEntries, setRejectMaterialReturns, setAnmsMtcRecords,
     };
 
     try {
@@ -890,6 +1340,9 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       if (server.data) {
         applyStoredData(server.data as StoredData, setters);
         saveToStorage(server.data as StoredData);
+        if (server.source === 'live') {
+          toast('Loaded data from live server (local API not running).', { icon: '☁️' });
+        }
         dataReadyRef.current = true;
         return;
       }
@@ -912,7 +1365,8 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       const local = loadFromStorage();
       if (local) {
         applyStoredData(local, setters);
-        toast.error('Server unavailable — loaded from browser cache.');
+        const n = local.parties?.length ?? 0;
+        toast.error(`Server unavailable — loaded ${n} parties from browser cache.`);
       } else {
         const seed = getSeedData();
         applyStoredData(seed, setters);
@@ -953,15 +1407,18 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
 
   // Sync to server + local cache on every state change
   useEffect(() => {
-    if (!dataReadyRef.current) return;
-
     const payload: StoredData = {
       orders, plates, usages, dispatches, challans,
       purchaseOrders, purchaseReceipts, tcRecords,
-      quotations, cncQuotations, logs, parties,
+      quotations, cncQuotations, ringQuotations, transportBills, logs, parties,
+      grades, items, sections, workers, transports,
+      companyProfile, preferences, cuttingAllocations, cncRateCalculations,
+      jobWorkOutwards, jobWorkInwards, weighbridgeEntries, rejectMaterialReturns, anmsMtcRecords,
     };
 
     saveToStorage(payload);
+
+    if (!dataReadyRef.current) return;
 
     if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
     saveTimerRef.current = setTimeout(async () => {
@@ -976,7 +1433,37 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     return () => {
       if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
     };
-  }, [orders, plates, usages, dispatches, challans, purchaseOrders, purchaseReceipts, tcRecords, quotations, cncQuotations, logs, parties]);
+  }, [orders, plates, usages, dispatches, challans, purchaseOrders, purchaseReceipts, tcRecords, quotations, cncQuotations, ringQuotations, transportBills, logs, parties, grades, items, sections, workers, transports, companyProfile, preferences, cuttingAllocations, cncRateCalculations, jobWorkOutwards, jobWorkInwards, weighbridgeEntries, rejectMaterialReturns, anmsMtcRecords]);
+
+  const buildStoredPayload = useCallback((override?: Partial<StoredData>): StoredData => ({
+    orders, plates, usages, dispatches, challans,
+    purchaseOrders, purchaseReceipts, tcRecords,
+    quotations, cncQuotations, ringQuotations, transportBills, logs, parties,
+    grades, items, sections, workers, transports,
+    companyProfile, preferences, cuttingAllocations, cncRateCalculations,
+    jobWorkOutwards, jobWorkInwards, weighbridgeEntries, rejectMaterialReturns, anmsMtcRecords,
+    ...override,
+  }), [orders, plates, usages, dispatches, challans, purchaseOrders, purchaseReceipts, tcRecords, quotations, cncQuotations, ringQuotations, transportBills, logs, parties, grades, items, sections, workers, transports, companyProfile, preferences, cuttingAllocations, cncRateCalculations, jobWorkOutwards, jobWorkInwards, weighbridgeEntries, rejectMaterialReturns, anmsMtcRecords]);
+
+  const persistErpNow = useCallback(async (override?: Partial<StoredData>) => {
+    if (saveTimerRef.current) {
+      clearTimeout(saveTimerRef.current);
+      saveTimerRef.current = null;
+    }
+    const payload = buildStoredPayload(override);
+    saveToStorage(payload);
+    try {
+      await saveErpData(payload as ErpStoredData, CURRENT_VERSION);
+    } catch (error) {
+      console.error('Immediate ERP save failed:', error);
+      toast.error('Failed to save to server. Data kept in browser cache.');
+      throw error;
+    }
+  }, [buildStoredPayload]);
+
+  const persistMastersNow = useCallback(async (override: Partial<Pick<StoredData, 'parties' | 'grades' | 'items' | 'sections' | 'workers' | 'transports' | 'logs'>>) => {
+    await persistErpNow(override);
+  }, [persistErpNow]);
 
   const t = useCallback((key: string) => {
     return translations[language][key] || key;
@@ -1001,13 +1488,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   }, [challans]);
 
   const nextPONo = useCallback(() => {
-    const year = new Date().getFullYear();
-    const maxNum = purchaseOrders.reduce((max, p) => {
-      const parts = p.poNumber.split('-');
-      const num = parseInt(parts[parts.length - 1], 10);
-      return isNaN(num) ? max : Math.max(max, num);
-    }, 0);
-    return `PO-JP-${year}-${String(maxNum + 1).padStart(3, '0')}`;
+    return nextPONumberFromExisting(purchaseOrders);
   }, [purchaseOrders]);
   
   const addLog = useCallback((log: Omit<ActivityLog, 'id' | 'timestamp' | 'user' | 'role'>) => {
@@ -1029,8 +1510,25 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       type: 'info',
       orderNo: order.orderNo
     });
-    toast.success('Order saved locally');
   }, [addLog]);
+
+  const deleteOrder = useCallback(async (id: string) => {
+    const order = orders.find(o => o.id === id);
+    const next = orders.filter(o => o.id !== id);
+    setOrders(next);
+    addLog({
+      action: 'Order Deleted',
+      details: `Order '${order?.orderNo ?? id}' removed.`,
+      type: 'warning',
+      orderNo: order?.orderNo,
+    });
+    try {
+      await persistErpNow({ orders: next });
+      toast.success('Order deleted');
+    } catch {
+      toast.error('Deleted locally but server sync failed');
+    }
+  }, [orders, addLog, persistErpNow]);
 
   const updateOrderStage = useCallback(async (id: string, stage: Stage) => {
     const order = orders.find(o => o.id === id);
@@ -1217,86 +1715,248 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     toast.success(`Dispatched ${totalDispatchQty} items & Created Challan ${newChallan.challanNo}`);
   }, [orders, nextChallanNo, addLog]);
 
+  const normalizeParty = (party: Omit<PartyMaster, 'id'>): Omit<PartyMaster, 'id'> => ({
+    ...party,
+    partyName: party.partyName.trim().toUpperCase(),
+    contactPerson: party.contactPerson.trim().toUpperCase(),
+    mobileNumber: party.mobileNumber.trim(),
+    location: party.location.trim(),
+    deliveryAddress: party.deliveryAddress.trim().toUpperCase(),
+    paymentTerms: party.paymentTerms?.trim().toUpperCase(),
+    gstNumber: party.gstNumber?.trim().toUpperCase(),
+    email: party.email?.trim(),
+    address: party.address?.trim().toUpperCase(),
+    supplierAddress: party.supplierAddress?.trim().toUpperCase(),
+    reference: party.reference?.trim().toUpperCase(),
+    grades: (party.grades ?? []).map(g => g.trim()).filter(Boolean),
+  });
+
   const addParty = useCallback(async (party: Omit<PartyMaster, 'id'>) => {
     const newParty: PartyMaster = {
-      ...party,
+      ...normalizeParty(party),
       id: Date.now().toString(),
-      partyName: party.partyName.trim().toUpperCase(),
-      contactPerson: party.contactPerson.trim().toUpperCase(),
-      mobileNumber: party.mobileNumber.trim(),
-      deliveryAddress: party.deliveryAddress.trim().toUpperCase(),
-      paymentTerms: party.paymentTerms?.trim().toUpperCase(),
-      gstNumber: party.gstNumber?.trim().toUpperCase(),
-      email: party.email?.trim(),
-      address: party.address?.trim().toUpperCase(),
-      supplierAddress: party.supplierAddress?.trim().toUpperCase(),
-      reference: party.reference?.trim().toUpperCase()
     };
-    
-    // Prevent duplicates by checking name
-    let addedParty = newParty;
-    setParties(prev => {
-      const existing = prev.find(p => p.partyName === newParty.partyName);
-      if (existing) {
-        addedParty = existing;
-        return prev;
-      }
-      return [...prev, newParty];
-    });
 
+    const existing = parties.find(p => p.partyName === newParty.partyName);
+    if (existing) return existing;
+
+    const nextParties = [...parties, newParty];
+    setParties(nextParties);
     addLog({
       action: 'Party Created',
       details: `New party '${newParty.partyName}' registered in Master.`,
-      type: 'info'
+      type: 'info',
     });
-    return addedParty;
-  }, [addLog]);
+    await persistMastersNow({ parties: nextParties });
+    return newParty;
+  }, [parties, addLog, persistMastersNow]);
 
-  const deletePurchaseOrder = (id: string) => {
-    setPurchaseOrders(prev => prev.filter(po => po.id !== id));
-    toast.success('Purchase Order deleted');
-  };
+  const deletePurchaseOrder = useCallback(async (id: string) => {
+    const po = purchaseOrders.find(p => p.id === id);
+    const next = purchaseOrders.filter(p => p.id !== id);
+    setPurchaseOrders(next);
+    addLog({
+      action: 'PO Deleted',
+      details: `Purchase order '${po?.poNumber ?? id}' removed.`,
+      type: 'warning',
+    });
+    try {
+      await persistErpNow({ purchaseOrders: next });
+      toast.success('Purchase Order deleted');
+    } catch {
+      toast.error('Deleted locally but server sync failed — refresh and retry if needed');
+    }
+  }, [purchaseOrders, addLog, persistErpNow]);
 
   const updateParty = useCallback(async (party: PartyMaster) => {
     const updated: PartyMaster = {
-      ...party,
-      partyName: party.partyName.trim().toUpperCase(),
-      contactPerson: party.contactPerson.trim().toUpperCase(),
-      mobileNumber: party.mobileNumber.trim(),
-      deliveryAddress: party.deliveryAddress.trim().toUpperCase(),
-      paymentTerms: party.paymentTerms?.trim().toUpperCase(),
-      gstNumber: party.gstNumber?.trim().toUpperCase(),
-      email: party.email?.trim(),
-      address: party.address?.trim().toUpperCase(),
-      supplierAddress: party.supplierAddress?.trim().toUpperCase(),
-      reference: party.reference?.trim().toUpperCase()
+      ...normalizeParty(party),
+      id: party.id,
     };
-    setParties(prev => prev.map(p => p.id === updated.id ? updated : p));
+    const nextParties = parties.map(p => p.id === updated.id ? updated : p);
+    setParties(nextParties);
     addLog({
       action: 'Party Updated',
       details: `Party '${updated.partyName}' details updated.`,
-      type: 'info'
+      type: 'info',
     });
-    toast.success('Party master updated');
-  }, [addLog]);
+    await persistMastersNow({ parties: nextParties });
+  }, [parties, addLog, persistMastersNow]);
 
   const deleteParty = useCallback(async (id: string) => {
     const party = parties.find(p => p.id === id);
-    setParties(prev => prev.filter(p => p.id !== id));
+    const nextParties = parties.filter(p => p.id !== id);
+    setParties(nextParties);
     addLog({
       action: 'Party Deleted',
       details: `Party '${party?.partyName}' removed from Master.`,
-      type: 'warning'
+      type: 'warning',
     });
-    toast.success('Party removed from Master');
-  }, [parties, addLog]);
+    await persistMastersNow({ parties: nextParties });
+  }, [parties, addLog, persistMastersNow]);
+
+  const importParties = useCallback(async (rows: Omit<PartyMaster, 'id'>[]) => {
+    let saved = 0;
+    let skipped = 0;
+
+    const idByName = new Map(parties.map(p => [p.partyName.trim().toUpperCase(), p.id]));
+    const merged = new Map(parties.map(p => [p.partyName.trim().toUpperCase(), p]));
+    let idx = 0;
+
+    for (const row of rows) {
+      const normalized = normalizeParty(row);
+      if (!normalized.partyName) {
+        skipped += 1;
+        continue;
+      }
+
+      const name = normalized.partyName;
+      const id = idByName.get(name) ?? `party_${Date.now()}_${idx++}`;
+      merged.set(name, { ...normalized, id });
+      saved += 1;
+    }
+
+    const nextParties = Array.from(merged.values());
+    setParties(nextParties);
+
+    if (saved > 0) {
+      addLog({
+        action: 'Parties Imported',
+        details: `${saved} party ledger(s) loaded from Excel.${skipped > 0 ? ` ${skipped} empty row(s) skipped.` : ''}`,
+        type: 'info',
+      });
+      await persistMastersNow({ parties: nextParties });
+    }
+
+    return { saved, skipped };
+  }, [parties, addLog, persistMastersNow]);
+
+  const addGrade = useCallback(async (grade: Omit<GradeMasterRecord, 'id'>) => {
+    const record: GradeMasterRecord = { ...grade, id: Date.now().toString() };
+    const next = [...grades, record];
+    setGrades(next);
+    addLog({ action: 'Grade Saved', details: `Grade '${record.name}' saved in Master.`, type: 'info' });
+    await persistMastersNow({ grades: next });
+    return record;
+  }, [grades, addLog, persistMastersNow]);
+
+  const updateGrade = useCallback(async (grade: GradeMasterRecord) => {
+    const next = grades.map(g => g.id === grade.id ? grade : g);
+    setGrades(next);
+    addLog({ action: 'Grade Updated', details: `Grade '${grade.name}' updated.`, type: 'info' });
+    await persistMastersNow({ grades: next });
+  }, [grades, addLog, persistMastersNow]);
+
+  const deleteGrade = useCallback(async (id: string) => {
+    const grade = grades.find(g => g.id === id);
+    const next = grades.filter(g => g.id !== id);
+    setGrades(next);
+    addLog({ action: 'Grade Deleted', details: `Grade '${grade?.name}' removed.`, type: 'warning' });
+    await persistMastersNow({ grades: next });
+  }, [grades, addLog, persistMastersNow]);
+
+  const addItem = useCallback(async (item: Omit<ItemMasterRecord, 'id'>) => {
+    const record: ItemMasterRecord = { ...item, id: Date.now().toString() };
+    const next = [...items, record];
+    setItems(next);
+    addLog({ action: 'Item Saved', details: `Item '${record.name}' saved in Master.`, type: 'info' });
+    await persistMastersNow({ items: next });
+    return record;
+  }, [items, addLog, persistMastersNow]);
+
+  const updateItem = useCallback(async (item: ItemMasterRecord) => {
+    const next = items.map(i => i.id === item.id ? item : i);
+    setItems(next);
+    addLog({ action: 'Item Updated', details: `Item '${item.name}' updated.`, type: 'info' });
+    await persistMastersNow({ items: next });
+  }, [items, addLog, persistMastersNow]);
+
+  const deleteItem = useCallback(async (id: string) => {
+    const item = items.find(i => i.id === id);
+    const next = items.filter(i => i.id !== id);
+    setItems(next);
+    addLog({ action: 'Item Deleted', details: `Item '${item?.name}' removed.`, type: 'warning' });
+    await persistMastersNow({ items: next });
+  }, [items, addLog, persistMastersNow]);
+
+  const addSection = useCallback(async (section: Omit<SectionMasterRecord, 'id'>) => {
+    const record: SectionMasterRecord = { ...section, id: Date.now().toString() };
+    const next = [...sections, record];
+    setSections(next);
+    addLog({ action: 'Section Saved', details: `Section '${record.category} ${record.size}' saved in Master.`, type: 'info' });
+    await persistMastersNow({ sections: next });
+    return record;
+  }, [sections, addLog, persistMastersNow]);
+
+  const updateSection = useCallback(async (section: SectionMasterRecord) => {
+    const next = sections.map(s => s.id === section.id ? section : s);
+    setSections(next);
+    addLog({ action: 'Section Updated', details: `Section '${section.category} ${section.size}' updated.`, type: 'info' });
+    await persistMastersNow({ sections: next });
+  }, [sections, addLog, persistMastersNow]);
+
+  const deleteSection = useCallback(async (id: string) => {
+    const section = sections.find(s => s.id === id);
+    const next = sections.filter(s => s.id !== id);
+    setSections(next);
+    addLog({ action: 'Section Deleted', details: `Section '${section?.category} ${section?.size}' removed.`, type: 'warning' });
+    await persistMastersNow({ sections: next });
+  }, [sections, addLog, persistMastersNow]);
+
+  const addWorker = useCallback(async (worker: Omit<WorkerMasterRecord, 'id'>) => {
+    const record: WorkerMasterRecord = { ...worker, id: Date.now().toString() };
+    const next = [...workers, record];
+    setWorkers(next);
+    addLog({ action: 'Worker Saved', details: `Worker '${record.name}' saved in Master.`, type: 'info' });
+    await persistMastersNow({ workers: next });
+    return record;
+  }, [workers, addLog, persistMastersNow]);
+
+  const updateWorker = useCallback(async (worker: WorkerMasterRecord) => {
+    const next = workers.map(w => w.id === worker.id ? worker : w);
+    setWorkers(next);
+    addLog({ action: 'Worker Updated', details: `Worker '${worker.name}' updated.`, type: 'info' });
+    await persistMastersNow({ workers: next });
+  }, [workers, addLog, persistMastersNow]);
+
+  const deleteWorker = useCallback(async (id: string) => {
+    const worker = workers.find(w => w.id === id);
+    const next = workers.filter(w => w.id !== id);
+    setWorkers(next);
+    addLog({ action: 'Worker Deleted', details: `Worker '${worker?.name}' removed.`, type: 'warning' });
+    await persistMastersNow({ workers: next });
+  }, [workers, addLog, persistMastersNow]);
+
+  const addTransport = useCallback(async (transport: Omit<TransportMasterRecord, 'id'>) => {
+    const record: TransportMasterRecord = { ...transport, id: Date.now().toString() };
+    const next = [...transports, record];
+    setTransports(next);
+    addLog({ action: 'Transport Saved', details: `Transport '${record.name}' saved in Master.`, type: 'info' });
+    await persistMastersNow({ transports: next });
+    return record;
+  }, [transports, addLog, persistMastersNow]);
+
+  const updateTransport = useCallback(async (transport: TransportMasterRecord) => {
+    const next = transports.map(t => t.id === transport.id ? transport : t);
+    setTransports(next);
+    addLog({ action: 'Transport Updated', details: `Transport '${transport.name}' updated.`, type: 'info' });
+    await persistMastersNow({ transports: next });
+  }, [transports, addLog, persistMastersNow]);
+
+  const deleteTransport = useCallback(async (id: string) => {
+    const transport = transports.find(t => t.id === id);
+    const next = transports.filter(t => t.id !== id);
+    setTransports(next);
+    addLog({ action: 'Transport Deleted', details: `Transport '${transport?.name}' removed.`, type: 'warning' });
+    await persistMastersNow({ transports: next });
+  }, [transports, addLog, persistMastersNow]);
 
   return (
     <AppContext.Provider value={{
       user, setUser, logout,
       role, language, setLanguage, branch, setBranch, t,
       theme, setTheme,
-      orders, setOrders, addOrder, updateOrderStage, updateItemStatus, updateItemCompletedQty, updateItemWorker, dispatchItems,
+      orders, setOrders, addOrder, deleteOrder, updateOrderStage, updateItemStatus, updateItemCompletedQty, updateItemWorker, dispatchItems,
       plates, setPlates,
       usages, setUsages,
       dispatches, setDispatches,
@@ -1313,15 +1973,43 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       quotations,
       setQuotations,
       addQuotation: (q: QuotationRecord) => setQuotations(prev => [q, ...prev]),
+      updateQuotation: (q: QuotationRecord) => setQuotations(prev => prev.map(r => r.id === q.id ? q : r)),
       deleteQuotation: (id: string) => setQuotations(prev => prev.filter(q => q.id !== id)),
 
       cncQuotations,
       setCNCQuotations,
       addCNCQuotation: (q: CNCQuotationRecord) => setCNCQuotations(prev => [q, ...prev]),
+      updateCNCQuotation: (q: CNCQuotationRecord) => setCNCQuotations(prev => prev.map(r => r.id === q.id ? q : r)),
       deleteCNCQuotation: (id: string) => setCNCQuotations(prev => prev.filter(q => q.id !== id)),
 
+      ringQuotations,
+      setRingQuotations,
+      addRingQuotation: (q: RingQuotationRecord) => setRingQuotations(prev => [q, ...prev]),
+      updateRingQuotation: (q: RingQuotationRecord) => setRingQuotations(prev => prev.map(r => r.id === q.id ? q : r)),
+      deleteRingQuotation: (id: string) => setRingQuotations(prev => prev.filter(q => q.id !== id)),
+
+      transportBills,
+      addTransportBill: (bill: TransportBillRecord) => setTransportBills(prev => [bill, ...prev]),
+
+      companyProfile, setCompanyProfile,
+      preferences, setPreferences,
+      cuttingAllocations, setCuttingAllocations,
+      cncRateCalculations, setCNCRateCalculations,
+      jobWorkOutwards, setJobWorkOutwards,
+      jobWorkInwards, setJobWorkInwards,
+      weighbridgeEntries, setWeighbridgeEntries,
+      rejectMaterialReturns, setRejectMaterialReturns,
+      anmsMtcRecords, setAnmsMtcRecords,
+
+      persistErpNow,
+
       nextOrderNo, nextChallanNo, nextPONo,
-      parties, setParties, addParty, updateParty, deleteParty,
+      parties, setParties, addParty, updateParty, deleteParty, importParties,
+      grades, addGrade, updateGrade, deleteGrade,
+      items, addItem, updateItem, deleteItem,
+      sections, addSection, updateSection, deleteSection,
+      workers, addWorker, updateWorker, deleteWorker,
+      transports, addTransport, updateTransport, deleteTransport,
     }}>
       {children}
     </AppContext.Provider>

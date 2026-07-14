@@ -114,7 +114,8 @@ export const PartyAutocomplete: React.FC<PartyAutocompleteProps> = ({
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (!isOpen) {
-      if (e.key === 'ArrowDown' || e.key === 'ArrowUp' || e.key === 'Enter') {
+      if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+        e.preventDefault();
         setIsOpen(true);
       }
       return;
@@ -152,7 +153,11 @@ export const PartyAutocomplete: React.FC<PartyAutocompleteProps> = ({
   };
 
   return (
-    <div ref={containerRef} className="relative w-full">
+    <div
+      ref={containerRef}
+      className="relative w-full"
+      data-autocomplete-open={isOpen && dropdownItems.length > 0 ? 'true' : undefined}
+    >
       <div className="relative">
         <input
           ref={inputRef}
@@ -180,7 +185,7 @@ export const PartyAutocomplete: React.FC<PartyAutocompleteProps> = ({
           <div className="px-3 py-1.5 bg-slate-50 dark:bg-slate-900/50 flex items-center justify-between">
             <span className="meta-10 flex items-center gap-1.5">
               <Building2 className="w-3.5 h-3.5" />
-              List of Ledgers (Tally Prime)
+              Party Master
             </span>
             <span className="caption-2 tracking-wider">
               Arrows/Enter to select
