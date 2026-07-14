@@ -69,6 +69,7 @@ export const PO_PRINT_STYLES = `
     box-sizing: border-box;
     display: flex;
     flex-direction: column;
+    border: 1px solid #000;
   }
 
   /* --- Header Section --- */
@@ -535,6 +536,7 @@ export const PO_PRINT_STYLES = `
     padding: 25px !important;
     border-radius: 0 !important;
     box-sizing: border-box !important;
+    border: 1px solid #000 !important;
   }
 
   @page po-print-page {
