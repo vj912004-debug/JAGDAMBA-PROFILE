@@ -57,6 +57,30 @@
     -moz-appearance: textfield;
     appearance: textfield;
   }
+
+}
+
+/* ── Dark-mode fix for native <select> dropdowns ────────────────────────────
+   MUST be outside any @layer so it beats Tailwind utilities (incl. bg-transparent)
+   in the CSS cascade. color-scheme alone doesn't work on Windows because the OS
+   paints the popup; explicit background-color on <option> is what forces it dark
+   in Chromium/Edge on Windows. ──────────────────────────────────────────────── */
+.dark select {
+  color-scheme: dark;
+  background-color: #1e293b !important; /* slate-800 */
+  color: #f1f5f9 !important;            /* slate-100 */
+  border-color: #334155;                /* slate-700 */
+}
+
+.dark select option {
+  background-color: #1e293b; /* slate-800 */
+  color: #f1f5f9;            /* slate-100 */
+}
+
+.dark select option:hover,
+.dark select option:checked {
+  background-color: #1d4ed8; /* blue-700 */
+  color: #ffffff;
 }
 
 @layer components {

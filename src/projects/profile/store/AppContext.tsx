@@ -1,7 +1,15 @@
 "use client";
 
 import React, { createContext, useContext, useState, useEffect, useCallback, useRef, type ReactNode } from 'react';
-import { fetchErpData, saveErpData, ERP_VERSION, type ErpStoredData } from '../services/erpApi';
+import {
+  fetchErpData,
+  saveErpData,
+  ERP_VERSION,
+  erpCriticalWeight,
+  isSparseErpData,
+  protectErpArrays,
+  type ErpStoredData,
+} from '../services/erpApi';
 import toast from 'react-hot-toast';
 import { nextPONumberFromExisting } from '../utils/poNumber';
 import type { JobWorkOutwardRecord, JobWorkInwardRecord } from '../utils/jobWorkHelpers';
@@ -55,7 +63,25 @@ export const UNIT_TYPES: UnitType[] = ['Kg', 'Nos', 'Set', 'Plate', 'Piece', 'Jo
 export type ScrapOwner = 'Customer' | 'Our Company';
 export type PlateSource = 'Customer' | 'Stock';
 
-export const BRANCHES = ['Makarpura Unit', 'Por Unit', 'Other'];
+export const BRANCHES = [
+  'HALOL',
+  'MANJUSAR',
+  'MAKARPURA',
+  'WAGHODIA',
+  'POR',
+  'KARJAN',
+  'BAMANGAM',
+  'BHARUCH',
+  'UMARGAM',
+  'SURAT',
+  'RAJKOT',
+  'AHMEDABAD',
+  'PALEJ',
+  'MEHSANA',
+  'JAMNAGAR',
+  'DAHEJ',
+  'OTHER',
+];
 
 export const MATERIAL_GRADES = [
   'IS 2062 E250',
@@ -595,6 +621,17 @@ export interface WorkerMasterRecord {
   status: string;
 }
 
+export interface TransportVehicle {
+  id: string;
+  vehicleNo: string;
+  vehicleType: string;
+  vehicleCapacity: string;
+  driverName: string;
+  driverMobileNo: string;
+  altMobileNo: string;
+  status: 'ACTIVE' | 'INACTIVE';
+}
+
 export interface TransportMasterRecord {
   id: string;
   code: string;
@@ -613,6 +650,7 @@ export interface TransportMasterRecord {
   vehicleType?: string;
   ratePerKg?: string;
   remark?: string;
+  vehicles?: TransportVehicle[];
 }
 
 // ─── Context Type ─────────────────────────────────────────────
@@ -792,7 +830,7 @@ const translations: Record<Language, Record<string, string>> = {
     purchaseOrder: 'Purchase Order',
     materialReceipt: 'Material Receipt',
     materialReceiptReport: 'Material Receipt Report',
-    materialPendingReport: 'Material Pending Report',
+    materialPendingReport: 'Purchase Order Pending Report',
     ringRate: 'Ring Rate Entry',
     plateQuotation: 'Plate Quotation',
     cuttingAllocation: 'Cutting Allocation',
@@ -1176,90 +1214,119 @@ function getSeedData(): StoredData {
   };
 }
 
-function applyStoredData(
-  stored: StoredData,
-  setters: {
-    setOrders: React.Dispatch<React.SetStateAction<Order[]>>;
-    setPlates: React.Dispatch<React.SetStateAction<Plate[]>>;
-    setUsages: React.Dispatch<React.SetStateAction<Usage[]>>;
-    setDispatches: React.Dispatch<React.SetStateAction<DispatchRecord[]>>;
-    setChallans: React.Dispatch<React.SetStateAction<ChallanRecord[]>>;
-    setPurchaseOrders: React.Dispatch<React.SetStateAction<PurchaseOrder[]>>;
-    setPurchaseReceipts: React.Dispatch<React.SetStateAction<PurchaseReceipt[]>>;
-    setTCRecords: React.Dispatch<React.SetStateAction<TCRecord[]>>;
-    setQuotations: React.Dispatch<React.SetStateAction<QuotationRecord[]>>;
-    setCNCQuotations: React.Dispatch<React.SetStateAction<CNCQuotationRecord[]>>;
-    setRingQuotations: React.Dispatch<React.SetStateAction<RingQuotationRecord[]>>;
-    setTransportBills: React.Dispatch<React.SetStateAction<TransportBillRecord[]>>;
-    setLogs: React.Dispatch<React.SetStateAction<ActivityLog[]>>;
-    setParties: React.Dispatch<React.SetStateAction<PartyMaster[]>>;
-    setGrades: React.Dispatch<React.SetStateAction<GradeMasterRecord[]>>;
-    setItems: React.Dispatch<React.SetStateAction<ItemMasterRecord[]>>;
-    setSections: React.Dispatch<React.SetStateAction<SectionMasterRecord[]>>;
-    setWorkers: React.Dispatch<React.SetStateAction<WorkerMasterRecord[]>>;
-    setTransports: React.Dispatch<React.SetStateAction<TransportMasterRecord[]>>;
-    setCompanyProfile: React.Dispatch<React.SetStateAction<CompanyProfileData>>;
-    setPreferences: React.Dispatch<React.SetStateAction<ErpPreferencesData>>;
-    setCuttingAllocations: React.Dispatch<React.SetStateAction<CuttingAllocationRecord[]>>;
-    setCNCRateCalculations: React.Dispatch<React.SetStateAction<CNCRateCalculationRecord[]>>;
-    setJobWorkOutwards: React.Dispatch<React.SetStateAction<JobWorkOutwardRecord[]>>;
-    setJobWorkInwards: React.Dispatch<React.SetStateAction<JobWorkInwardRecord[]>>;
-    setWeighbridgeEntries: React.Dispatch<React.SetStateAction<WeighbridgeRecord[]>>;
-    setRejectMaterialReturns: React.Dispatch<React.SetStateAction<RejectMaterialReturnRecord[]>>;
-    setAnmsMtcRecords: React.Dispatch<React.SetStateAction<AnmsMtcRecord[]>>;
-  }
-) {
-  const local = loadFromStorage();
+type StoredDataSetters = {
+  setOrders: React.Dispatch<React.SetStateAction<Order[]>>;
+  setPlates: React.Dispatch<React.SetStateAction<Plate[]>>;
+  setUsages: React.Dispatch<React.SetStateAction<Usage[]>>;
+  setDispatches: React.Dispatch<React.SetStateAction<DispatchRecord[]>>;
+  setChallans: React.Dispatch<React.SetStateAction<ChallanRecord[]>>;
+  setPurchaseOrders: React.Dispatch<React.SetStateAction<PurchaseOrder[]>>;
+  setPurchaseReceipts: React.Dispatch<React.SetStateAction<PurchaseReceipt[]>>;
+  setTCRecords: React.Dispatch<React.SetStateAction<TCRecord[]>>;
+  setQuotations: React.Dispatch<React.SetStateAction<QuotationRecord[]>>;
+  setCNCQuotations: React.Dispatch<React.SetStateAction<CNCQuotationRecord[]>>;
+  setRingQuotations: React.Dispatch<React.SetStateAction<RingQuotationRecord[]>>;
+  setTransportBills: React.Dispatch<React.SetStateAction<TransportBillRecord[]>>;
+  setLogs: React.Dispatch<React.SetStateAction<ActivityLog[]>>;
+  setParties: React.Dispatch<React.SetStateAction<PartyMaster[]>>;
+  setGrades: React.Dispatch<React.SetStateAction<GradeMasterRecord[]>>;
+  setItems: React.Dispatch<React.SetStateAction<ItemMasterRecord[]>>;
+  setSections: React.Dispatch<React.SetStateAction<SectionMasterRecord[]>>;
+  setWorkers: React.Dispatch<React.SetStateAction<WorkerMasterRecord[]>>;
+  setTransports: React.Dispatch<React.SetStateAction<TransportMasterRecord[]>>;
+  setCompanyProfile: React.Dispatch<React.SetStateAction<CompanyProfileData>>;
+  setPreferences: React.Dispatch<React.SetStateAction<ErpPreferencesData>>;
+  setCuttingAllocations: React.Dispatch<React.SetStateAction<CuttingAllocationRecord[]>>;
+  setCNCRateCalculations: React.Dispatch<React.SetStateAction<CNCRateCalculationRecord[]>>;
+  setJobWorkOutwards: React.Dispatch<React.SetStateAction<JobWorkOutwardRecord[]>>;
+  setJobWorkInwards: React.Dispatch<React.SetStateAction<JobWorkInwardRecord[]>>;
+  setWeighbridgeEntries: React.Dispatch<React.SetStateAction<WeighbridgeRecord[]>>;
+  setRejectMaterialReturns: React.Dispatch<React.SetStateAction<RejectMaterialReturnRecord[]>>;
+  setAnmsMtcRecords: React.Dispatch<React.SetStateAction<AnmsMtcRecord[]>>;
+};
 
-  // getArray: prefer server data if non-empty; fall back to local cache to prevent
-  // empty server arrays (e.g. after a DB reset) from clobbering valid client-side data.
-  const getArray = <T,>(server: T[] | undefined, localRows: T[] | undefined): T[] => {
-    if (Array.isArray(server) && server.length > 0) return server;
-    if (Array.isArray(localRows) && localRows.length > 0) return localRows;
-    return [];
+function pickArray<T>(primary: T[] | undefined, fallback: T[] | undefined): T[] {
+  if (Array.isArray(primary) && primary.length > 0) return primary;
+  if (Array.isArray(fallback) && fallback.length > 0) return fallback;
+  return Array.isArray(primary) ? primary : [];
+}
+
+function mergeMasterRows<T extends { id: string }>(
+  primary: T[] | undefined,
+  localRows: T[] | undefined,
+  fallback: T[],
+): T[] {
+  const base = Array.isArray(primary) ? primary : (Array.isArray(localRows) ? localRows : fallback);
+  if (!localRows?.length) return base.length ? base : fallback;
+  const map = new Map(base.map((x) => [x.id, x]));
+  for (const row of localRows) map.set(row.id, row);
+  return Array.from(map.values());
+}
+
+/** Merge server + local cache into one payload (never prefer empty primary over non-empty local). */
+function mergeStoredData(primary: Partial<StoredData> | null | undefined, local: StoredData | null): StoredData {
+  const p = primary || {};
+  return {
+    orders: pickArray(p.orders, local?.orders),
+    plates: pickArray(p.plates, local?.plates),
+    usages: pickArray(p.usages, local?.usages),
+    dispatches: pickArray(p.dispatches, local?.dispatches),
+    challans: pickArray(p.challans, local?.challans),
+    purchaseOrders: pickArray(p.purchaseOrders, local?.purchaseOrders),
+    purchaseReceipts: pickArray(p.purchaseReceipts, local?.purchaseReceipts),
+    tcRecords: pickArray(p.tcRecords, local?.tcRecords),
+    quotations: pickArray(p.quotations, local?.quotations),
+    cncQuotations: mergeMasterRows(p.cncQuotations, local?.cncQuotations, []),
+    ringQuotations: mergeMasterRows(p.ringQuotations, local?.ringQuotations, []),
+    transportBills: pickArray(p.transportBills, local?.transportBills),
+    logs: pickArray(p.logs, local?.logs),
+    parties: mergeMasterRows(p.parties, local?.parties, seedParties),
+    grades: mergeMasterRows(p.grades, local?.grades, seedGrades),
+    items: mergeItemCatalog(mergeMasterRows(p.items, local?.items, seedItems)),
+    sections: mergeSectionCatalog(mergeMasterRows(p.sections, local?.sections, seedSections)),
+    workers: mergeMasterRows(p.workers, local?.workers, []),
+    transports: mergeMasterRows(p.transports, local?.transports, []),
+    companyProfile: p.companyProfile ?? local?.companyProfile ?? DEFAULT_COMPANY_PROFILE,
+    preferences: p.preferences ?? local?.preferences ?? DEFAULT_ERP_PREFERENCES,
+    cuttingAllocations: pickArray(p.cuttingAllocations, local?.cuttingAllocations),
+    cncRateCalculations: pickArray(p.cncRateCalculations, local?.cncRateCalculations),
+    jobWorkOutwards: pickArray(p.jobWorkOutwards, local?.jobWorkOutwards),
+    jobWorkInwards: pickArray(p.jobWorkInwards, local?.jobWorkInwards),
+    weighbridgeEntries: pickArray(p.weighbridgeEntries, local?.weighbridgeEntries),
+    rejectMaterialReturns: pickArray(p.rejectMaterialReturns, local?.rejectMaterialReturns),
+    anmsMtcRecords: pickArray(p.anmsMtcRecords, local?.anmsMtcRecords),
   };
+}
 
-  const mergeMaster = <T extends { id: string }>(server: T[] | undefined, localRows: T[] | undefined, fallback: T[]): T[] => {
-    const base = Array.isArray(server) ? server : (Array.isArray(localRows) ? localRows : fallback);
-    if (!localRows?.length) return base.length ? base : fallback;
-    const map = new Map(base.map(x => [x.id, x]));
-    for (const row of localRows) map.set(row.id, row);
-    return Array.from(map.values());
-  };
-
-  // Transactional arrays: use getArray so a blank server never wipes local cache
-  setters.setOrders(getArray(stored.orders, local?.orders));
-  setters.setPlates(getArray(stored.plates, local?.plates));
-  setters.setUsages(getArray(stored.usages, local?.usages));
-  setters.setDispatches(getArray(stored.dispatches, local?.dispatches));
-  setters.setChallans(getArray(stored.challans, local?.challans));
-  setters.setPurchaseOrders(getArray(stored.purchaseOrders, local?.purchaseOrders));
-  setters.setPurchaseReceipts(getArray(stored.purchaseReceipts, local?.purchaseReceipts));
-  setters.setTCRecords(getArray(stored.tcRecords, local?.tcRecords));
-  setters.setQuotations(getArray(stored.quotations, local?.quotations));
-  setters.setCNCQuotations(
-    mergeMaster(stored.cncQuotations, local?.cncQuotations, []),
-  );
-  setters.setRingQuotations(
-    mergeMaster(stored.ringQuotations, local?.ringQuotations, []),
-  );
-  setters.setTransportBills(getArray(stored.transportBills, local?.transportBills));
-  setters.setLogs(getArray(stored.logs, local?.logs));
-  setters.setParties(mergeMaster(stored.parties, local?.parties, seedParties));
-  setters.setGrades(mergeMaster(stored.grades, local?.grades, seedGrades));
-  setters.setItems(mergeItemCatalog(mergeMaster(stored.items, local?.items, seedItems)));
-  setters.setSections(mergeSectionCatalog(mergeMaster(stored.sections, local?.sections, seedSections)));
-  setters.setWorkers(mergeMaster(stored.workers, local?.workers, []));
-  setters.setTransports(mergeMaster(stored.transports, local?.transports, []));
-  setters.setCompanyProfile(stored.companyProfile ?? local?.companyProfile ?? DEFAULT_COMPANY_PROFILE);
-  setters.setPreferences(stored.preferences ?? local?.preferences ?? DEFAULT_ERP_PREFERENCES);
-  setters.setCuttingAllocations(getArray(stored.cuttingAllocations, local?.cuttingAllocations));
-  setters.setCNCRateCalculations(getArray(stored.cncRateCalculations, local?.cncRateCalculations));
-  setters.setJobWorkOutwards(getArray(stored.jobWorkOutwards, local?.jobWorkOutwards));
-  setters.setJobWorkInwards(getArray(stored.jobWorkInwards, local?.jobWorkInwards));
-  setters.setWeighbridgeEntries(getArray(stored.weighbridgeEntries, local?.weighbridgeEntries));
-  setters.setRejectMaterialReturns(getArray(stored.rejectMaterialReturns, local?.rejectMaterialReturns));
-  setters.setAnmsMtcRecords(getArray(stored.anmsMtcRecords, local?.anmsMtcRecords));
+function applyMergedData(merged: StoredData, setters: StoredDataSetters) {
+  setters.setOrders(merged.orders);
+  setters.setPlates(merged.plates);
+  setters.setUsages(merged.usages);
+  setters.setDispatches(merged.dispatches);
+  setters.setChallans(merged.challans);
+  setters.setPurchaseOrders(merged.purchaseOrders);
+  setters.setPurchaseReceipts(merged.purchaseReceipts);
+  setters.setTCRecords(merged.tcRecords);
+  setters.setQuotations(merged.quotations);
+  setters.setCNCQuotations(merged.cncQuotations);
+  setters.setRingQuotations(merged.ringQuotations);
+  setters.setTransportBills(merged.transportBills);
+  setters.setLogs(merged.logs);
+  setters.setParties(merged.parties);
+  setters.setGrades(merged.grades);
+  setters.setItems(merged.items);
+  setters.setSections(merged.sections);
+  setters.setWorkers(merged.workers);
+  setters.setTransports(merged.transports);
+  setters.setCompanyProfile(merged.companyProfile);
+  setters.setPreferences(merged.preferences);
+  setters.setCuttingAllocations(merged.cuttingAllocations);
+  setters.setCNCRateCalculations(merged.cncRateCalculations);
+  setters.setJobWorkOutwards(merged.jobWorkOutwards);
+  setters.setJobWorkInwards(merged.jobWorkInwards);
+  setters.setWeighbridgeEntries(merged.weighbridgeEntries);
+  setters.setRejectMaterialReturns(merged.rejectMaterialReturns);
+  setters.setAnmsMtcRecords(merged.anmsMtcRecords);
 }
 
 // ─── Context ──────────────────────────────────────────────────
@@ -1323,10 +1390,35 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   const [rejectMaterialReturns, setRejectMaterialReturns] = useState<RejectMaterialReturnRecord[]>([]);
   const [anmsMtcRecords, setAnmsMtcRecords] = useState<AnmsMtcRecord[]>([]);
   const dataReadyRef = useRef(false);
+  /** Only true after a successful server load or intentional restore — blocks seed/empty PUTs. */
+  const allowServerPersistRef = useRef(false);
+  const lastGoodWeightRef = useRef(0);
+  /** Last known-good full payload — empty arrays cannot erase these collections. */
+  const lastGoodPayloadRef = useRef<StoredData | null>(null);
   const saveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
+  const rememberGoodPayload = (merged: StoredData) => {
+    lastGoodPayloadRef.current = merged;
+    lastGoodWeightRef.current = erpCriticalWeight(merged);
+  };
+
+  const safePersistPayload = (payload: StoredData): StoredData => {
+    const protectedPayload = protectErpArrays(lastGoodPayloadRef.current, payload) as StoredData;
+    const weight = erpCriticalWeight(protectedPayload);
+    if (lastGoodWeightRef.current >= 10 && weight < Math.ceil(lastGoodWeightRef.current * 0.35)) {
+      console.warn(
+        `Blocked client ERP wipe persist: lastGood=${lastGoodWeightRef.current}, next=${weight}`,
+      );
+      return lastGoodPayloadRef.current || protectedPayload;
+    }
+    if (weight > 0) {
+      rememberGoodPayload(protectedPayload);
+    }
+    return protectedPayload;
+  };
+
   const fetchData = useCallback(async () => {
-    const setters = {
+    const setters: StoredDataSetters = {
       setOrders, setPlates, setUsages, setDispatches, setChallans,
       setPurchaseOrders, setPurchaseReceipts, setTCRecords,
       setQuotations, setCNCQuotations, setRingQuotations, setTransportBills, setLogs, setParties,
@@ -1335,45 +1427,72 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       setJobWorkOutwards, setJobWorkInwards, setWeighbridgeEntries, setRejectMaterialReturns, setAnmsMtcRecords,
     };
 
-    try {
-      const server = await fetchErpData();
-      if (server.data) {
-        applyStoredData(server.data as StoredData, setters);
-        saveToStorage(server.data as StoredData);
-        if (server.source === 'live') {
-          toast('Loaded data from live server (local API not running).', { icon: '☁️' });
-        }
-        dataReadyRef.current = true;
-        return;
-      }
-
-      const local = loadFromStorage();
-      if (local) {
-        applyStoredData(local, setters);
-        await saveErpData(local as ErpStoredData, CURRENT_VERSION);
-        dataReadyRef.current = true;
-        return;
-      }
-
-      const seed = getSeedData();
-      applyStoredData(seed, setters);
-      await saveErpData(seed as ErpStoredData, CURRENT_VERSION);
-      saveToStorage(seed);
+    const commitLocalOnly = (merged: StoredData, toastMsg?: string) => {
+      applyMergedData(merged, setters);
+      saveToStorage(merged);
+      rememberGoodPayload(merged);
+      allowServerPersistRef.current = false;
       dataReadyRef.current = true;
+      if (toastMsg) toast.error(toastMsg);
+    };
+
+    const commitWithServerWrite = (merged: StoredData, opts?: { toastLive?: boolean }) => {
+      applyMergedData(merged, setters);
+      saveToStorage(merged);
+      rememberGoodPayload(merged);
+      allowServerPersistRef.current = true;
+      dataReadyRef.current = true;
+      if (opts?.toastLive) {
+        toast('Loaded data from live server (local API empty or offline).', { icon: '☁️' });
+      }
+    };
+
+    try {
+      const local = loadFromStorage();
+      const server = await fetchErpData();
+      const serverSparse = isSparseErpData(server.data);
+      const localSparse = isSparseErpData(local);
+
+      if (server.data && !serverSparse) {
+        const merged = mergeStoredData(server.data as StoredData, local);
+        commitWithServerWrite(merged, { toastLive: server.source === 'live' });
+        return;
+      }
+
+      // Server empty/missing — restore from browser cache if it has real data
+      if (local && !localSparse) {
+        const merged = mergeStoredData(local, null);
+        commitWithServerWrite(merged);
+        try {
+          await saveErpData(merged as ErpStoredData, CURRENT_VERSION);
+        } catch (err) {
+          console.error('Failed to restore local ERP cache to server:', err);
+        }
+        return;
+      }
+
+      // Both empty: show seed UI only — NEVER push seed to the server
+      const seed = getSeedData();
+      commitLocalOnly(
+        seed,
+        server.data
+          ? 'Server returned empty ERP data — using defaults locally (server not overwritten).'
+          : undefined,
+      );
     } catch (error) {
       console.error('Error loading data:', error);
       const local = loadFromStorage();
-      if (local) {
-        applyStoredData(local, setters);
-        const n = local.parties?.length ?? 0;
-        toast.error(`Server unavailable — loaded ${n} parties from browser cache.`);
+      if (local && !isSparseErpData(local)) {
+        commitLocalOnly(
+          mergeStoredData(local, null),
+          `Server unavailable — loaded ${local.parties?.length ?? 0} parties from browser cache (not writing to server).`,
+        );
       } else {
-        const seed = getSeedData();
-        applyStoredData(seed, setters);
-        saveToStorage(seed);
-        toast.error('Failed to load from server. Using default data.');
+        commitLocalOnly(
+          getSeedData(),
+          'Failed to load from server. Using default data locally (server not overwritten).',
+        );
       }
-      dataReadyRef.current = true;
     }
   }, []);
 
@@ -1385,9 +1504,13 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     }
     fetchData();
 
-    // Sockets removed for local-only version
+    // Polling added for multitasking/syncing data automatically across clients
+    const syncInterval = setInterval(() => {
+      fetchData();
+    }, 15000); // 15 seconds
+
     return () => {
-      // Clean up if needed
+      clearInterval(syncInterval);
     };
   }, [fetchData]);
 
@@ -1416,14 +1539,26 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       jobWorkOutwards, jobWorkInwards, weighbridgeEntries, rejectMaterialReturns, anmsMtcRecords,
     };
 
-    saveToStorage(payload);
-
     if (!dataReadyRef.current) return;
+
+    const rawWeight = erpCriticalWeight(payload);
+    const safePayload = safePersistPayload(payload);
+    const safeWeight = erpCriticalWeight(safePayload);
+
+    // Incoming payload tried to wipe collections — do not persist the wipe
+    if (rawWeight < safeWeight) {
+      console.warn(`Blocked client ERP collection wipe: raw=${rawWeight}, safe=${safeWeight}`);
+      return;
+    }
+
+    saveToStorage(safePayload);
+
+    if (!allowServerPersistRef.current) return;
 
     if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
     saveTimerRef.current = setTimeout(async () => {
       try {
-        await saveErpData(payload as ErpStoredData, CURRENT_VERSION);
+        await saveErpData(safePayload as ErpStoredData, CURRENT_VERSION);
       } catch (error) {
         console.error('Error saving to server:', error);
         toast.error('Failed to save to server. Data kept in browser cache.');
@@ -1450,8 +1585,13 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       clearTimeout(saveTimerRef.current);
       saveTimerRef.current = null;
     }
-    const payload = buildStoredPayload(override);
+    const payload = safePersistPayload(buildStoredPayload(override));
+    if (lastGoodWeightRef.current >= 10 && erpCriticalWeight(payload) < Math.ceil(lastGoodWeightRef.current * 0.35)) {
+      toast.error('Save blocked — payload looks empty compared to loaded data. Refresh and retry.');
+      throw new Error('Refusing to persist sparse ERP payload');
+    }
     saveToStorage(payload);
+    allowServerPersistRef.current = true;
     try {
       await saveErpData(payload as ErpStoredData, CURRENT_VERSION);
     } catch (error) {

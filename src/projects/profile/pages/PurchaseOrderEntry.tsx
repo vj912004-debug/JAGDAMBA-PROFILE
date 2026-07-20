@@ -50,7 +50,7 @@ const createEmptyPOItem = (): POItem => ({
 });
 
 const hasItemContent = (item: POItem) =>
-  Boolean(item.grade.trim() || item.thickness || item.width || item.length || item.nos || item.kg || item.rate || item.sizeSection);
+  Boolean(item.itemName?.trim() || item.grade.trim() || item.make?.trim() || item.thickness || item.width || item.length || item.nos || item.kg || item.rate || item.sizeSection);
 
 const isRowReadyForNext = (item: POItem) =>
   Boolean(item.grade.trim() && (String(item.thickness).trim() || String(item.sizeSection).trim()) && String(item.length).trim());
@@ -70,8 +70,7 @@ export const PurchaseOrderEntry: React.FC = () => {
     addParty,
     persistErpNow,
     grades,
-    plates,
-    usages,
+
     items: itemMasterList,
     transports,
     user
@@ -81,8 +80,7 @@ export const PurchaseOrderEntry: React.FC = () => {
   const [searchParams] = useSearchParams();
   const editId = searchParams.get('edit');
   const existingPo = editId ? purchaseOrders.find(po => po.id === editId) : undefined;
-  const [draftPoNumber, setDraftPoNumber] = useState(() => nextPONo());
-  const poNumber = existingPo?.poNumber ?? draftPoNumber;
+  const poNumber = existingPo?.poNumber ?? nextPONo();
 
   // Supplier Details
   const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
@@ -117,7 +115,7 @@ export const PurchaseOrderEntry: React.FC = () => {
   const [gstType, setGstType] = useState('GST 18%');
   const [roundOff, setRoundOff] = useState(0);
   const [stockCheck, setStockCheck] = useState(false);
-  const [itemMtc, setItemMtc] = useState<Record<string, string>>({});
+
   const [items, setItems] = useState<POItem[]>([createEmptyPOItem()]);
 
   const selectedSupplier = useMemo(
@@ -182,8 +180,18 @@ export const PurchaseOrderEntry: React.FC = () => {
     plateKg: number;
   } | null>(null);
 
-  // Filter out empty rows when summing / saving
-  const filledItems = useMemo(() => items.filter(hasItemContent), [items]);
+  // Filter out trailing empty rows when summing / saving, but preserve empty rows in the middle for spacing
+  const filledItems = useMemo(() => {
+    let lastFilledIndex = -1;
+    for (let i = items.length - 1; i >= 0; i--) {
+      if (hasItemContent(items[i])) {
+        lastFilledIndex = i;
+        break;
+      }
+    }
+    if (lastFilledIndex === -1) return [];
+    return items.slice(0, lastFilledIndex + 1);
+  }, [items]);
   const totalWeight = useMemo(() => filledItems.reduce((sum, item) => sum + item.kg, 0), [filledItems]);
 
   // Dynamic Total Amount based on Rate Basis
@@ -297,11 +305,6 @@ export const PurchaseOrderEntry: React.FC = () => {
       return;
     }
     setItems(prev => prev.filter(item => item.id !== id));
-    setItemMtc(prev => {
-      const next = { ...prev };
-      delete next[id];
-      return next;
-    });
   };
 
   const updateItem = (id: string, field: keyof POItem, value: unknown) => {
@@ -353,35 +356,7 @@ export const PurchaseOrderEntry: React.FC = () => {
     });
   };
 
-  const normStock = (s: string) => s.trim().toUpperCase();
 
-  const handleCheckStock = (item: POItem) => {
-    if (!item.grade.trim()) {
-      toast.error('Select grade first');
-      return;
-    }
-    let plateNos = 0;
-    let plateKg = 0;
-    for (const plate of plates) {
-      if (normStock(plate.grade) !== normStock(item.grade)) continue;
-      if (item.thickness && plate.thickness && normStock(String(plate.thickness)) !== normStock(String(item.thickness))) continue;
-      const used = usages
-        .filter(u => u.plateId === plate.id)
-        .reduce((sum, u) => sum + u.usedWeight + u.scrapQuantity, 0);
-      const balance = Math.max(0, (plate.weight || plate.initialWeight) - used);
-      if (balance <= 0) continue;
-      plateNos += 1;
-      plateKg += balance;
-    }
-    setStockModal({
-      grade: item.grade.trim(),
-      thickness: String(item.thickness || '-'),
-      width: String(item.width || '-'),
-      length: String(item.length || '-'),
-      plateNos,
-      plateKg,
-    });
-  };
 
   const buildPOFromForm = (): PurchaseOrder | null => {
     if (!supplierName.trim()) { toast.error('Supplier Name is required'); return null; }
@@ -483,12 +458,12 @@ export const PurchaseOrderEntry: React.FC = () => {
 
   const handleNew = () => {
     navigate('/purchase-order');
-    setDraftPoNumber(nextPONo());
+
     setSupplierName(''); setSupplierAddress(''); setSupplierGST(''); setSupplierEmail('');
     setSupplierMobile(''); setContactPerson(''); setDeliveryLocation(''); setTransportName('');
     setLocation(''); setPaymentTerms(''); setUtLevel(''); setTc('');
     setNote(''); setRemark(''); setCustomer(''); setTerms(DEFAULT_TERMS); setGstType('GST 18%');
-    setRoundOff(0); setInspection(''); setStockCheck(false); setItemMtc({});
+    setRoundOff(0); setInspection(''); setStockCheck(false);
     setTransport(''); setLoading('');
     setItems([createEmptyPOItem()]);
     toast('New PO form ready');
@@ -670,8 +645,7 @@ export const PurchaseOrderEntry: React.FC = () => {
 
   // Dynamic lists from other masters
   const transportOptions = useMemo(() => {
-    const list = transports.map(t => t.name.trim().toUpperCase()).filter(Boolean);
-    return Array.from(new Set([...list, ...TRANSPORT_PAYMENT_OPTIONS]));
+    return transports.map(t => t.name.trim().toUpperCase()).filter(Boolean);
   }, [transports]);
 
   return (
@@ -777,7 +751,7 @@ export const PurchaseOrderEntry: React.FC = () => {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
         
         {/* Column 1: SUPPLIER DETAILS */}
-        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg shadow-sm overflow-hidden flex flex-col">
+        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg shadow-sm flex flex-col">
           <div className="bg-[#f0f4f9] dark:bg-slate-800/50 px-4 py-2 border-b border-slate-200 dark:border-slate-800 flex items-center gap-2">
             <span className="text-[#0b387c] text-sm">👤</span>
             <span className="text-xs font-extrabold text-[#0b387c] dark:text-blue-400 uppercase tracking-wider">
@@ -974,7 +948,6 @@ export const PurchaseOrderEntry: React.FC = () => {
                 <th className="px-2 py-2.5 border-r border-blue-900/40 w-28 font-bold">WEIGHT (KG)</th>
                 <th className="px-2 py-2.5 border-r border-blue-900/40 w-24 font-bold">RATE (₹)</th>
                 <th className="px-2 py-2.5 border-r border-blue-900/40 w-28 font-bold">RATE BASIS</th>
-                <th className="px-2 py-2.5 border-r border-blue-900/40 w-16 font-bold text-center">MTC</th>
                 <th className="px-2 py-2.5 border-r border-blue-900/40 w-32 font-bold text-right pr-4">AMOUNT (₹)</th>
                 <th className="px-2 py-2.5 w-12 font-bold text-center">ACTION</th>
               </tr>
@@ -1011,11 +984,11 @@ export const PurchaseOrderEntry: React.FC = () => {
                         <select
                           value={item.itemMasterId || ''}
                           onChange={e => applyItemMaster(item.id, e.target.value)}
-                          className="w-full bg-transparent border border-transparent hover:border-slate-300 dark:hover:border-slate-700 rounded px-2 py-1 text-xs focus:ring-1 focus:ring-blue-500 focus:outline-none"
+                          className="w-full bg-white dark:bg-slate-900 dark:text-slate-100 border border-transparent hover:border-slate-300 dark:hover:border-slate-700 rounded px-2 py-1 text-xs text-slate-800 focus:ring-1 focus:ring-blue-500 focus:outline-none"
                         >
-                          <option value="">Select Item</option>
+                          <option value="" className="bg-white dark:bg-slate-900 dark:text-slate-100">Select Item</option>
                           {itemMasterOptions.map(m => (
-                            <option key={m.id} value={m.id}>
+                            <option key={m.id} value={m.id} className="bg-white dark:bg-slate-900 dark:text-slate-100">
                               {m.name}
                             </option>
                           ))}
@@ -1047,11 +1020,11 @@ export const PurchaseOrderEntry: React.FC = () => {
                       <select
                         value={item.make || ''}
                         onChange={e => updateItem(item.id, 'make', e.target.value)}
-                        className="w-full bg-transparent border border-transparent hover:border-slate-300 dark:hover:border-slate-700 rounded px-2 py-1 text-xs focus:ring-1 focus:ring-blue-500 focus:outline-none"
+                        className="w-full bg-white dark:bg-slate-900 dark:text-slate-100 border border-transparent hover:border-slate-300 dark:hover:border-slate-700 rounded px-2 py-1 text-xs text-slate-800 focus:ring-1 focus:ring-blue-500 focus:outline-none"
                       >
-                        <option value="">Select Make</option>
+                        <option value="" className="bg-white dark:bg-slate-900">Select Make</option>
                         {MAKES.map(m => (
-                          <option key={m} value={m}>{m}</option>
+                          <option key={m} value={m} className="bg-white dark:bg-slate-900">{m}</option>
                         ))}
                       </select>
                     </td>
@@ -1115,14 +1088,6 @@ export const PurchaseOrderEntry: React.FC = () => {
                           onChange={v => updateItem(item.id, 'kg', v)}
                           className="w-full bg-transparent border border-transparent hover:border-slate-300 dark:hover:border-slate-700 rounded px-2 py-1 text-xs font-bold text-blue-700 dark:text-blue-400 text-right"
                         />
-                        <button
-                          type="button"
-                          onClick={() => handleCheckStock(item)}
-                          title="Check Yard Stock"
-                          className="w-6 h-6 rounded bg-emerald-100 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-300 flex items-center justify-center hover:bg-emerald-200 shrink-0"
-                        >
-                          <Package className="w-3 h-3" />
-                        </button>
                       </div>
                     </td>
 
@@ -1148,17 +1113,7 @@ export const PurchaseOrderEntry: React.FC = () => {
                       </select>
                     </td>
 
-                    {/* MTC */}
-                    <td className="p-1 border-r border-slate-100 dark:border-slate-800 w-16">
-                      <select
-                        value={itemMtc[item.id] || 'No'}
-                        onChange={e => setItemMtc(prev => ({ ...prev, [item.id]: e.target.value }))}
-                        className="w-full bg-transparent border border-transparent hover:border-slate-300 dark:hover:border-slate-700 rounded px-2 py-1 text-xs focus:ring-1 focus:ring-blue-500 focus:outline-none"
-                      >
-                        <option value="Yes">Yes</option>
-                        <option value="No">No</option>
-                      </select>
-                    </td>
+
 
                     {/* AMOUNT */}
                     <td className="px-4 py-2 border-r border-slate-100 dark:border-slate-800 w-32 text-right font-black text-slate-800 dark:text-slate-200 pr-4 select-none">
