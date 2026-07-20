@@ -1,4 +1,5 @@
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo, useEffect, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import { Save, Plus, Trash2, MessageSquare, X, Printer, Mail, Pencil, FileText, Package, List } from 'lucide-react';
 import { useAppContext, type PurchaseOrder, type POItem, MATERIAL_GRADES, BRANCHES } from '../store/AppContext';
 import toast from 'react-hot-toast';
@@ -18,6 +19,91 @@ const MAKES = ['SAIL', 'JINDAL', 'TATA', 'AMNS', 'ESSAR', 'BHUSHAN', 'VIZAG', 'R
 const GST_OPTIONS = ['GST 0%', 'GST 5%', 'GST 12%', 'GST 18%', 'GST 28%'] as const;
 const TRANSPORT_PAYMENT_OPTIONS = ['TO PAY', 'PAID', 'EX-WORKS', 'FOR VADODARA', 'TO BE BORNE BY US', 'TO BE BORNE BY SUPPLIER'];
 const LOADING_OPTIONS = ['FREE', 'EXTRA', 'INCLUDED', 'BY SUPPLIER', 'BY OUR SCOPE'];
+
+/** A fully custom dropdown that replaces native <select> — fully dark-mode compatible.
+ *  Uses position:fixed + portal so it escapes overflow:hidden/auto table containers. */
+const InlineCustomSelect: React.FC<{
+  value: string;
+  onChange: (v: string) => void;
+  options: readonly string[];
+  placeholder?: string;
+}> = ({ value, onChange, options, placeholder = 'Select' }) => {
+  const [isOpen, setIsOpen] = useState(false);
+  const [rect, setRect] = useState<DOMRect | null>(null);
+  const triggerRef = useRef<HTMLButtonElement>(null);
+
+  useEffect(() => {
+    if (!isOpen) return;
+    const close = (e: MouseEvent) => {
+      if (triggerRef.current && !triggerRef.current.contains(e.target as Node)) setIsOpen(false);
+    };
+    const closeOnScroll = () => setIsOpen(false);
+    document.addEventListener('mousedown', close);
+    window.addEventListener('scroll', closeOnScroll, true);
+    window.addEventListener('resize', closeOnScroll);
+    return () => {
+      document.removeEventListener('mousedown', close);
+      window.removeEventListener('scroll', closeOnScroll, true);
+      window.removeEventListener('resize', closeOnScroll);
+    };
+  }, [isOpen]);
+
+  const toggle = () => {
+    if (!isOpen && triggerRef.current) setRect(triggerRef.current.getBoundingClientRect());
+    setIsOpen(v => !v);
+  };
+
+  return (
+    <div className="relative w-full">
+      <button
+        ref={triggerRef}
+        type="button"
+        onClick={toggle}
+        className="w-full flex items-center justify-between bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-100 border border-transparent hover:border-slate-300 dark:hover:border-slate-700 rounded px-2 py-1 text-xs focus:ring-1 focus:ring-blue-500 focus:outline-none transition-colors"
+      >
+        <span className={`truncate ${value ? '' : 'text-slate-400 dark:text-slate-500'}`}>
+          {value || placeholder}
+        </span>
+        <svg className="w-3 h-3 text-slate-400 shrink-0 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+        </svg>
+      </button>
+
+      {isOpen && rect && createPortal(
+        <div
+          style={{ position: 'fixed', top: rect.bottom + 2, left: rect.left, minWidth: Math.max(rect.width, 140), zIndex: 9999 }}
+          className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg shadow-2xl overflow-hidden"
+          onMouseDown={e => e.stopPropagation()}
+        >
+          <div className="max-h-56 overflow-y-auto">
+            <button
+              type="button"
+              onClick={() => { onChange(''); setIsOpen(false); }}
+              className="w-full text-left px-3 py-1.5 text-xs text-slate-400 dark:text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
+            >
+              {placeholder}
+            </button>
+            {options.map(opt => (
+              <button
+                key={opt}
+                type="button"
+                onClick={() => { onChange(opt); setIsOpen(false); }}
+                className={`w-full text-left px-3 py-1.5 text-xs font-semibold transition-colors ${
+                  value === opt
+                    ? 'bg-blue-600 text-white'
+                    : 'text-slate-700 dark:text-slate-200 hover:bg-blue-50 dark:hover:bg-slate-800'
+                }`}
+              >
+                {opt}
+              </button>
+            ))}
+          </div>
+        </div>,
+        document.body
+      )}
+    </div>
+  );
+};
 
 const INSPECTION_OPTIONS = ['Third Party', 'Customer', 'Our Inspection', 'No Inspection', 'Other'];
 const TC_OPTIONS = ['Yes', 'No', 'If Available'];
@@ -981,18 +1067,15 @@ export const PurchaseOrderEntry: React.FC = () => {
                     {/* ITEM */}
                     <td className="p-1 border-r border-slate-100 dark:border-slate-800 min-w-[160px]">
                       <div className="flex items-center gap-1">
-                        <select
-                          value={item.itemMasterId || ''}
-                          onChange={e => applyItemMaster(item.id, e.target.value)}
-                          className="w-full bg-white dark:bg-slate-900 dark:text-slate-100 border border-transparent hover:border-slate-300 dark:hover:border-slate-700 rounded px-2 py-1 text-xs text-slate-800 focus:ring-1 focus:ring-blue-500 focus:outline-none"
-                        >
-                          <option value="" className="bg-white dark:bg-slate-900 dark:text-slate-100">Select Item</option>
-                          {itemMasterOptions.map(m => (
-                            <option key={m.id} value={m.id} className="bg-white dark:bg-slate-900 dark:text-slate-100">
-                              {m.name}
-                            </option>
-                          ))}
-                        </select>
+                        <InlineCustomSelect
+                          value={itemMasterOptions.find(m => m.id === item.itemMasterId)?.name || ''}
+                          onChange={v => {
+                            const master = itemMasterOptions.find(m => m.name === v);
+                            applyItemMaster(item.id, master?.id || '');
+                          }}
+                          options={itemMasterOptions.map(m => m.name)}
+                          placeholder="Select Item"
+                        />
                         <button
                           type="button"
                           onClick={() => navigate('/item-master')}
@@ -1017,16 +1100,12 @@ export const PurchaseOrderEntry: React.FC = () => {
 
                     {/* MAKE */}
                     <td className="p-1 border-r border-slate-100 dark:border-slate-800 min-w-[110px]">
-                      <select
+                      <InlineCustomSelect
                         value={item.make || ''}
-                        onChange={e => updateItem(item.id, 'make', e.target.value)}
-                        className="w-full bg-white dark:bg-slate-900 dark:text-slate-100 border border-transparent hover:border-slate-300 dark:hover:border-slate-700 rounded px-2 py-1 text-xs text-slate-800 focus:ring-1 focus:ring-blue-500 focus:outline-none"
-                      >
-                        <option value="" className="bg-white dark:bg-slate-900">Select Make</option>
-                        {MAKES.map(m => (
-                          <option key={m} value={m} className="bg-white dark:bg-slate-900">{m}</option>
-                        ))}
-                      </select>
+                        onChange={v => updateItem(item.id, 'make', v)}
+                        options={MAKES}
+                        placeholder="Select Make"
+                      />
                     </td>
 
                     {/* SIZE / SECTION */}

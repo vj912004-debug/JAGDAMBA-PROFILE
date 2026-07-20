@@ -1,5 +1,6 @@
-import React, { useState, useEffect } from 'react';
-import { List } from 'lucide-react';
+import React, { useState, useEffect, useRef } from 'react';
+import { createPortal } from 'react-dom';
+import { List, ChevronDown } from 'lucide-react';
 import { upper } from '../utils/textCase';
 
 interface EditableSelectProps {
@@ -11,17 +12,21 @@ interface EditableSelectProps {
   displayTransform?: (option: string) => string;
 }
 
-export const EditableSelect: React.FC<EditableSelectProps> = ({ 
-  value, 
-  onChange, 
-  options, 
-  placeholder, 
-  className = "", 
-  displayTransform 
+export const EditableSelect: React.FC<EditableSelectProps> = ({
+  value,
+  onChange,
+  options,
+  placeholder,
+  className = '',
+  displayTransform,
 }) => {
   const [isManual, setIsManual] = useState(false);
+  const [isOpen, setIsOpen] = useState(false);
+  const [dropdownRect, setDropdownRect] = useState<DOMRect | null>(null);
+  const triggerRef = useRef<HTMLButtonElement>(null);
+  const datalistId = React.useId();
 
-  // Automatically increase size and padding to ensure dropdowns are clear, easy-to-read, and professional
+  // Keep the size-enhancement transform from the original
   const enhancedClassName = className
     .replace(/\bp-1\.5\b/g, 'px-2.5 py-2')
     .replace(/\bp-1\b/g, 'px-2.5 py-2')
@@ -37,32 +42,62 @@ export const EditableSelect: React.FC<EditableSelectProps> = ({
     .replace(/\bw-18\b/g, 'w-24')
     .replace(/\bw-22\b/g, 'w-28');
 
-  // Check if initial value is manual (not in options and not empty)
+  // If value is not in options, switch to manual mode
   useEffect(() => {
     if (value && !options.includes(value) && value !== 'OTHER_MANUAL') {
       setIsManual(true);
     }
   }, [value, options]);
 
-  const handleSelectChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    if (e.target.value === 'OTHER_MANUAL') {
+  // Close dropdown on outside click
+  useEffect(() => {
+    if (!isOpen) return;
+    const handleClick = (e: MouseEvent) => {
+      if (triggerRef.current && !triggerRef.current.contains(e.target as Node)) {
+        setIsOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClick);
+    return () => document.removeEventListener('mousedown', handleClick);
+  }, [isOpen]);
+
+  // Close on scroll/resize so dropdown doesn't drift
+  useEffect(() => {
+    if (!isOpen) return;
+    const close = () => setIsOpen(false);
+    window.addEventListener('scroll', close, true);
+    window.addEventListener('resize', close);
+    return () => {
+      window.removeEventListener('scroll', close, true);
+      window.removeEventListener('resize', close);
+    };
+  }, [isOpen]);
+
+  const handleToggle = () => {
+    if (!isOpen && triggerRef.current) {
+      setDropdownRect(triggerRef.current.getBoundingClientRect());
+    }
+    setIsOpen(v => !v);
+  };
+
+  const handleSelect = (opt: string) => {
+    if (opt === '__MANUAL__') {
       setIsManual(true);
       onChange('');
     } else {
-      onChange(e.target.value);
+      onChange(opt);
     }
+    setIsOpen(false);
   };
 
   const handleBackToList = () => {
     setIsManual(false);
-    // If current manual value is empty, pick the first option or empty
     if (!value || !options.includes(value)) {
       onChange(options[0] || '');
     }
   };
 
-  const datalistId = React.useId();
-
+  // ── Manual input mode ────────────────────────────────────────
   if (isManual) {
     return (
       <div className="relative flex items-center group">
@@ -71,7 +106,7 @@ export const EditableSelect: React.FC<EditableSelectProps> = ({
           list={datalistId}
           value={value}
           onChange={(e) => onChange(upper(e.target.value))}
-          placeholder={placeholder || "Type manually..."}
+          placeholder={placeholder || 'Type manually...'}
           className={`${enhancedClassName} pr-8 focus:ring-2 focus:ring-blue-500 outline-none transition-all`}
           autoFocus
         />
@@ -83,7 +118,7 @@ export const EditableSelect: React.FC<EditableSelectProps> = ({
         <button
           type="button"
           onClick={handleBackToList}
-          className="absolute right-2 text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors p-1 rounded-md hover:bg-slate-100 dark:bg-slate-800"
+          className="absolute right-2 text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors p-1 rounded-md hover:bg-slate-100 dark:hover:bg-slate-800"
           title="Switch back to list"
         >
           <List className="w-3 h-3" />
@@ -92,19 +127,89 @@ export const EditableSelect: React.FC<EditableSelectProps> = ({
     );
   }
 
+  // ── Custom dropdown (replaces native <select> for dark mode compat) ──
+  const displayLabel = displayTransform && value ? displayTransform(value) : value;
+
+  // Portal dropdown — rendered at document.body, positioned via fixed coords
+  // so it escapes any overflow:hidden/auto parent (e.g. table's overflow-x-auto).
+  // Dark mode works because document.documentElement carries the .dark class.
+  const dropdown =
+    isOpen && dropdownRect
+      ? createPortal(
+          <div
+            style={{
+              position: 'fixed',
+              top: dropdownRect.bottom + 2,
+              left: dropdownRect.left,
+              minWidth: Math.max(dropdownRect.width, 160),
+              zIndex: 9999,
+            }}
+            className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg shadow-2xl overflow-hidden"
+            onMouseDown={e => e.stopPropagation()}
+          >
+            <div className="max-h-56 overflow-y-auto">
+              {placeholder && (
+                <button
+                  type="button"
+                  onClick={() => { onChange(''); setIsOpen(false); }}
+                  className="w-full text-left px-3 py-1.5 text-sm font-semibold text-slate-400 dark:text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
+                >
+                  {placeholder}
+                </button>
+              )}
+              {options.map(opt => (
+                <button
+                  key={opt}
+                  type="button"
+                  onClick={() => handleSelect(opt)}
+                  className={`w-full text-left px-3 py-1.5 text-sm font-semibold transition-colors ${
+                    value === opt
+                      ? 'bg-blue-600 text-white'
+                      : 'text-slate-700 dark:text-slate-200 hover:bg-blue-50 dark:hover:bg-slate-800'
+                  }`}
+                >
+                  {displayTransform ? displayTransform(opt) : opt}
+                </button>
+              ))}
+            </div>
+            <div className="border-t border-slate-100 dark:border-slate-800">
+              <button
+                type="button"
+                onClick={() => handleSelect('__MANUAL__')}
+                className="w-full text-left px-3 py-1.5 text-sm font-bold text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-slate-800 transition-colors"
+              >
+                + Other (Type Manually)
+              </button>
+            </div>
+          </div>,
+          document.body,
+        )
+      : null;
+
   return (
-    <select
-      value={value}
-      onChange={handleSelectChange}
-      className={`${enhancedClassName} dark:text-slate-100 focus:ring-2 focus:ring-blue-500 outline-none transition-all`}
-    >
-      {placeholder && <option value="" className="bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100">{placeholder}</option>}
-      {options.map(opt => (
-        <option key={opt} value={opt} className="bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100">
-          {displayTransform ? displayTransform(opt) : opt}
-        </option>
-      ))}
-      <option value="OTHER_MANUAL" className="font-bold text-blue-600 dark:text-blue-300 bg-white dark:bg-slate-800">+ Other (Type Manually)</option>
-    </select>
+    <div className="relative w-full">
+      <button
+        ref={triggerRef}
+        type="button"
+        onClick={handleToggle}
+        className={`${enhancedClassName} relative flex items-center justify-between w-full text-left pr-6 focus:ring-2 focus:ring-blue-500 outline-none transition-all`}
+      >
+        <span
+          className={`truncate ${
+            displayLabel
+              ? 'text-slate-800 dark:text-slate-100'
+              : 'text-slate-400 dark:text-slate-500 font-normal'
+          }`}
+        >
+          {displayLabel || placeholder || ''}
+        </span>
+        <ChevronDown
+          className={`absolute right-1.5 top-1/2 -translate-y-1/2 w-3 h-3 text-slate-400 dark:text-slate-500 shrink-0 transition-transform duration-150 ${
+            isOpen ? 'rotate-180' : ''
+          }`}
+        />
+      </button>
+      {dropdown}
+    </div>
   );
 };
