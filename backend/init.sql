@@ -26,3 +26,17 @@ CREATE TABLE IF NOT EXISTS erp_data (
 INSERT INTO erp_data (id, data, version)
 VALUES ('main', '{}', 'v4_seeded')
 ON CONFLICT (id) DO NOTHING;
+
+-- Automatic snapshots before every ERP save (keeps last N via app logic)
+CREATE TABLE IF NOT EXISTS erp_data_backups (
+    id BIGSERIAL PRIMARY KEY,
+    erp_id TEXT NOT NULL DEFAULT 'main',
+    data JSONB NOT NULL,
+    version TEXT,
+    critical_weight INTEGER NOT NULL DEFAULT 0,
+    reason TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE INDEX IF NOT EXISTS idx_erp_data_backups_created
+ON erp_data_backups (erp_id, created_at DESC);

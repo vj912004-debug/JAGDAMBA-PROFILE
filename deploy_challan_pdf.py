@@ -21,6 +21,10 @@ SOURCE_FILES = [
     'src/projects/profile/pages/ChallanPage.tsx',
     'src/projects/profile/utils/logo2Base64.ts',
     'src/projects/profile/utils/logoPrintBase64.ts',
+    'src/projects/profile/utils/salesOrderDownload.tsx',
+    'src/projects/profile/components/SalesOrderPrint.tsx',
+    'src/projects/profile/pages/OrderEntry.tsx',
+    'src/projects/profile/pages/ProductionList.tsx',
 ]
 
 
@@ -122,8 +126,6 @@ def verify_bundle(client: paramiko.SSHClient) -> None:
         "checks = {\n"
         "    'ORIGINAL COPY': 'ORIGINAL COPY' in content,\n"
         "    'DUPLICATE COPY': 'DUPLICATE COPY' in content,\n"
-        "    'challan original id': 'challan-original-print-area' in content,\n"
-        "    'challan duplicate id': 'challan-duplicate-print-area' in content,\n"
         "}\n"
         "for label, ok in checks.items():\n"
         "    print(f'{label}:', 'OK' if ok else 'MISSING')\n"

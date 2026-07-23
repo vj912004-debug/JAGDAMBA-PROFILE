@@ -1,6 +1,6 @@
 import { PO_BODY_FIT_SCALE } from '../components/purchaseOrderPrintStyles';
 
-/** Scale PO body to fit inside the sheet without clipping signatures or edge bands. */
+/** Scale PO body to fit inside the sheet without clipping rows or footer. */
 export function fitPoSheetBody(sheet: HTMLElement, maxScale = PO_BODY_FIT_SCALE): void {
   const wrap = sheet.querySelector('.po-body-wrap') as HTMLElement | null;
   const body = sheet.querySelector('.po-body') as HTMLElement | null;
@@ -17,7 +17,9 @@ export function fitPoSheetBody(sheet: HTMLElement, maxScale = PO_BODY_FIT_SCALE)
   const needed = body.scrollHeight;
   if (available <= 0 || needed <= 0) return;
 
+  // Always shrink enough so every item row stays visible on one A4 page
   const scale = Math.min(maxScale, available / needed);
+
   body.style.transform = `scale(${scale})`;
   body.style.transformOrigin = 'top center';
   body.style.width = `${100 / scale}%`;
@@ -36,5 +38,7 @@ export async function fitPoSheetBodyWhenReady(sheet: HTMLElement | null | undefi
   } catch {
     /* ignore */
   }
+  fitPoSheetBody(sheet);
+  await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)));
   fitPoSheetBody(sheet);
 }

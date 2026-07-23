@@ -130,5 +130,8 @@ export function lookupGstFromPartyOrApi(
   if (existing) {
     return Promise.resolve(partyToGstLookup(existing));
   }
-  return fetchGstDetails(gstin).catch(() => ({ ...localGstLookup(gstin), requiresCaptcha: true }));
+  return fetchGstDetails(gstin).catch((error) => {
+    console.error('GST API lookup failed:', error);
+    return { ...localGstLookup(gstin), requiresCaptcha: false };
+  });
 }

@@ -10,12 +10,12 @@ import {
 } from '../utils/jobWorkPending';
 import { exportToExcel } from '../utils/excel';
 
-const emptyFilters = {
+const emptyFilters: { fromDate: string; toDate: string; party: string; grade: string; showPending: 'pending' | 'all' } = {
   fromDate: '',
   toDate: '',
   party: 'All',
   grade: 'All',
-  showPending: 'pending' as const,
+  showPending: 'pending',
 };
 
 export const JobWorkPendingReport: React.FC = () => {

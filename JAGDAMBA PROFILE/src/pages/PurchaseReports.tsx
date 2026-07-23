@@ -388,12 +388,15 @@ export const PurchaseReports: React.FC = () => {
                         <head>
                           <meta charset="UTF-8" />
                           <title>Purchase Order - ${previewPO.poNumber}</title>
+                          <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;600;700&family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
                           <style>
                             * { box-sizing: border-box; margin: 0; padding: 0; }
-                            body { background: #fff; }
+                            body { background: #fff; font-family: 'Roboto', sans-serif; }
                             @page { size: A4; margin: 0; }
                             @media print {
                               body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+                              #po-print-area { width: 210mm !important; min-width: 210mm !important; max-width: 210mm !important; }
+                              #po-print-area .po-v2-page { width: 210mm !important; height: 297mm !important; min-height: 297mm !important; box-shadow: none !important; }
                             }
                           </style>
                         </head>
@@ -404,10 +407,11 @@ export const PurchaseReports: React.FC = () => {
                     `);
                     printWindow.document.close();
                     printWindow.focus();
+                    // Wait for Google Fonts to load before printing
                     setTimeout(() => {
                       printWindow.print();
                       printWindow.close();
-                    }, 500);
+                    }, 1500);
                   }}
                   className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-xl text-sm font-bold transition-all shadow-md active:scale-95"
                 >

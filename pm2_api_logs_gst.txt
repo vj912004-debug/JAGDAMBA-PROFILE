@@ -1,0 +1,2 @@
+[TAILING] Tailing last 30 lines for [api] process (change the value with --lines option)
+

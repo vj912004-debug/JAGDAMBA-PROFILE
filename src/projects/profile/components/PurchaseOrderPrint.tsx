@@ -22,7 +22,8 @@ export { PO_PRINT_AREA_ID, PO_PRINT_WIDTH_PX, PO_PDF_CAPTURE_ID, PO_BLANK_PRINT_
 export type { PoCompanyBrand, PurchaseOrderPrintExtras, PurchaseOrderPrintData };
 export { buildPurchaseOrderPrintData, PO_COMPANY_BRANDS };
 
-const ROW_COUNT = 8;
+/** Blank template / short POs keep a few empty lines; longer POs use exact item count. */
+const MIN_ROW_COUNT = 4;
 
 const poStylesFor = (areaId: string) =>
   areaId === PO_PRINT_AREA_ID
@@ -91,8 +92,14 @@ export const PurchaseOrderPrint: React.FC<PurchaseOrderPrintProps> = ({
 
   const source = blank || !po ? EMPTY_PO : po;
   const data = buildPurchaseOrderPrintData(source, blank ? {} : extras);
-  const rows = Array.from({ length: ROW_COUNT }, (_, i) => data.items[i] ?? null);
+  // Exact item count when 4+ lines so print does not waste space on blank rows
+  const rowCount = blank
+    ? MIN_ROW_COUNT
+    : Math.max(data.items.length, data.items.length >= 4 ? data.items.length : MIN_ROW_COUNT);
+  const rows = Array.from({ length: rowCount }, (_, i) => data.items[i] ?? null);
   const sheetRef = useRef<HTMLDivElement>(null);
+  const densityClass =
+    data.items.length >= 6 ? 'po-dense-lg' : data.items.length >= 4 ? 'po-dense' : '';
 
   const hasItem = rows.some(i => i?.itemName);
   const hasGrade = blank || rows.some(i => i?.grade);
@@ -109,7 +116,7 @@ export const PurchaseOrderPrint: React.FC<PurchaseOrderPrintProps> = ({
     void fitPoSheetBodyWhenReady(sheet);
     const t = window.setTimeout(() => void fitPoSheetBodyWhenReady(sheet), 250);
     return () => clearTimeout(t);
-  }, [blank, printAreaId, data.poNumber, data.supplierName, data.items.length, data.grandTotal]);
+  }, [blank, printAreaId, data.poNumber, data.supplierName, data.items.length, data.grandTotal, rowCount, densityClass]);
 
   const totalItemsCount = data.items.length;
   
@@ -136,7 +143,9 @@ export const PurchaseOrderPrint: React.FC<PurchaseOrderPrintProps> = ({
       <link rel="stylesheet" href={PO_FONT_LINK} />
       <style>{poStylesFor(printAreaId)}</style>
 
-      <div ref={sheetRef} className="page-container">
+      <div ref={sheetRef} className={`page-container ${densityClass}`.trim()}>
+        <div className="po-body-wrap">
+          <div className="po-body">
         
         {/* Header */}
         <table className="header-table">
@@ -412,7 +421,10 @@ export const PurchaseOrderPrint: React.FC<PurchaseOrderPrintProps> = ({
             </div>
         </div>
 
-        {/* Bottom Base Decorative Line Badge */}
+          </div>
+        </div>
+
+        {/* Bottom Base Decorative Line Badge — outside scale wrap so it stays pinned */}
         <div className="footer-bar">
             <div className="footer-left">THANK YOU FOR YOUR BUSINESS!</div>
             <div className="footer-right">

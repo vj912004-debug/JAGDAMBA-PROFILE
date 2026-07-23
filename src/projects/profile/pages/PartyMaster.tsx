@@ -150,7 +150,7 @@ export const PartyMasterPage: React.FC = () => {
     const gstin = normalizeGstin(rawGst ?? form.gstNumber);
     if (!gstin) return;
     if (!isValidGstinFormat(gstin)) {
-      toast.error('Enter a valid 15-character GST number');
+      toast.error('Enter a valid 15-character GST number', { id: 'gst-toast' });
       return;
     }
 
@@ -170,11 +170,13 @@ export const PartyMasterPage: React.FC = () => {
         source: 'party',
         partial: false,
       });
-      toast.success('Details filled from existing party with this GST');
+      toast.success('Details filled from existing party with this GST', { id: 'gst-toast' });
       return;
     }
 
+    if (gstLoading) return;
     setGstLoading(true);
+    
     try {
       let lookup = localGstLookup(gstin);
       try {
@@ -187,15 +189,19 @@ export const PartyMasterPage: React.FC = () => {
       applyLookup(lookup);
 
       if (lookup.partyName && !lookup.partial) {
-        toast.success('Company details filled from GST');
+        toast.success('Company details filled from GST', { id: 'gst-toast' });
         return;
       }
 
-      toast('PAN & state filled. Enter the captcha below to fetch company name and address.', { duration: 6000 });
-      await openGstCaptchaModal(gstin);
+      if ((lookup as any).requiresCaptcha) {
+        toast('PAN & state filled. Enter the captcha below to fetch company name and address.', { duration: 6000, id: 'gst-toast' });
+        await openGstCaptchaModal(gstin);
+      } else {
+        toast.success('PAN & state filled. Please enter company details manually.', { id: 'gst-toast' });
+      }
     } catch (err) {
       applyLookup(localGstLookup(gstin));
-      toast.error((err as Error).message || 'Could not load GST verification');
+      toast.error((err as Error).message || 'Could not load GST verification', { id: 'gst-toast' });
     } finally {
       setGstLoading(false);
     }

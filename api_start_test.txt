@@ -1,0 +1,12 @@
+◇ injected env (6) from .env [2m// tip: ◈ encrypted .env [www.dotenvx.com][0m
+◇ injected env (0) from .env [2m// tip: ◈ secrets for agents [www.dotenvx.com][0m
+◇ injected env (0) from .env [2m// tip: ⌘ suppress logs { quiet: true }[0m
+Server running on http://localhost:5000
+PostgreSQL Database Connected Successfully
+GST captcha error: fetch failed
+GST captcha error: fetch failed
+GST captcha error: fetch failed
+GST captcha error: fetch failed
+GST captcha error: fetch failed
+bash: line 1: 561730 Killed                  node src/index.js 2>&1
+

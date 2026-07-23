@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { useLocation } from 'react-router-dom';
 import { MasterForm } from '../components/MasterForm';
+import { MasterSavedList } from '../components/MasterSavedList';
 import { useAppContext, type GradeMasterRecord } from '../store/AppContext';
 import { nextMasterCode } from '../utils/masterHelpers';
 import toast from 'react-hot-toast';
@@ -102,6 +103,24 @@ export const GradeMaster: React.FC = () => {
         { label: 'Description', value: f.description, onChange: set('description'), type: 'textarea' },
         { label: 'Status', value: f.status, onChange: set('status'), type: 'select', options: ['Active', 'Inactive'] },
       ]}
+      listPanel={
+        <MasterSavedList
+          title="Saved Grades"
+          rows={grades}
+          getId={r => r.id}
+          selectedId={f.id}
+          onSelect={load}
+          searchAccessor={r => `${r.code} ${r.name} ${r.standard}`}
+          columns={[
+            { header: 'Code', render: r => r.code },
+            { header: 'Grade Name', render: r => r.name },
+            { header: 'Standard', render: r => r.standard },
+            { header: 'Density', render: r => r.density },
+            { header: 'Status', render: r => r.status },
+            { header: 'Description', render: r => r.description || '—' },
+          ]}
+        />
+      }
     />
   );
 };

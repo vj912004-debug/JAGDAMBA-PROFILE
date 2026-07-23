@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { useLocation } from 'react-router-dom';
 import { MasterForm } from '../components/MasterForm';
+import { MasterSavedList } from '../components/MasterSavedList';
 import { useAppContext, MATERIAL_GRADES, type ItemMasterRecord } from '../store/AppContext';
 import { ITEM_MASTER_TYPES } from '../utils/itemMasterSeed';
 import { nextMasterCode } from '../utils/masterHelpers';
@@ -107,6 +108,24 @@ export const ItemMaster: React.FC = () => {
         { label: 'Unit', value: f.unit, onChange: set('unit'), type: 'select', required: true, options: ['Kg', 'Nos', 'Mtr', 'Sq.Ft'] },
         { label: 'HSN Code', value: f.hsn, onChange: set('hsn') },
       ]}
+      listPanel={
+        <MasterSavedList
+          title="Saved Items"
+          rows={items}
+          getId={r => r.id}
+          selectedId={f.id}
+          onSelect={load}
+          searchAccessor={r => `${r.code} ${r.name} ${r.type} ${r.grade}`}
+          columns={[
+            { header: 'Code', render: r => r.code },
+            { header: 'Item Name', render: r => r.name },
+            { header: 'Type', render: r => r.type },
+            { header: 'Grade', render: r => r.grade },
+            { header: 'Unit', render: r => r.unit },
+            { header: 'HSN', render: r => r.hsn || '—' },
+          ]}
+        />
+      }
     />
   );
 };

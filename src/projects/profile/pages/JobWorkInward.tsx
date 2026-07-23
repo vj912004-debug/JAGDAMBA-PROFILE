@@ -9,7 +9,7 @@ import {
 } from '../components/JobWorkFormParts';
 import { useAppContext, MATERIAL_GRADES, type PartyMaster } from '../store/AppContext';
 import {
-  emptyMaterialRow, emptyLabour, fmtKg3, hydrateMaterialRow, labourAmount,
+  emptyMaterialRow, emptyLabour, fmtKg3, labourAmount,
   nextJobWorkNo, type JobWorkInwardRecord, type JobWorkMaterialRow,
 } from '../utils/jobWorkHelpers';
 
@@ -19,8 +19,10 @@ export const JobWorkInward: React.FC = () => {
 
   const [editingId, setEditingId] = useState<string | null>(null);
   const [showSearch, setShowSearch] = useState(false);
-  const [inwardNo, setInwardNo] = useState(() =>
-    nextJobWorkNo('IN', jobWorkInwards.map(r => r.inwardNo), today));
+  const inwardNo = useMemo(() => {
+    if (editingId) return jobWorkInwards.find(r => r.id === editingId)?.inwardNo || '';
+    return nextJobWorkNo('IN', jobWorkInwards.map(r => r.inwardNo), today);
+  }, [editingId, jobWorkInwards, today]);
   const [inwardDate, setInwardDate] = useState(today);
   const [againstOutwardNo, setAgainstOutwardNo] = useState('');
   const [outwardDate, setOutwardDate] = useState('');
@@ -64,7 +66,6 @@ export const JobWorkInward: React.FC = () => {
   const resetForm = useCallback(() => {
     const d = new Date().toISOString().split('T')[0];
     setEditingId(null);
-    setInwardNo(nextJobWorkNo('IN', jobWorkInwards.map(r => r.inwardNo), d));
     setInwardDate(d);
     setAgainstOutwardNo('');
     setOutwardDate('');
@@ -79,7 +80,6 @@ export const JobWorkInward: React.FC = () => {
 
   const loadRecord = (rec: JobWorkInwardRecord) => {
     setEditingId(rec.id);
-    setInwardNo(rec.inwardNo);
     setInwardDate(rec.inwardDate);
     setAgainstOutwardNo(rec.againstOutwardNo);
     setOutwardDate(rec.outwardDate);
@@ -126,9 +126,6 @@ export const JobWorkInward: React.FC = () => {
       await persistErpNow({ jobWorkInwards: next });
       toast.success(`Job Work Inward ${inwardNo} saved`);
       setEditingId(record.id);
-      if (!editingId) {
-        setInwardNo(nextJobWorkNo('IN', next.map(r => r.inwardNo), inwardDate));
-      }
     } catch {
       toast.error('Saved locally but server sync failed');
     }

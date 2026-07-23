@@ -599,7 +599,7 @@ export const TcMtcDocumentSearch: React.FC = () => {
                     <DocPreviewCard title="TC PDF" icon={FileText} fileName={previewTc.pdfName} dataUrl={previewTc.pdfData} />
                     <DocPreviewCard title="Plate Photo" icon={Image} fileName={previewTc.platePhotoName} dataUrl={previewTc.platePhotoData} />
                     <DocPreviewCard title="UT Report" icon={FlaskConical} fileName={previewTc.labReportName} dataUrl={previewTc.labReportData} />
-                    <DocPreviewCard title="Heat Marking" icon={Image} fileName={previewTc.heatMarkingPhotoName} dataUrl={previewTc.heatMarkingPhotoData} />
+                    <DocPreviewCard title="Lab Report" icon={Image} fileName={previewTc.heatMarkingPhotoName} dataUrl={previewTc.heatMarkingPhotoData} />
                   </div>
                   {!hasTcPdf(previewTc) && !previewTc.platePhotoData && !previewTc.labReportData && !previewTc.heatMarkingPhotoData && (
                     <p className="text-sm text-slate-500 italic">No uploaded files — TC PDF will be auto-generated on download.</p>

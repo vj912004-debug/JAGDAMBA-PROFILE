@@ -18,6 +18,7 @@ def update_live_server():
         sys.exit(1)
 
     commands = [
+        "cd /root/JAGDAMBA-PROFILE && git stash",
         "cd /root/JAGDAMBA-PROFILE && git pull origin master",
         "cd /root/JAGDAMBA-PROFILE && npm install",
         "cd /root/JAGDAMBA-PROFILE/backend && npm install",
@@ -36,11 +37,11 @@ def update_live_server():
             line = stdout.readline()
             if not line:
                 break
-            print(line.strip().encode(sys.stdout.encoding, errors='replace').decode(sys.stdout.encoding, errors='replace'))
+            print(line.strip().encode('ascii', errors='replace').decode('ascii'))
             
         err = stderr.read().decode('utf-8', errors='replace').strip()
         if err:
-            print(f"Stderr output:\n{err}")
+            print(f"Stderr output:\n{err}".encode('ascii', errors='replace').decode('ascii'))
             
         exit_status = stdout.channel.recv_exit_status()
         print(f"Command exit status: {exit_status}")

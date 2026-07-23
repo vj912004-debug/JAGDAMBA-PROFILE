@@ -4,6 +4,20 @@ import pool from '../config/db.js';
 
 dotenv.config();
 
+function attachmentFromDataUrl(dataUrl, filename) {
+  if (!dataUrl || typeof dataUrl !== 'string') return null;
+  if (dataUrl.startsWith('data:')) {
+    const match = dataUrl.match(/^data:([^;]+);base64,(.+)$/);
+    if (!match) return null;
+    return {
+      filename: filename || 'attachment.pdf',
+      content: Buffer.from(match[2], 'base64'),
+      contentType: match[1],
+    };
+  }
+  return { filename: filename || 'attachment.pdf', path: dataUrl };
+}
+
 // Create transporter
 const transporter = nodemailer.createTransport({
   host: process.env.SMTP_HOST,
@@ -15,6 +29,62 @@ const transporter = nodemailer.createTransport({
   },
 });
 
+export const getMailStatus = async (req, res) => {
+  const configured = !!(
+    process.env.SMTP_HOST &&
+    process.env.SMTP_USER &&
+    process.env.SMTP_PASS
+  );
+
+  if (!configured) {
+    return res.json({ status: 'NOT_CONFIGURED' });
+  }
+
+  res.json({
+    status: 'CONFIGURED',
+    user: process.env.SMTP_USER,
+    host: process.env.SMTP_HOST,
+    port: process.env.SMTP_PORT || 587,
+  });
+};
+
+export const verifyMailConnection = async (req, res) => {
+  const configured = !!(
+    process.env.SMTP_HOST &&
+    process.env.SMTP_USER &&
+    process.env.SMTP_PASS
+  );
+
+  if (!configured) {
+    return res.status(400).json({
+      success: false,
+      status: 'NOT_CONFIGURED',
+      message: 'SMTP credentials are not configured on the server.',
+    });
+  }
+
+  try {
+    await transporter.verify();
+    res.json({
+      success: true,
+      status: 'CONNECTED',
+      user: process.env.SMTP_USER,
+      host: process.env.SMTP_HOST,
+      port: process.env.SMTP_PORT || 587,
+    });
+  } catch (error) {
+    console.error('SMTP verification error:', error);
+    res.status(500).json({
+      success: false,
+      status: 'ERROR',
+      message: error.message,
+      user: process.env.SMTP_USER,
+      host: process.env.SMTP_HOST,
+      port: process.env.SMTP_PORT || 587,
+    });
+  }
+};
+
 export const sendPoEmail = async (req, res) => {
   const { to, subject, message, poData, fileName } = req.body;
 
@@ -23,17 +93,13 @@ export const sendPoEmail = async (req, res) => {
   }
 
   try {
+    const attachment = attachmentFromDataUrl(poData, fileName || 'Purchase_Order.pdf');
     const mailOptions = {
       from: `"Jagdamba Steel" <${process.env.SMTP_USER}>`,
       to,
       subject: subject || `Purchase Order - ${fileName || 'PO'}`,
       text: message || 'Please find the attached Purchase Order.',
-      attachments: [
-        {
-          filename: fileName || 'Purchase_Order.pdf',
-          path: poData,
-        },
-      ],
+      attachments: attachment ? [attachment] : [],
     };
 
     const info = await transporter.sendMail(mailOptions);
@@ -63,17 +129,13 @@ export const sendTCEmail = async (req, res) => {
   }
 
   try {
+    const attachment = attachmentFromDataUrl(tcData, fileName || 'Test_Certificate.pdf');
     const mailOptions = {
       from: `"Jagdamba Steel" <${process.env.SMTP_USER}>`,
       to,
       subject: subject || `Test Certificate - ${fileName || 'Material'}`,
       text: message || 'Please find the attached Test Certificate.',
-      attachments: [
-        {
-          filename: fileName || 'Test_Certificate.pdf',
-          path: tcData, // handles base64 data URLs
-        },
-      ],
+      attachments: attachment ? [attachment] : [],
     };
 
     const info = await transporter.sendMail(mailOptions);

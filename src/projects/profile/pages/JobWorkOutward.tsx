@@ -23,8 +23,10 @@ export const JobWorkOutward: React.FC = () => {
 
   const [editingId, setEditingId] = useState<string | null>(null);
   const [showSearch, setShowSearch] = useState(false);
-  const [outwardNo, setOutwardNo] = useState(() =>
-    nextJobWorkNo('OUT', jobWorkOutwards.map(r => r.outwardNo), today));
+  const outwardNo = useMemo(() => {
+    if (editingId) return jobWorkOutwards.find(r => r.id === editingId)?.outwardNo || '';
+    return nextJobWorkNo('OUT', jobWorkOutwards.map(r => r.outwardNo), today);
+  }, [editingId, jobWorkOutwards, today]);
   const [outwardDate, setOutwardDate] = useState(today);
   const [partyName, setPartyName] = useState('');
   const [address, setAddress] = useState('');
@@ -65,7 +67,6 @@ export const JobWorkOutward: React.FC = () => {
   const resetForm = useCallback(() => {
     const d = new Date().toISOString().split('T')[0];
     setEditingId(null);
-    setOutwardNo(nextJobWorkNo('OUT', jobWorkOutwards.map(r => r.outwardNo), d));
     setOutwardDate(d);
     setPartyName('');
     setAddress('');
@@ -79,7 +80,6 @@ export const JobWorkOutward: React.FC = () => {
 
   const loadRecord = (rec: JobWorkOutwardRecord) => {
     setEditingId(rec.id);
-    setOutwardNo(rec.outwardNo);
     setOutwardDate(rec.outwardDate);
     setPartyName(rec.partyName);
     setAddress(rec.address);
@@ -124,9 +124,6 @@ export const JobWorkOutward: React.FC = () => {
       await persistErpNow({ jobWorkOutwards: next });
       toast.success(`Job Work Outward ${outwardNo} saved`);
       setEditingId(record.id);
-      if (!editingId) {
-        setOutwardNo(nextJobWorkNo('OUT', next.map(r => r.outwardNo), outwardDate));
-      }
     } catch {
       toast.error('Saved locally but server sync failed');
     }

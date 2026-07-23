@@ -1,0 +1,15 @@
+import { execFile } from 'child_process';
+import { promisify } from 'util';
+import fs from 'fs/promises';
+import os from 'os';
+import path from 'path';
+Use --update-env to update environment variables
+[PM2] Applying action restartProcessId on app [api](ids: [ 50 ])
+[PM2] [api](50) ✓
+┌────┬─────────────┬─────────────┬─────────┬─────────┬──────────┬────────┬──────┬───────────┬──────────┬──────────┬──────────┬──────────┐
+│ id │ name        │ namespace   │ version │ mode    │ pid      │ uptime │ ↺    │ status    │ cpu      │ mem      │ user     │ watching │
+├────┼─────────────┼─────────────┼─────────┼─────────┼──────────┼────────┼──────┼───────────┼──────────┼──────────┼──────────┼──────────┤
+│ 50 │ api         │ default     │ 1.0.0   │ fork    │ 562074   │ 0s     │ 17   │ online    │ 0%       │ 18.9mb   │ root     │ disabled │
+│ 5  │ whatsapp    │ default     │ 1.0.0   │ fork    │ 560966   │ 21m    │ 67   │ online    │ 0%       │ 70.3mb   │ root     │ disabled │
+└────┴─────────────┴─────────────┴─────────┴─────────┴──────────┴────────┴──────┴───────────┴──────────┴──────────┴──────────┴──────────┘
+{"success":false,"message":"fetch failed"}

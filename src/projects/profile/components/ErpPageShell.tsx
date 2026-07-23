@@ -141,7 +141,7 @@ export const ErpNumberedSection: React.FC<{
 /** Row of summary metric boxes (GRN entry footer) */
 export const ErpSummaryTiles: React.FC<{
   items: { label: string; value: string | number; tone?: 'blue' | 'green' | 'orange' | 'default' }[];
-  columns?: 1 | 2 | 3 | 4 | 6;
+  columns?: 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9;
   layout?: 'grid' | 'stack';
 }> = ({ items, columns, layout = 'grid' }) => {
   if (layout === 'stack') {

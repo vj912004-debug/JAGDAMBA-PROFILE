@@ -21,7 +21,9 @@ app.use(express.urlencoded({ limit: '50mb', extended: true }));
 app.get('/api/whatsapp/status', (req, res) => {
   res.json({
     status: whatsappService.status,
-    hasQr: !!whatsappService.qr
+    hasQr: !!whatsappService.qr,
+    lastError: whatsappService.lastError,
+    stuck: whatsappService.isInitStuck(),
   });
 });
 
@@ -54,6 +56,12 @@ app.post('/api/whatsapp/init', (req, res) => {
 app.post('/api/whatsapp/disconnect', async (req, res) => {
   await whatsappService.disconnect();
   res.json({ message: 'WhatsApp disconnected successfully' });
+});
+
+// Force-reset stuck WhatsApp session
+app.post('/api/whatsapp/reset', async (req, res) => {
+  await whatsappService.forceReset();
+  res.json({ message: 'WhatsApp session reset' });
 });
 
 // Send Bulk Messages (Hybrid Mode: Contacts sent from frontend)

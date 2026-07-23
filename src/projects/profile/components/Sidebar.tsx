@@ -3,7 +3,7 @@ import { useAppContext } from '../store/AppContext';
 import { Link, useLocation } from 'react-router-dom';
 import {
   LayoutDashboard, Users, ShoppingCart, ShoppingBag, Boxes, Factory,
-  Wallet, BarChart3, Settings2, ChevronDown, ShieldAlert, Truck
+  Wallet, BarChart3, Settings2, ChevronDown, ShieldAlert, Truck, ClipboardList
 } from 'lucide-react';
 import { clsx } from 'clsx';
 import { twMerge } from 'tailwind-merge';
@@ -54,8 +54,13 @@ export const NAV_GROUPS: NavGroup[] = [
       { path: '/plate-quotation-list', label: 'Plate Quotation List' },
       { path: '/purchase-return', label: 'Purchase Return' },
       { path: '/supplier-ledger', label: 'Supplier Ledger' },
-      { path: '/material-receipt', label: 'GRN Entry' },
       { path: '/reject-material-return', label: 'Reject Material Return' },
+    ]
+  },
+  {
+    title: 'GRN', icon: ClipboardList, roles: ['Admin', 'Office Entry'], children: [
+      { path: '/material-receipt', label: 'Add GRN' },
+      { path: '/grn-list', label: 'GRN List / Edit' },
     ]
   },
   {
@@ -104,7 +109,8 @@ export const NAV_GROUPS: NavGroup[] = [
       { path: '/production-reports', label: 'Production Reports' },
       { path: '/stock-reports', label: 'Stock Reports' },
       { path: '/material-receipt-report', label: 'Material Receipt Report' },
-      { path: '/material-pending-report', label: 'Material Pending Report' },
+      { path: '/material-required-pending', label: 'Material Required Pending' },
+      { path: '/pending-material-report', label: 'Pending Material Report' },
       { path: '/reports', label: 'Sales Dashboard' },
     ]
   },

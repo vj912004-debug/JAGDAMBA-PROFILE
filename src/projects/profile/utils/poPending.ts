@@ -7,6 +7,9 @@ export interface POItemPending {
   supplier: string;
   itemId: string;
   grade: string;
+  make: string;
+  itemName: string;
+  sizeSection: string;
   thickness: string;
   width: string;
   length: string;
@@ -88,6 +91,9 @@ export function computePOPendingRows(
         supplier: po.supplierName,
         itemId: item.id,
         grade: item.grade,
+        make: item.make || '',
+        itemName: item.itemName || '',
+        sizeSection: item.sizeSection || '',
         thickness: item.thickness,
         width: item.width,
         length: item.length,

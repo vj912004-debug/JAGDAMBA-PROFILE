@@ -2,7 +2,7 @@ import React, { useState, useMemo } from 'react';
 
 import {
 
-  Search, RotateCcw, FileSpreadsheet, Printer, ChevronDown, ChevronRight,
+  Search, RotateCcw, FileSpreadsheet, FileText, Printer, ChevronDown, ChevronRight,
 
   Users, ClipboardList, Package, Scale, IndianRupee, PackageCheck,
 
@@ -280,7 +280,7 @@ export const MaterialPendingReport: React.FC = () => {
 
       pendingWeightKg: r.pendingKg, rate: r.rate, pendingAmount: r.pendingAmount, expectedDate: '-',
 
-    })), totals);
+    })), { ...totals, orderedNos: totals.poNos });
 
     toast.success('PDF downloaded');
 
@@ -309,6 +309,8 @@ export const MaterialPendingReport: React.FC = () => {
         extra={
 
           <ErpScreenActions>
+
+            <button type="button" onClick={handleExportPDF} className="erp-btn erp-btn-ghost"><FileText className="w-4 h-4 text-red-600" /> Export PDF</button>
 
             <button type="button" onClick={handleExportExcel} className="erp-btn erp-btn-ghost"><FileSpreadsheet className="w-4 h-4 text-green-600" /> Export Excel</button>
 

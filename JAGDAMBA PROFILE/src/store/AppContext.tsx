@@ -182,13 +182,17 @@ export interface ChallanRecord {
 
 export interface POItem {
   id: string;
+  item: string;
   grade: string;
+  make: string;
+  sizeSection: string;
   thickness: string;
   width: string;
   length: string;
   nos: number;
   kg: number;
   rate: number;
+  rateBasis: string;
   amount: number;
   heatNo?: string;
   actualWeight?: number;
@@ -199,26 +203,35 @@ export interface PurchaseOrder {
   poNumber: string;
   date: string;
   supplierName: string;
+  contactPerson?: string;
+  supplierMobile?: string;
   supplierAddress?: string;
   supplierGST?: string;
   supplierEmail?: string;
-  supplierMobile?: string;
-  deliveryAddress?: string;
+  deliveryLocation?: string;
   transportName?: string;
-  transportNumber?: string;
   driverMobile?: string;
-  paymentTerms?: string;
-  make?: string;
-  utLevel?: string;
-  tc?: string;
   note?: string;
+  remark?: string;
+  paymentTerms?: string;
+  inspection?: string;
+  tc?: string;
+  utLevel?: string;
+  transport?: string;
+  loading?: string;
+  // legacy fields
+  deliveryAddress?: string;
+  transportNumber?: string;
+  make?: string;
   invoiceNo?: string;
   customer?: string;
   location?: string;
   items: POItem[];
   totalKg: number;
   totalAmount: number;
+  gstRate?: number;
   status: 'Pending' | 'Partial' | 'Complete';
+  createdBy?: string;
 }
 
 
@@ -583,14 +596,11 @@ function loadFromStorage(): StoredData | null {
   if (typeof window === 'undefined') return null;
   try {
     const version = localStorage.getItem(STORAGE_VERSION_KEY);
-    if (version !== CURRENT_VERSION) {
-      localStorage.removeItem(STORAGE_KEY);
-      localStorage.removeItem(AUTH_KEY);
-      localStorage.removeItem('jagdamba_erp_token');
-      localStorage.setItem(STORAGE_VERSION_KEY, CURRENT_VERSION);
-      return null;
-    }
     const raw = localStorage.getItem(STORAGE_KEY);
+    if (version !== CURRENT_VERSION) {
+      // Keep saved data — only bump version (do not wipe on app update)
+      localStorage.setItem(STORAGE_VERSION_KEY, CURRENT_VERSION);
+    }
     if (raw) return JSON.parse(raw);
   } catch { /* ignore */ }
   return null;
@@ -676,9 +686,13 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     }
     fetchData();
 
-    // Sockets removed for local-only version
+    // Polling added for multitasking/syncing data automatically across clients
+    const syncInterval = setInterval(() => {
+      fetchData();
+    }, 15000); // 15 seconds
+
     return () => {
-      // Clean up if needed
+      clearInterval(syncInterval);
     };
   }, [fetchData]);
 

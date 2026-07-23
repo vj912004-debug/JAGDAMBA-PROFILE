@@ -11,13 +11,16 @@ import { ChallanPage } from './pages/ChallanPage';
 import { PurchaseOrderEntry } from './pages/PurchaseOrderEntry';
 import { MaterialReceipt } from './pages/MaterialReceipt';
 import { MaterialReceiptReport } from './pages/MaterialReceiptReport';
+import { MaterialRequiredPendingReport } from './pages/MaterialRequiredPendingReport';
 import { MaterialPendingReport } from './pages/MaterialPendingReport';
+import { PendingMaterialReport } from './pages/PendingMaterialReport';
 import { StockRegister } from './pages/StockRegister';
 import { TransportBillEntry } from './pages/TransportBillEntry';
 import { RingRateEntry } from './pages/RingRateEntry';
 import { CuttingAllocationEntry } from './pages/CuttingAllocationEntry';
 import { WorkerCuttingList } from './pages/WorkerCuttingList';
 import { GRNReport } from './pages/GRNReport';
+import { GRNListEdit } from './pages/GRNListEdit';
 import { ProductionList } from './pages/ProductionList';
 import { Reports } from './pages/Reports';
 import { AlertCenter } from './pages/AlertCenter';
@@ -138,12 +141,15 @@ export default function ProfileApp() {
             <Route path="/transport-wise-summary" element={<TransportWiseSummaryReport />} />
             <Route path="/transport-pending-report" element={<TransportPendingBillReport />} />
             <Route path="/material-receipt-report" element={<MaterialReceiptReport />} />
+            <Route path="/material-required-pending" element={<MaterialRequiredPendingReport />} />
             <Route path="/job-work-pending-report" element={<JobWorkPendingReport />} />
             <Route path="/material-pending-report" element={<MaterialPendingReport />} />
+            <Route path="/pending-material-report" element={<PendingMaterialReport />} />
             <Route path="/ring-rate" element={<RingRateEntry />} />
             <Route path="/cutting-allocation" element={<CuttingAllocationEntry />} />
             <Route path="/worker-cutting" element={<WorkerCuttingList />} />
             <Route path="/grn-report" element={<GRNReport />} />
+            <Route path="/grn-list" element={<GRNListEdit />} />
             <Route path="/purchase-reports" element={<PurchaseReportsList />} />
             <Route path="/reports" element={<Reports />} />
             <Route path="/alert-center" element={<AdminRoute><AlertCenter /></AdminRoute>} />

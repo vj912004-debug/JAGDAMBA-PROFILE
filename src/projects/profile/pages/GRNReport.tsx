@@ -1,13 +1,19 @@
 import React, { useState, useMemo } from 'react';
-import { Download, Search } from 'lucide-react';
+import { Download, Search, CheckCircle, FileText, X } from 'lucide-react';
 import { useAppContext } from '../store/AppContext';
 import { PoToolbarActions } from '../components/PoToolbarActions';
 import { clsx } from 'clsx';
 
 export const GRNReport: React.FC = () => {
-  const { t, purchaseOrders, purchaseReceipts } = useAppContext();
+  const { t, purchaseOrders, purchaseReceipts, role, user, setPurchaseReceipts, persistErpNow } = useAppContext();
   const [search, setSearch] = useState('');
   const [selectedPoId, setSelectedPoId] = useState<string | null>(null);
+  
+  // Invoice processing modal state
+  const [processingGrn, setProcessingGrn] = useState<string | null>(null);
+  const [invoiceAmount, setInvoiceAmount] = useState('');
+  
+  const canProcessInvoice = role === 'Admin' || role === 'Accounts User';
 
   const toolbarPo = useMemo(
     () => (selectedPoId ? purchaseOrders.find(p => p.id === selectedPoId) ?? null : null),
@@ -44,6 +50,29 @@ export const GRNReport: React.FC = () => {
     a.href = url;
     a.download = `GRN_Report_${new Date().toISOString().split('T')[0]}.csv`;
     a.click();
+  };
+
+  const handleProcessInvoice = async () => {
+    if (!processingGrn) return;
+    const amount = parseFloat(invoiceAmount);
+    
+    const updated = purchaseReceipts.map(pr => 
+      pr.id === processingGrn ? { 
+        ...pr, 
+        invoiceStatus: 'Processed' as const, 
+        invoiceAmount: amount || 0,
+        invoiceProcessedBy: user?.displayName || 'Unknown',
+        invoiceProcessedDate: new Date().toISOString()
+      } : pr
+    );
+    setPurchaseReceipts(updated);
+    try {
+      await persistErpNow({ purchaseReceipts: updated });
+      setProcessingGrn(null);
+      setInvoiceAmount('');
+    } catch (e) {
+      console.error(e);
+    }
   };
 
   return (
@@ -84,10 +113,12 @@ export const GRNReport: React.FC = () => {
                 <th className="p-4 text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Material Grade</th>
                 <th className="p-4 text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider text-right">Received Qty (Nos)</th>
                 <th className="p-4 text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Bill No</th>
+                <th className="p-4 text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider text-center">Inspection</th>
                 <th className="p-4 text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Transporter</th>
                 <th className="p-4 text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Vehicle No</th>
                 <th className="p-4 text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider text-center">TC</th>
-                <th className="p-4 text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Remark</th>
+                <th className="p-4 text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Invoice Status</th>
+                <th className="p-4 text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider text-right">Accounts Action</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
@@ -108,6 +139,15 @@ export const GRNReport: React.FC = () => {
                   <td className="p-4 text-sm text-slate-600 dark:text-slate-300">{pr.grade}</td>
                   <td className="p-4 text-sm text-emerald-600 dark:text-emerald-400 text-right font-bold">{pr.receivedQty} Nos</td>
                   <td className="p-4 text-sm text-slate-700 dark:text-slate-200 font-semibold">{pr.billNo || '-'}</td>
+                  <td className="p-4 text-sm text-center">
+                    {pr.conditionOfGoods === 'Rejected' ? (
+                       <span className="text-xs font-bold text-rose-600 bg-rose-50 px-2 py-0.5 rounded-full" title={pr.inspectionRemark}>Rejected</span>
+                    ) : pr.conditionOfGoods === 'Partial' ? (
+                       <span className="text-xs font-bold text-amber-600 bg-amber-50 px-2 py-0.5 rounded-full" title={pr.inspectionRemark}>Partial</span>
+                    ) : (
+                       <span className="text-xs font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full" title={pr.inspectionRemark}>Accepted</span>
+                    )}
+                  </td>
                   <td className="p-4 text-sm text-slate-600 dark:text-slate-300">{pr.transporterName || '-'}</td>
                   <td className="p-4 text-sm font-mono text-slate-700 dark:text-slate-200">{pr.vehicleNo || '-'}</td>
                   <td className="p-4 text-sm text-center">
@@ -117,13 +157,74 @@ export const GRNReport: React.FC = () => {
                       <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-bold bg-rose-50 text-rose-700 border border-rose-100">No</span>
                     )}
                   </td>
-                  <td className="p-4 text-sm text-slate-500 dark:text-slate-400 italic">{pr.remark || '-'}</td>
+                  <td className="p-4 text-sm font-medium">
+                    {pr.invoiceStatus === 'Processed' ? (
+                      <span className="text-emerald-600 flex items-center gap-1"><CheckCircle className="w-3.5 h-3.5"/> Processed</span>
+                    ) : (
+                      <span className="text-amber-600">Pending</span>
+                    )}
+                  </td>
+                  <td className="p-4 text-sm text-right">
+                    {pr.invoiceStatus === 'Processed' ? (
+                      <div className="text-xs text-slate-500">₹{pr.invoiceAmount}</div>
+                    ) : canProcessInvoice ? (
+                      <button
+                        onClick={(e) => { e.stopPropagation(); setProcessingGrn(pr.id); }}
+                        className="bg-brand-blue text-white px-3 py-1 rounded shadow-sm text-xs hover:bg-blue-700 transition-colors"
+                      >
+                        Process
+                      </button>
+                    ) : (
+                      <span className="text-xs text-slate-400">-</span>
+                    )}
+                  </td>
                 </tr>
               ))}
             </tbody>
           </table>
         </div>
       </div>
+      
+      {/* Process Invoice Modal */}
+      {processingGrn && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm fade-in">
+          <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-xl w-full max-w-md overflow-hidden flex flex-col scale-in">
+            <div className="px-6 py-4 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center bg-slate-50/50 dark:bg-slate-800/50">
+              <h3 className="font-bold text-lg text-slate-800 dark:text-slate-100 flex items-center gap-2">
+                <FileText className="w-5 h-5 text-brand-blue" />
+                Process Invoice
+              </h3>
+              <button onClick={() => setProcessingGrn(null)} className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 p-1 rounded-full hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            <div className="p-6 space-y-4">
+              <p className="text-sm text-slate-600 dark:text-slate-300">
+                You are marking the invoice for this GRN as Processed. Please enter the finalized invoice amount.
+              </p>
+              <div>
+                <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1 uppercase tracking-wider">Invoice Amount (₹)</label>
+                <input 
+                  type="number" 
+                  value={invoiceAmount}
+                  onChange={(e) => setInvoiceAmount(e.target.value)}
+                  className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-brand-blue transition-all"
+                  placeholder="e.g. 50000"
+                />
+              </div>
+            </div>
+            <div className="px-6 py-4 border-t border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50 flex justify-end gap-3">
+              <button onClick={() => setProcessingGrn(null)} className="px-4 py-2 text-sm font-semibold text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-xl transition-colors">
+                Cancel
+              </button>
+              <button onClick={handleProcessInvoice} className="px-6 py-2 text-sm font-bold text-white bg-brand-blue hover:bg-blue-700 rounded-xl shadow-sm transition-colors flex items-center gap-2">
+                <CheckCircle className="w-4 h-4" />
+                Mark Processed
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

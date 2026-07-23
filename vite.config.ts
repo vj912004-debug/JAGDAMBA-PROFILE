@@ -16,6 +16,10 @@ export default defineConfig({
   },
   server: {
     proxy: {
+      '/api/whatsapp': {
+        target: 'http://localhost:5001',
+        changeOrigin: true,
+      },
       '/api': {
         target: 'http://localhost:5000',
         changeOrigin: true,

@@ -4,7 +4,7 @@ import { useAppContext, EMPLOYEES, MATERIAL_GRADES } from '../store/AppContext';
 import { NumericInput, parseNum } from '../components/NumericInput';
 import toast from 'react-hot-toast';
 import {
-  ErpEntryPage, ErpEntryToolbar, ErpMaterialSection, ErpSummaryTiles, ErpMockupTitleBar, ErpNumberedSection, ErpIconStatCards,
+  ErpEntryPage, ErpEntryToolbar, ErpMaterialSection, ErpSummaryTiles, ErpMockupTitleBar,
 } from '../components/ErpPageShell';
 import { Scissors, Users } from 'lucide-react';
 
@@ -43,7 +43,7 @@ export const CuttingAllocationEntry: React.FC = () => {
     return `CA/2627/${String(max + 1).padStart(5, '0')}`;
   };
 
-  const [entryNo, setEntryNo] = useState(nextEntryNo());
+  const entryNo = useMemo(() => nextEntryNo(), [cuttingAllocations]);
   const [entryDate, setEntryDate] = useState(today);
   const [orderNo, setOrderNo] = useState('');
   const [remark, setRemark] = useState('');
@@ -100,7 +100,6 @@ export const CuttingAllocationEntry: React.FC = () => {
     try {
       await persistErpNow({ cuttingAllocations: next });
       toast.success(`Cutting allocation ${entryNo} saved`);
-      setEntryNo(nextEntryNo());
       handleClear();
     } catch {
       toast.error('Saved locally but server sync failed — retry Save');

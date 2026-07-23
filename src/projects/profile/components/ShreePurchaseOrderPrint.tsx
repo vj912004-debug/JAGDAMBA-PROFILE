@@ -22,7 +22,7 @@ import {
 } from './poPrintIcons';
 import { fitPoSheetBodyWhenReady } from '../utils/fitPoPrintLayout';
 
-const ROW_COUNT = 8;
+const MIN_ROW_COUNT = 4;
 
 const fmt = (n: number) =>
   (isFinite(n) ? n : 0).toLocaleString('en-IN', { minimumFractionDigits: 0, maximumFractionDigits: 2 });
@@ -85,7 +85,10 @@ export const ShreePurchaseOrderPrint: React.FC<ShreePurchaseOrderPrintProps> = (
   const company = PO_COMPANY_BRANDS.shree;
   const source = blank || !po ? EMPTY_PO : po;
   const data = buildPurchaseOrderPrintData(source, blank ? {} : extras);
-  const rows = Array.from({ length: ROW_COUNT }, (_, i) => data.items[i] ?? null);
+  const rowCount = blank
+    ? MIN_ROW_COUNT
+    : Math.max(data.items.length, data.items.length >= 4 ? data.items.length : MIN_ROW_COUNT);
+  const rows = Array.from({ length: rowCount }, (_, i) => data.items[i] ?? null);
   const sheetRef = useRef<HTMLDivElement>(null);
 
   const hasItem = rows.some(i => i?.itemName);

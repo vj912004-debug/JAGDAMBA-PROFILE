@@ -1,7 +1,6 @@
 import { useState, Suspense, lazy } from 'react';
+import ProfileApp from './projects/profile/ProfileApp';
 
-// Lazy load the projects
-const ProfileApp = lazy(() => import('./projects/profile/ProfileApp'));
 // @ts-ignore
 const ClientApp = lazy(() => import('./projects/client/ClientApp'));
 
@@ -35,7 +34,7 @@ const Portal = ({ onSelect }: { onSelect: (project: 'profile' | 'client') => voi
             Enterprise Management System
           </div>
           <h1 className="text-5xl md:text-7xl font-black text-transparent bg-clip-text bg-gradient-to-r from-slate-100 via-white to-slate-400 tracking-tight drop-shadow-[0_2px_10px_rgba(255,255,255,0.05)]">
-            JAGDAMBA <span className="bg-gradient-to-r from-blue-400 via-cyan-400 to-indigo-400 bg-clip-text text-transparent">STEEL</span>
+            JAGDAMBA <span className="text-[#FFA500]">STEEL</span>
           </h1>
           <p className="text-sm md:text-base text-slate-400 max-w-xl mx-auto tracking-wide">
             Select an operational module below to access your tailored workspace.
@@ -66,7 +65,7 @@ const Portal = ({ onSelect }: { onSelect: (project: 'profile' | 'client') => voi
                 </p>
               </div>
               <div className="pt-2 flex items-center text-sm text-blue-400 font-bold group-hover:text-blue-300 transition-colors">
-                <span>Launch Application</span>
+                <span>ACCESS PORTAL</span>
                 <svg className="ml-2 w-4 h-4 group-hover:translate-x-1.5 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M14 5l7 7m0 0l-7 7m7-7H3" />
                 </svg>
@@ -97,7 +96,7 @@ const Portal = ({ onSelect }: { onSelect: (project: 'profile' | 'client') => voi
                 </p>
               </div>
               <div className="pt-2 flex items-center text-sm text-orange-400 font-bold group-hover:text-orange-300 transition-colors">
-                <span>Launch Application</span>
+                <span>ACCESS PORTAL</span>
                 <svg className="ml-2 w-4 h-4 group-hover:translate-x-1.5 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M14 5l7 7m0 0l-7 7m7-7H3" />
                 </svg>
@@ -121,7 +120,13 @@ const Portal = ({ onSelect }: { onSelect: (project: 'profile' | 'client') => voi
 export default function App() {
   const [selectedProject, setSelectedProject] = useState<'profile' | 'client' | null>(() => {
     if (typeof window !== 'undefined') {
-      return (localStorage.getItem('jagdamba-project') as 'profile' | 'client') || null;
+      const saved = localStorage.getItem('jagdamba-project') as 'profile' | 'client' | null;
+      if (saved === 'profile' || saved === 'client') return saved;
+
+      const path = window.location.pathname;
+      const clientPaths = ['/contacts', '/staff', '/candidates', '/transport', '/reminders', '/search', '/masters', '/reports'];
+      if (clientPaths.some(p => path === p || path.startsWith(`${p}/`))) return 'client';
+      if (path !== '/') return 'profile';
     }
     return null;
   });
@@ -135,9 +140,7 @@ export default function App() {
     return (
       <div className="relative min-h-screen bg-slate-950">
         <div className="profile-app-container">
-          <Suspense fallback={<Loading />}>
-            <ProfileApp />
-          </Suspense>
+          <ProfileApp />
         </div>
       </div>
     );
@@ -145,7 +148,7 @@ export default function App() {
 
   if (selectedProject === 'client') {
     return (
-      <div className="relative min-h-screen bg-[#080d16]">
+      <div className="relative min-h-screen bg-[#eef2f9]">
         <div className="client-app-container">
           <Suspense fallback={<Loading />}>
             <ClientApp />

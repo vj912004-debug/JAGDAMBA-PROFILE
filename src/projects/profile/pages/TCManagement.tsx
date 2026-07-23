@@ -871,7 +871,7 @@ export const TCManagement: React.FC = () => {
               <LinkedDocCard title="TC PDF" icon={FileText} fileName={formData.pdfName} dataUrl={formData.pdfData} />
               <LinkedDocCard title="Plate Photo" icon={Image} fileName={formData.platePhotoName} dataUrl={formData.platePhotoData} />
               <LinkedDocCard title="UT Report" icon={FlaskConical} fileName={formData.labReportName} dataUrl={formData.labReportData} />
-              <LinkedDocCard title="Heat Marking" icon={Image} fileName={formData.heatMarkingPhotoName} dataUrl={formData.heatMarkingPhotoData} />
+              <LinkedDocCard title="Lab Report" icon={Image} fileName={formData.heatMarkingPhotoName} dataUrl={formData.heatMarkingPhotoData} />
             </div>
           </div>
         </div>
@@ -883,7 +883,7 @@ export const TCManagement: React.FC = () => {
               <TcUploadBox label="TC PDF" icon={FileText} fileName={formData.pdfName} onChange={attachFile('pdfData', 'pdfName')} accept=".pdf,image/*" />
               <TcUploadBox label="Plate Photo" icon={Image} fileName={formData.platePhotoName} onChange={attachFile('platePhotoData', 'platePhotoName')} accept="image/*" />
               <TcUploadBox label="UT Report" icon={FlaskConical} fileName={formData.labReportName} onChange={attachFile('labReportData', 'labReportName')} accept=".pdf,image/*" />
-              <TcUploadBox label="Heat Marking Photo" icon={Image} fileName={formData.heatMarkingPhotoName} onChange={attachFile('heatMarkingPhotoData', 'heatMarkingPhotoName')} accept="image/*" />
+              <TcUploadBox label="Lab Report" icon={Image} fileName={formData.heatMarkingPhotoName} onChange={attachFile('heatMarkingPhotoData', 'heatMarkingPhotoName')} accept="image/*,.pdf" />
             </div>
           </div>
         </aside>

@@ -11,7 +11,14 @@ const sanitizeFilename = (name: string): string => {
 };
 
 /**
- * Capture a DOM element and download as PDF
+ * A4 width at 96 DPI in pixels (210mm)
+ */
+const A4_WIDTH_PX = Math.round((210 * 96) / 25.4); // ~794px
+
+/**
+ * Capture a DOM element and download as PDF.
+ * Clones the element off-screen at full opacity and exact A4 width so
+ * html2canvas captures the complete layout including bottom sections.
  */
 export const downloadPDF = async (elementId: string, filename: string) => {
   const element = document.getElementById(elementId);
@@ -20,22 +27,47 @@ export const downloadPDF = async (elementId: string, filename: string) => {
     return;
   }
 
+  // Create an off-screen wrapper with explicit A4 width
   const wrapper = document.createElement('div');
-  wrapper.style.cssText = 'position:fixed;left:0;top:0;z-index:-9999;opacity:1;pointer-events:none;background:#fff;';
+  wrapper.style.cssText = [
+    'position:fixed',
+    'left:0',
+    'top:0',
+    'z-index:-9999',
+    'opacity:1',
+    'pointer-events:none',
+    'background:#fff',
+    `width:${A4_WIDTH_PX}px`,
+    `min-width:${A4_WIDTH_PX}px`,
+    `max-width:${A4_WIDTH_PX}px`,
+    'overflow:visible',
+  ].join(';') + ';';
+
   const clone = element.cloneNode(true) as HTMLElement;
+  clone.style.width = `${A4_WIDTH_PX}px`;
+  clone.style.minWidth = `${A4_WIDTH_PX}px`;
+  clone.style.maxWidth = `${A4_WIDTH_PX}px`;
+  clone.style.opacity = '1';
+  clone.style.position = 'static';
   wrapper.appendChild(clone);
   document.body.appendChild(wrapper);
 
   try {
-    await new Promise((resolve) => setTimeout(resolve, 150));
+    // Wait for fonts and layout to settle
+    await new Promise((resolve) => setTimeout(resolve, 500));
+
+    const captureWidth = clone.scrollWidth || A4_WIDTH_PX;
+    const captureHeight = clone.scrollHeight || Math.round((297 * 96) / 25.4);
 
     const canvas = await html2canvas(clone, {
       scale: 2,
       useCORS: true,
       logging: false,
       backgroundColor: '#ffffff',
-      width: clone.scrollWidth,
-      height: clone.scrollHeight,
+      width: captureWidth,
+      height: captureHeight,
+      windowWidth: captureWidth,
+      windowHeight: captureHeight,
     });
 
     const imgData = canvas.toDataURL('image/png');

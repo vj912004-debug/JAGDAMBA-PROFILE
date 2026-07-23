@@ -14,8 +14,8 @@ export const PO_EDGE_BAND_PX = 10;
 export const PO_BODY_PAD_TOP_PX = 24;
 export const PO_BODY_PAD_X_PX = 32;
 export const PO_BODY_PAD_BOTTOM_PX = 10;
-/** Max scale for one-page fit; larger base fonts, auto-shrink when needed */
-export const PO_BODY_FIT_SCALE = 0.98;
+/** Max scale for one-page fit; layout auto-shrinks when item rows would clip */
+export const PO_BODY_FIT_SCALE = 1;
 
 export const PO_FONT_LINK =
   'https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700;900&display=swap';
@@ -64,12 +64,23 @@ export const PO_PRINT_STYLES = `
     width: 100%;
     height: 100%;
     background-color: #ffffff;
-    padding: 25px;
+    padding: 18px 20px 12px;
     position: relative;
     box-sizing: border-box;
     display: flex;
     flex-direction: column;
     border: 1px solid #000;
+    overflow: hidden;
+  }
+
+  #${PO_PRINT_AREA_ID} .po-body-wrap {
+    flex: 1;
+    min-height: 0;
+    overflow: hidden;
+  }
+
+  #${PO_PRINT_AREA_ID} .po-body {
+    width: 100%;
   }
 
   /* --- Header Section --- */
@@ -302,10 +313,42 @@ export const PO_PRINT_STYLES = `
 
   #${PO_PRINT_AREA_ID} .items-table td {
     border: 1px solid var(--grid-border) !important;
-    padding: 4px 4px;
-    height: 24px;
+    padding: 3px 3px;
+    height: 22px;
     font-weight: 700;
   }
+
+  #${PO_PRINT_AREA_ID} .page-container.po-dense .company-title-main { font-size: 34px; }
+  #${PO_PRINT_AREA_ID} .page-container.po-dense .company-title-sub { font-size: 30px; margin-bottom: 4px; }
+  #${PO_PRINT_AREA_ID} .page-container.po-dense .po-title-bar { margin: 8px 0; }
+  #${PO_PRINT_AREA_ID} .page-container.po-dense .meta-info-bar { margin-bottom: 8px; padding: 4px 12px; }
+  #${PO_PRINT_AREA_ID} .page-container.po-dense .details-grid { margin-bottom: 8px; gap: 8px; }
+  #${PO_PRINT_AREA_ID} .page-container.po-dense .card-body { padding: 6px 6px; }
+  #${PO_PRINT_AREA_ID} .page-container.po-dense .items-section { margin-bottom: 8px; }
+  #${PO_PRINT_AREA_ID} .page-container.po-dense .items-table th { padding: 4px 2px; font-size: 8.5px; }
+  #${PO_PRINT_AREA_ID} .page-container.po-dense .items-table td { padding: 2px 2px; height: 18px; font-size: 9px; }
+  #${PO_PRINT_AREA_ID} .page-container.po-dense .bottom-grid { margin-bottom: 8px; gap: 10px; }
+  #${PO_PRINT_AREA_ID} .page-container.po-dense .ack-section { margin-top: 6px; }
+
+  #${PO_PRINT_AREA_ID} .page-container.po-dense-lg .company-title-main { font-size: 30px; }
+  #${PO_PRINT_AREA_ID} .page-container.po-dense-lg .company-title-sub { font-size: 26px; margin-bottom: 2px; }
+  #${PO_PRINT_AREA_ID} .page-container.po-dense-lg .company-tagline { font-size: 9px; }
+  #${PO_PRINT_AREA_ID} .page-container.po-dense-lg .po-title-text { font-size: 18px; padding: 2px 20px; }
+  #${PO_PRINT_AREA_ID} .page-container.po-dense-lg .po-title-bar { margin: 6px 0; }
+  #${PO_PRINT_AREA_ID} .page-container.po-dense-lg .meta-info-bar { margin-bottom: 6px; padding: 3px 10px; font-size: 12px; }
+  #${PO_PRINT_AREA_ID} .page-container.po-dense-lg .details-grid { margin-bottom: 6px; gap: 6px; }
+  #${PO_PRINT_AREA_ID} .page-container.po-dense-lg .card-header { font-size: 11px; padding: 3px; }
+  #${PO_PRINT_AREA_ID} .page-container.po-dense-lg .card-body { padding: 4px 5px; font-size: 10px; }
+  #${PO_PRINT_AREA_ID} .page-container.po-dense-lg .info-table td { padding: 2px 1px; }
+  #${PO_PRINT_AREA_ID} .page-container.po-dense-lg .items-section { margin-bottom: 6px; }
+  #${PO_PRINT_AREA_ID} .page-container.po-dense-lg .items-table th { padding: 3px 1px; font-size: 8px; }
+  #${PO_PRINT_AREA_ID} .page-container.po-dense-lg .items-table td { padding: 1px 2px; height: 16px; font-size: 8.5px; }
+  #${PO_PRINT_AREA_ID} .page-container.po-dense-lg .table-summary-bar { padding: 4px 8px; font-size: 10px; }
+  #${PO_PRINT_AREA_ID} .page-container.po-dense-lg .bottom-grid { margin-bottom: 6px; gap: 8px; }
+  #${PO_PRINT_AREA_ID} .page-container.po-dense-lg .terms-body { padding: 5px; font-size: 9px; }
+  #${PO_PRINT_AREA_ID} .page-container.po-dense-lg .fin-row { font-size: 11px; padding: 3px 0; }
+  #${PO_PRINT_AREA_ID} .page-container.po-dense-lg .ack-section { margin-top: 4px; }
+  #${PO_PRINT_AREA_ID} .page-container.po-dense-lg .ack-body { font-size: 10px; }
 
   #${PO_PRINT_AREA_ID} .items-table tr.blank-row td {
     color: transparent !important;
@@ -489,7 +532,8 @@ export const PO_PRINT_STYLES = `
 
   /* --- Bottom Footer Bar --- */
   #${PO_PRINT_AREA_ID} .footer-bar {
-    margin-top: auto;
+    margin-top: 8px;
+    flex-shrink: 0;
     background: linear-gradient(to right, var(--orange-primary) 45%, var(--blue-primary) 45%) !important;
     color: white !important;
     display: flex;
@@ -533,10 +577,13 @@ export const PO_PRINT_STYLES = `
     min-height: 100% !important;
     max-height: 100% !important;
     margin: 0 !important;
-    padding: 25px !important;
+    padding: 18px 20px 12px !important;
     border-radius: 0 !important;
     box-sizing: border-box !important;
     border: 1px solid #000 !important;
+    overflow: hidden !important;
+    display: flex !important;
+    flex-direction: column !important;
   }
 
   @page po-print-page {
@@ -560,7 +607,7 @@ export const PO_PRINT_STYLES = `
       min-height: 297mm !important;
       max-height: 297mm !important;
       margin: 0 !important;
-      padding: 25px !important;
+      padding: 18px 20px 12px !important;
       border-radius: 0 !important;
       box-shadow: none !important;
       page-break-after: avoid;
@@ -569,7 +616,8 @@ export const PO_PRINT_STYLES = `
     }
 
     #${PO_PRINT_AREA_ID} .footer-bar {
-      margin-top: auto !important;
+      margin-top: 8px !important;
+      flex-shrink: 0 !important;
     }
   }
 `;

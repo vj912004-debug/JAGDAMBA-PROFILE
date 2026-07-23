@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { useLocation } from 'react-router-dom';
 import { MasterForm } from '../components/MasterForm';
+import { MasterSavedList } from '../components/MasterSavedList';
 import { useAppContext, type SectionMasterRecord, type SectionWeightMode } from '../store/AppContext';
 import { SECTION_CATEGORIES } from '../utils/sectionMasterSeed';
 import { weightModeLabel } from '../utils/sectionWeight';
@@ -147,6 +148,24 @@ export const SectionMaster: React.FC = () => {
         },
         { label: 'Status', value: f.status, onChange: set('status'), type: 'select', options: ['Active', 'Inactive'] },
       ]}
+      listPanel={
+        <MasterSavedList
+          title="Saved Sections"
+          rows={sections}
+          getId={r => r.id}
+          selectedId={f.id}
+          onSelect={load}
+          searchAccessor={r => `${r.code} ${r.category} ${r.size} ${r.kgPerMeter}`}
+          columns={[
+            { header: 'Code', render: r => r.code },
+            { header: 'Category', render: r => r.category },
+            { header: 'Size', render: r => r.size },
+            { header: 'Kg/Mtr', render: r => r.weightMode === 'per_meter' ? r.kgPerMeter : 'Formula' },
+            { header: 'Weight Mode', render: r => r.weightMode === 'per_meter' ? 'Standard' : r.weightMode === 'pipe' ? 'Pipe' : 'Plate' },
+            { header: 'Status', render: r => r.status },
+          ]}
+        />
+      }
     />
   );
 };

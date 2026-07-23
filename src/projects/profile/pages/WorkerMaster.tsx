@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { useLocation } from 'react-router-dom';
 import { MasterForm } from '../components/MasterForm';
+import { MasterSavedList } from '../components/MasterSavedList';
 import { useAppContext, type WorkerMasterRecord } from '../store/AppContext';
 import { nextMasterCode } from '../utils/masterHelpers';
 import toast from 'react-hot-toast';
@@ -102,6 +103,24 @@ export const WorkerMaster: React.FC = () => {
         { label: 'Daily Rate (Nos)', value: f.rate, onChange: set('rate'), type: 'number' },
         { label: 'Status', value: f.status, onChange: set('status'), type: 'select', options: ['Active', 'Inactive'] },
       ]}
+      listPanel={
+        <MasterSavedList
+          title="Saved Workers"
+          rows={workers}
+          getId={r => r.id}
+          selectedId={f.id}
+          onSelect={load}
+          searchAccessor={r => `${r.code} ${r.name} ${r.mobile} ${r.skill}`}
+          columns={[
+            { header: 'Code', render: r => r.code },
+            { header: 'Name', render: r => r.name },
+            { header: 'Mobile', render: r => r.mobile },
+            { header: 'Skill', render: r => r.skill },
+            { header: 'Rate', render: r => r.rate || '—' },
+            { header: 'Status', render: r => r.status },
+          ]}
+        />
+      }
     />
   );
 };
