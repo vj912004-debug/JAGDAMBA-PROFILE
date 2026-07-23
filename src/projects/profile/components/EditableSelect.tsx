@@ -22,8 +22,10 @@ export const EditableSelect: React.FC<EditableSelectProps> = ({
 }) => {
   const [isManual, setIsManual] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
+  const [searchTerm, setSearchTerm] = useState('');
   const [dropdownRect, setDropdownRect] = useState<DOMRect | null>(null);
   const triggerRef = useRef<HTMLButtonElement>(null);
+  const dropdownRef = useRef<HTMLDivElement>(null);
   const datalistId = React.useId();
 
   // Keep the size-enhancement transform from the original
@@ -64,7 +66,10 @@ export const EditableSelect: React.FC<EditableSelectProps> = ({
   // Close on scroll/resize so dropdown doesn't drift
   useEffect(() => {
     if (!isOpen) return;
-    const close = () => setIsOpen(false);
+    const close = (e: Event) => {
+      if (dropdownRef.current && dropdownRef.current.contains(e.target as Node)) return;
+      setIsOpen(false);
+    };
     window.addEventListener('scroll', close, true);
     window.addEventListener('resize', close);
     return () => {
@@ -76,6 +81,7 @@ export const EditableSelect: React.FC<EditableSelectProps> = ({
   const handleToggle = () => {
     if (!isOpen && triggerRef.current) {
       setDropdownRect(triggerRef.current.getBoundingClientRect());
+      setSearchTerm('');
     }
     setIsOpen(v => !v);
   };
@@ -137,18 +143,32 @@ export const EditableSelect: React.FC<EditableSelectProps> = ({
     isOpen && dropdownRect
       ? createPortal(
           <div
+            ref={dropdownRef}
             style={{
               position: 'fixed',
               top: dropdownRect.bottom + 2,
               left: dropdownRect.left,
+              width: dropdownRect.width,
               minWidth: Math.max(dropdownRect.width, 160),
               zIndex: 9999,
             }}
             className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg shadow-2xl overflow-hidden"
             onMouseDown={e => e.stopPropagation()}
           >
+            <div className="p-2 border-b border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 sticky top-0 z-10">
+              <input
+                type="text"
+                autoFocus
+                placeholder="Search..."
+                value={searchTerm}
+                onChange={e => setSearchTerm(e.target.value)}
+                onClick={e => e.stopPropagation()}
+                onKeyDown={e => { e.stopPropagation(); if (e.key === 'Escape') setIsOpen(false); }}
+                className="w-full bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-700 rounded px-2 py-1 text-xs focus:ring-1 focus:ring-blue-500 focus:outline-none text-slate-800 dark:text-slate-200"
+              />
+            </div>
             <div className="max-h-56 overflow-y-auto">
-              {placeholder && (
+              {placeholder && !searchTerm && (
                 <button
                   type="button"
                   onClick={() => { onChange(''); setIsOpen(false); }}
@@ -157,7 +177,7 @@ export const EditableSelect: React.FC<EditableSelectProps> = ({
                   {placeholder}
                 </button>
               )}
-              {options.map(opt => (
+              {options.filter(opt => opt.toLowerCase().includes(searchTerm.toLowerCase())).map(opt => (
                 <button
                   key={opt}
                   type="button"

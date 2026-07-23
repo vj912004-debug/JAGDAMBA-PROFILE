@@ -114,7 +114,7 @@ export const OrderEntry: React.FC = () => {
   const [customerPONo, setCustomerPONo] = useState('');
   const [customerPODate, setCustomerPODate] = useState('');
   const [tc, setTc] = useState<'Yes' | 'No'>('No');
-  const [ut, setUt] = useState<'Yes' | 'No'>('No');
+  const [ut, setUt] = useState<string>('Not Required');
   const partyPoInputRef = useRef<HTMLInputElement>(null);
   const drawingInputRef = useRef<HTMLInputElement>(null);
   const [drawingLineId, setDrawingLineId] = useState<string | null>(null);
@@ -278,7 +278,7 @@ export const OrderEntry: React.FC = () => {
     setDeliveryDate(''); setUrgent(false);
     setDeliveryOption(''); setPaymentTerms(''); setTermsAndConditions('');
     setGstType('GST 18%'); setTransportationCharges(0); setLoadingUnloadingCharges(0);
-    setCustomerPONo(''); setCustomerPODate(''); setTc('No'); setUt('No');
+    setCustomerPONo(''); setCustomerPODate(''); setTc('No'); setUt('Not Required');
     setPartyPoFile(null);
     setPartyAddress('');
     setLines([first]);
@@ -347,7 +347,7 @@ export const OrderEntry: React.FC = () => {
               <select value={tc} onChange={e => setTc(e.target.value as 'Yes' | 'No')} className={inp}><option value="Yes">Yes</option><option value="No">No</option></select>
             </div>
             <div><label className={lbl}>UT Level</label>
-              <select value={ut} onChange={e => setUt(e.target.value as 'Yes' | 'No')} className={inp}><option value="Yes">Yes</option><option value="No">No</option></select>
+              <EditableSelect value={ut} onChange={setUt} options={['Level 1', 'Level 2', 'Level 3', 'Not Required']} placeholder="Select UT Level" className={inp} />
             </div>
           </div>
           <div><label className={lbl}>Note</label><textarea value={remark} onChange={e => setRemark(e.target.value.toUpperCase())} rows={2} className={inp} /></div>

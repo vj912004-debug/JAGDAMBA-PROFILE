@@ -158,7 +158,7 @@ export interface Order {
   customerPONo?: string;
   customerPODate?: string;
   tc?: 'Yes' | 'No';
-  ut?: 'Yes' | 'No';
+  ut?: string;
   items: OrderLineItem[];
   createdAt: string;
 }

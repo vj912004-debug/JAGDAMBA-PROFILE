@@ -29,15 +29,20 @@ const InlineCustomSelect: React.FC<{
   placeholder?: string;
 }> = ({ value, onChange, options, placeholder = 'Select' }) => {
   const [isOpen, setIsOpen] = useState(false);
+  const [searchTerm, setSearchTerm] = useState('');
   const [rect, setRect] = useState<DOMRect | null>(null);
   const triggerRef = useRef<HTMLButtonElement>(null);
+  const dropdownRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (!isOpen) return;
     const close = (e: MouseEvent) => {
       if (triggerRef.current && !triggerRef.current.contains(e.target as Node)) setIsOpen(false);
     };
-    const closeOnScroll = () => setIsOpen(false);
+    const closeOnScroll = (e: Event) => {
+      if (dropdownRef.current && dropdownRef.current.contains(e.target as Node)) return;
+      setIsOpen(false);
+    };
     document.addEventListener('mousedown', close);
     window.addEventListener('scroll', closeOnScroll, true);
     window.addEventListener('resize', closeOnScroll);
@@ -49,7 +54,10 @@ const InlineCustomSelect: React.FC<{
   }, [isOpen]);
 
   const toggle = () => {
-    if (!isOpen && triggerRef.current) setRect(triggerRef.current.getBoundingClientRect());
+    if (!isOpen && triggerRef.current) {
+      setRect(triggerRef.current.getBoundingClientRect());
+      setSearchTerm('');
+    }
     setIsOpen(v => !v);
   };
 
@@ -71,19 +79,34 @@ const InlineCustomSelect: React.FC<{
 
       {isOpen && rect && createPortal(
         <div
+          ref={dropdownRef}
           style={{ position: 'fixed', top: rect.bottom + 2, left: rect.left, minWidth: Math.max(rect.width, 140), zIndex: 9999 }}
           className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg shadow-2xl overflow-hidden"
           onMouseDown={e => e.stopPropagation()}
         >
+          <div className="p-2 border-b border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 sticky top-0 z-10">
+            <input
+              type="text"
+              autoFocus
+              placeholder="Search..."
+              value={searchTerm}
+              onChange={e => setSearchTerm(e.target.value)}
+              onClick={e => e.stopPropagation()}
+              onKeyDown={e => { e.stopPropagation(); if (e.key === 'Escape') setIsOpen(false); }}
+              className="w-full bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-700 rounded px-2 py-1 text-xs focus:ring-1 focus:ring-blue-500 focus:outline-none text-slate-800 dark:text-slate-200"
+            />
+          </div>
           <div className="max-h-56 overflow-y-auto">
-            <button
-              type="button"
-              onClick={() => { onChange(''); setIsOpen(false); }}
-              className="w-full text-left px-3 py-1.5 text-xs text-slate-400 dark:text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
-            >
-              {placeholder}
-            </button>
-            {options.map(opt => (
+            {placeholder && !searchTerm && (
+              <button
+                type="button"
+                onClick={() => { onChange(''); setIsOpen(false); }}
+                className="w-full text-left px-3 py-1.5 text-xs text-slate-400 dark:text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
+              >
+                {placeholder}
+              </button>
+            )}
+            {options.filter(opt => opt.toLowerCase().includes(searchTerm.toLowerCase())).map(opt => (
               <button
                 key={opt}
                 type="button"
@@ -107,7 +130,15 @@ const InlineCustomSelect: React.FC<{
 
 const INSPECTION_OPTIONS = ['Third Party', 'Customer', 'Our Inspection', 'No Inspection', 'Other'];
 const TC_OPTIONS = ['Yes', 'No', 'If Available'];
-const UT_LEVEL_OPTIONS = ['Level 1', 'Level 2', 'Level 3', 'Not Required'];
+const UT_LEVEL_OPTIONS = [
+  'Not Required', 'Level 1', 'Level 2', 'Level 3',
+  'IS 11630 – GRADE 1', 'IS 11630 – GRADE 2',
+  'EN 10160 – S0/E0', 'EN 10160 – S0/E1', 'EN 10160 – S1/E1', 'EN 10160 – S1/E2',
+  'EN 10160 – S2/E2', 'EN 10160 – S2/E3', 'EN 10160 – S3/E3', 'EN 10160 – S3/E4',
+  'ASTM A578 – LEVEL A', 'ASTM A578 – LEVEL B', 'ASTM A578 – LEVEL C',
+  'ASME SA-578 – LEVEL A', 'ASME SA-578 – LEVEL B', 'ASME SA-578 – LEVEL C',
+  'ASTM A435', 'IS 4225', 'AS PER CUSTOMER SPECIFICATION', 'OTHER'
+];
 const RATE_BASIS_OPTIONS = ['Per Kg', 'Per Ton', 'Per Nos', 'Per Set', 'Per Piece'];
 
 const DEFAULT_TERMS = `1. Material should be as per our requirement & specification.
