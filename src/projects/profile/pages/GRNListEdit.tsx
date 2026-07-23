@@ -103,7 +103,7 @@ export const GRNListEdit: React.FC = () => {
   };
 
   return (
-    <div className="w-full h-[calc(100vh-6rem)] bg-[#f8f9fa] p-4 flex flex-col gap-4 fade-in">
+    <div className="w-full min-h-[800px] bg-[#f8f9fa] p-4 flex flex-col gap-4 fade-in">
       {/* Header */}
       <div className="flex justify-between items-center bg-white p-3 shadow-sm rounded-md border border-gray-200">
         <h1 className="text-xl font-bold text-[#1e3a8a] uppercase tracking-wide">GRN EDIT / DELETE LIST</h1>
@@ -219,10 +219,10 @@ export const GRNListEdit: React.FC = () => {
         </div>
       </div>
 
-      {/* Data Table */}
-      <div className="bg-white shadow-sm rounded-md border border-gray-200 overflow-hidden flex-1 flex flex-col min-h-0">
-        <div className="overflow-auto flex-1">
-          <table className="w-full text-sm text-left relative">
+      {/* Table Area */}
+      <div className="bg-white border border-gray-200 rounded-md shadow-sm flex flex-col">
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm text-left whitespace-nowrap min-w-[1200px]">
             <thead className="bg-[#1e3a8a] text-white sticky top-0 z-10">
               <tr>
                 <th className="px-3 py-3 font-semibold border-r border-[#2d4b9c] text-center w-12">Sr No</th>
