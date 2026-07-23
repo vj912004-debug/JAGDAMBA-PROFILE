@@ -63,7 +63,7 @@ export const GRNListEdit: React.FC = () => {
   }, [grnData, fromDate, toDate, supplier, billStatus, grnNo, poNo, vehicleNo]);
 
   // Pagination (Mocked for UI)
-  const itemsPerPage = 10;
+  const [itemsPerPage, setItemsPerPage] = useState(25);
   const [currentPage, setCurrentPage] = useState(1);
   const totalPages = Math.ceil(filteredData.length / itemsPerPage) || 1;
   const paginatedData = filteredData.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
@@ -103,7 +103,7 @@ export const GRNListEdit: React.FC = () => {
   };
 
   return (
-    <div className="w-full h-full bg-[#f8f9fa] p-4 flex flex-col gap-4 fade-in">
+    <div className="w-full h-[calc(100vh-6rem)] bg-[#f8f9fa] p-4 flex flex-col gap-4 fade-in">
       {/* Header */}
       <div className="flex justify-between items-center bg-white p-3 shadow-sm rounded-md border border-gray-200">
         <h1 className="text-xl font-bold text-[#1e3a8a] uppercase tracking-wide">GRN EDIT / DELETE LIST</h1>
@@ -220,10 +220,10 @@ export const GRNListEdit: React.FC = () => {
       </div>
 
       {/* Data Table */}
-      <div className="bg-white shadow-sm rounded-md border border-gray-200 overflow-hidden flex-1 flex flex-col">
-        <div className="overflow-x-auto">
-          <table className="w-full text-sm text-left">
-            <thead className="bg-[#1e3a8a] text-white">
+      <div className="bg-white shadow-sm rounded-md border border-gray-200 overflow-hidden flex-1 flex flex-col min-h-0">
+        <div className="overflow-auto flex-1">
+          <table className="w-full text-sm text-left relative">
+            <thead className="bg-[#1e3a8a] text-white sticky top-0 z-10">
               <tr>
                 <th className="px-3 py-3 font-semibold border-r border-[#2d4b9c] text-center w-12">Sr No</th>
                 <th className="px-3 py-3 font-semibold border-r border-[#2d4b9c]">GRN No</th>
@@ -283,8 +283,18 @@ export const GRNListEdit: React.FC = () => {
         
         {/* Footer / Pagination */}
         <div className="flex flex-col sm:flex-row justify-between items-center p-3 border-t border-gray-200 bg-gray-50 mt-auto gap-4 sm:gap-0">
-          <div className="text-xs text-gray-600">
-            Showing {(currentPage - 1) * itemsPerPage + 1} to {Math.min(currentPage * itemsPerPage, filteredData.length)} of {filteredData.length} entries
+          <div className="text-xs text-gray-600 flex items-center gap-2">
+            <span>Showing {(currentPage - 1) * itemsPerPage + 1} to {Math.min(currentPage * itemsPerPage, filteredData.length)} of {filteredData.length} entries</span>
+            <select 
+              value={itemsPerPage} 
+              onChange={(e) => { setItemsPerPage(Number(e.target.value)); setCurrentPage(1); }}
+              className="border border-gray-300 rounded px-2 py-1 text-xs focus:outline-none focus:border-blue-500 bg-white"
+            >
+              <option value={10}>10 per page</option>
+              <option value={25}>25 per page</option>
+              <option value={50}>50 per page</option>
+              <option value={100}>100 per page</option>
+            </select>
           </div>
           <div className="flex gap-1">
             <button onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))} disabled={currentPage === 1} className="px-2.5 py-1 border border-gray-300 bg-white text-gray-600 rounded text-xs hover:bg-gray-100 disabled:opacity-50">&laquo;</button>
@@ -303,7 +313,7 @@ export const GRNListEdit: React.FC = () => {
       </div>
 
       {/* Note Block */}
-      <div className="flex flex-wrap gap-4 mt-2">
+      <div className="flex flex-wrap gap-4 mt-3 mb-4">
         <div className="flex items-center gap-2 bg-white px-3 py-1.5 rounded shadow-sm border border-gray-200">
           <Edit className="w-3.5 h-3.5 text-[#0d6efd]" />
           <span className="text-xs text-gray-600"><strong className="text-[#0d6efd]">Edit :</strong> GRN details edit karva mate.</span>
