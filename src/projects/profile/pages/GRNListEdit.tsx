@@ -8,8 +8,8 @@ export const GRNListEdit: React.FC = () => {
   const { purchaseOrders, purchaseReceipts, setPurchaseReceipts, persistErpNow } = useAppContext();
   
   // Filters state
-  const [fromDate, setFromDate] = useState('2025-05-01');
-  const [toDate, setToDate] = useState('2025-05-20');
+  const [fromDate, setFromDate] = useState('');
+  const [toDate, setToDate] = useState('');
   const [supplier, setSupplier] = useState('');
   const [billStatus, setBillStatus] = useState('');
   const [grnNo, setGrnNo] = useState('');
