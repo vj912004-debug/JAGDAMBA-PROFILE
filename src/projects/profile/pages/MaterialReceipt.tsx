@@ -1,6 +1,6 @@
 import React, { useState, useMemo, useEffect, useCallback } from 'react';
 import { Plus, Printer, X, RefreshCw, Save, Trash2 } from 'lucide-react';
-import { useAppContext, type PurchaseReceipt, type PurchaseOrder } from '../store/AppContext';
+import { useAppContext, EMPLOYEES, type PurchaseReceipt, type PurchaseOrder } from '../store/AppContext';
 import toast from 'react-hot-toast';
 import { upper } from '../utils/textCase';
 import { ErpPageHeader, ErpNumberedSection, ErpSummaryTiles } from '../components/ErpPageShell';
@@ -26,6 +26,11 @@ export const MaterialReceipt: React.FC = () => {
   const [transporterName, setTransporterName] = useState('');
   const [vehicleNo, setVehicleNo] = useState('');
   const [tcAvailable] = useState<'Yes' | 'No'>('No');
+
+  // Inspection Fields
+  const [conditionOfGoods, setConditionOfGoods] = useState<'Accepted' | 'Rejected' | 'Partial'>('Accepted');
+  const [inspectedBy, setInspectedBy] = useState('');
+  const [inspectionRemark, setInspectionRemark] = useState('');
 
   const activePOs = useMemo(() => (purchaseOrders ?? []).filter(po => po.status !== 'Complete'), [purchaseOrders]);
 
@@ -90,7 +95,7 @@ export const MaterialReceipt: React.FC = () => {
     } else {
       setItemQuantities({});
     }
-  }, [selectedPOId, purchaseReceipts]);
+  }, [selectedPOId]);
 
   const totals = useMemo(() => {
     let pendingNos = 0;
@@ -143,6 +148,9 @@ export const MaterialReceipt: React.FC = () => {
     setDate(new Date().toISOString().split('T')[0]);
     setGrnNumber(nextGRNNumberFromExisting(purchaseReceipts));
     setItemQuantities({});
+    setConditionOfGoods('Accepted');
+    setInspectedBy('');
+    setInspectionRemark('');
   };
 
   useEffect(() => {
@@ -180,6 +188,10 @@ export const MaterialReceipt: React.FC = () => {
       transporterName: transporterName.trim(),
       vehicleNo: vehicleNo.trim(),
       tcAvailable,
+      conditionOfGoods,
+      inspectedBy: inspectedBy.trim(),
+      inspectionRemark: inspectionRemark.trim(),
+      invoiceStatus: 'Pending',
       items: Object.entries(itemQuantities)
         .filter(([, qty]) => parseNum(qty) > 0)
         .map(([itemId, qty]) => ({ itemId, receivedQty: parseNum(qty) })),
@@ -259,9 +271,28 @@ export const MaterialReceipt: React.FC = () => {
             <label className="tc-mgmt-label">Invoice No.</label>
             <input value={invoiceNo} onChange={e => setInvoiceNo(upper(e.target.value))} className="tc-mgmt-input" placeholder="INV/1245/25-26" />
           </div>
+          <div>
+            <label className="tc-mgmt-label">Condition of Goods</label>
+            <select value={conditionOfGoods} onChange={e => setConditionOfGoods(e.target.value as any)} className="tc-mgmt-input">
+              <option value="Accepted">Accepted</option>
+              <option value="Rejected">Rejected</option>
+              <option value="Partial">Partial</option>
+            </select>
+          </div>
+          <div>
+            <label className="tc-mgmt-label">Inspected By</label>
+            <select value={inspectedBy} onChange={e => setInspectedBy(e.target.value)} className="tc-mgmt-input">
+              <option value="">Select Inspector...</option>
+              {EMPLOYEES.map(emp => <option key={emp} value={emp}>{emp}</option>)}
+            </select>
+          </div>
           <div className="col-span-2">
+            <label className="tc-mgmt-label">Inspection Remark</label>
+            <textarea value={inspectionRemark} onChange={e => setInspectionRemark(e.target.value)} rows={2} className="tc-mgmt-input resize-y min-h-[38px]" placeholder="Inspection findings..." />
+          </div>
+          <div className="col-span-2 md:col-span-4">
             <label className="tc-mgmt-label">Remark / Note</label>
-            <textarea value={remark} onChange={e => setRemark(e.target.value)} rows={2} className="tc-mgmt-input resize-y min-h-[38px]" placeholder="Enter note here..." />
+            <textarea value={remark} onChange={e => setRemark(e.target.value)} rows={2} className="tc-mgmt-input resize-y min-h-[38px]" placeholder="Enter general note here..." />
           </div>
           {supplierPOs.length > 1 && (
             <div className="col-span-2 md:col-span-4">
@@ -293,7 +324,7 @@ export const MaterialReceipt: React.FC = () => {
               ) : pendingOrderRows.map(({ po, item, pendingNos, pendingKg }) => (
                 <tr
                   key={`${po.id}-${item.id}`}
-                  className={selectedPOId === po.id ? 'bg-blue-50/60 cursor-pointer' : 'cursor-pointer hover:bg-slate-50'}
+                  className={selectedPOId === po.id ? 'bg-blue-50/60 dark:bg-blue-900/30 cursor-pointer' : 'cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800/50'}
                   onClick={() => setSelectedPOId(po.id)}
                 >
                   <td className="font-semibold text-brand-blue">{po.poNumber}</td>
@@ -352,12 +383,8 @@ export const MaterialReceipt: React.FC = () => {
                   return (
                     <tr key={item.id}>
                       <td>{idx + 1}</td>
-                      <td>
-                        <input readOnly value={item.grade} className="tc-mgmt-input py-1 text-xs min-w-[90px] bg-slate-50" />
-                      </td>
-                      <td>
-                        <input readOnly value={item.thickness} className="tc-mgmt-input py-1 text-xs min-w-[70px] bg-slate-50" />
-                      </td>
+                      <td className="whitespace-nowrap font-medium text-slate-700 dark:text-slate-200">{item.grade}</td>
+                      <td className="text-center font-medium">{item.thickness}</td>
                       <td>{item.width}</td><td>{item.length}</td>
                       <td className="text-right">{pendingNos}</td>
                       <td className="text-right">{kg(pendingKg)}</td>

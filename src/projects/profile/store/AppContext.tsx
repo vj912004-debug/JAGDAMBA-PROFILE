@@ -288,6 +288,17 @@ export interface PurchaseReceipt {
   challanNo?: string;
   invoiceNo?: string;
   transportBillId?: string;
+  
+  // Inspection / Store Fields
+  conditionOfGoods?: 'Accepted' | 'Rejected' | 'Partial';
+  inspectedBy?: string;
+  inspectionRemark?: string;
+  
+  // Accounts Fields
+  invoiceStatus?: 'Pending' | 'Processed';
+  invoiceProcessedBy?: string;
+  invoiceProcessedDate?: string;
+  invoiceAmount?: number;
 }
 
 export interface TransportBillRecord {
