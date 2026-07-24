@@ -97,6 +97,9 @@ export interface PurchaseOrderPrintData {
   itemTypeKey?: string;
   /** Resolved spec field values for the first PO line item */
   specDetails?: SpecDetails;
+  note: string;
+  remark: string;
+  terms: string;
 }
 
 export function buildPurchaseOrderPrintData(
@@ -133,6 +136,21 @@ export function buildPurchaseOrderPrintData(
       }
     : undefined;
 
+  let finalNote = po.note || '';
+  let finalRemark = po.remark || '';
+  let finalTerms = po.terms || '';
+
+  if (!po.terms && finalNote.includes('TERMS:\n')) {
+    const parts = finalNote.split('TERMS:\n');
+    finalNote = parts[0].trim();
+    finalTerms = parts[1].trim();
+  }
+  if (!po.remark && finalNote.includes('REMARK: ')) {
+    const parts = finalNote.split('REMARK: ');
+    finalNote = parts[0].trim();
+    finalRemark = parts[1].trim();
+  }
+
   return {
     poNumber: po.poNumber,
     date: po.date,
@@ -165,5 +183,8 @@ export function buildPurchaseOrderPrintData(
     grandTotal,
     itemTypeKey: detectedConfig?.key,
     specDetails,
+    note: finalNote,
+    remark: finalRemark,
+    terms: finalTerms,
   };
 }

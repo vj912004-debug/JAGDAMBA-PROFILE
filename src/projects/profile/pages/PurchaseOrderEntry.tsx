@@ -167,10 +167,10 @@ const createEmptyPOItem = (): POItem => ({
 });
 
 const hasItemContent = (item: POItem) =>
-  Boolean(item.itemName?.trim() || item.grade.trim() || item.make?.trim() || item.thickness || item.width || item.length || item.nos || item.kg || item.rate || item.sizeSection);
+  Boolean(item.itemName?.trim() || item.grade?.trim() || item.make?.trim() || item.thickness || item.width || item.length || item.nos || item.kg || item.rate || item.sizeSection);
 
 const isRowReadyForNext = (item: POItem) =>
-  Boolean(item.grade.trim() && (String(item.thickness).trim() || String(item.sizeSection).trim()) && String(item.length).trim());
+  Boolean(item.grade?.trim() && (String(item.thickness || '').trim() || String(item.sizeSection || '').trim()) && String(item.length || '').trim());
 
 const parseGstRate = (gstType: string) => {
   const m = gstType.match(/(\d+)/);
@@ -250,7 +250,7 @@ export const PurchaseOrderEntry: React.FC = () => {
     );
     const seen = new Set(base.map(g => g.toUpperCase()));
     const extras = items
-      .map(i => i.grade.trim())
+      .map(i => i.grade?.trim())
       .filter(g => g && !seen.has(g.toUpperCase()));
     return extras.length ? [...base, ...extras] : base;
   }, [grades, selectedSupplier, purchaseOrders, supplierName, items]);
@@ -373,7 +373,9 @@ export const PurchaseOrderEntry: React.FC = () => {
       make: upper(items[0]?.make || ''),
       utLevel: upper(utLevel.trim()),
       tc: upper(tc.trim()),
-      note: upper([note.trim(), remark.trim() ? `REMARK: ${remark.trim()}` : ''].filter(Boolean).join('\n')),
+      note: upper(note.trim()),
+      remark: upper(remark.trim()),
+      terms: upper(terms.trim()),
       customer: upper(customer.trim()),
       location: upper(location.trim()),
       inspection: upper(inspection.trim()),
@@ -481,8 +483,6 @@ export const PurchaseOrderEntry: React.FC = () => {
       toast.error('Add at least one item with grade and weight');
       return null;
     }
-    const noteCombined = [note.trim(), terms.trim() ? `TERMS:\n${terms.trim()}` : ''].filter(Boolean).join('\n\n');
-
     return {
       id: editId || Date.now().toString(),
       poNumber,
@@ -499,7 +499,9 @@ export const PurchaseOrderEntry: React.FC = () => {
       make: upper(items[0]?.make || ''),
       utLevel: upper(utLevel.trim()),
       tc: upper(tc.trim()),
-      note: upper(noteCombined),
+      note: upper(note.trim()),
+      remark: upper(remark.trim()),
+      terms: upper(terms.trim()),
       customer: upper(customer.trim()),
       location: upper(location.trim()),
       inspection: upper(inspection.trim()),
@@ -729,11 +731,19 @@ export const PurchaseOrderEntry: React.FC = () => {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [items, supplierName, date, showWhatsAppModal, showEmailModal, stockModal]);
 
+  const loadedEditIdRef = useRef<string | null>(null);
+
   // Load PO values for editing
   useEffect(() => {
-    if (!editId) return;
+    if (!editId) {
+      loadedEditIdRef.current = null;
+      return;
+    }
+    if (loadedEditIdRef.current === editId) return; // Already loaded
+
     const existing = purchaseOrders.find(po => po.id === editId);
     if (!existing) return;
+    
     setDate(existing.date);
     setSupplierName(existing.supplierName);
     setSupplierAddress(existing.supplierAddress || '');
@@ -746,6 +756,8 @@ export const PurchaseOrderEntry: React.FC = () => {
     setUtLevel(existing.utLevel || '');
     setTc(existing.tc || '');
     setNote(existing.note || '');
+    setRemark(existing.remark || '');
+    setTerms(existing.terms || DEFAULT_TERMS);
     setCustomer(existing.customer || '');
     setLocation(existing.location || '');
     setInspection(existing.inspection || '');
@@ -755,6 +767,8 @@ export const PurchaseOrderEntry: React.FC = () => {
     const loaded = existing.items.map(item => ({ ...item }));
     const last = loaded[loaded.length - 1];
     setItems(last && hasItemContent(last) ? [...loaded, createEmptyPOItem()] : loaded.length ? loaded : [createEmptyPOItem()]);
+
+    loadedEditIdRef.current = editId;
   }, [editId, purchaseOrders]);
 
   const canCreate = role === 'Admin' || role === 'Office Entry';

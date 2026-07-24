@@ -251,6 +251,8 @@ export interface PurchaseOrder {
   utLevel?: string;
   tc?: string;
   note?: string;
+  remark?: string;
+  terms?: string;
   invoiceNo?: string;
   customer?: string;
   location?: string;

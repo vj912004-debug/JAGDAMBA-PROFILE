@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { createPortal } from 'react-dom';
 import { List, ChevronDown } from 'lucide-react';
 import { upper } from '../utils/textCase';
@@ -10,6 +10,7 @@ interface EditableSelectProps {
   placeholder?: string;
   className?: string;
   displayTransform?: (option: string) => string;
+  cacheKey?: string;
 }
 
 export const EditableSelect: React.FC<EditableSelectProps> = ({
@@ -19,14 +20,44 @@ export const EditableSelect: React.FC<EditableSelectProps> = ({
   placeholder,
   className = '',
   displayTransform,
+  cacheKey,
 }) => {
   const [isManual, setIsManual] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [dropdownRect, setDropdownRect] = useState<DOMRect | null>(null);
+  const [cachedOptions, setCachedOptions] = useState<string[]>([]);
   const triggerRef = useRef<HTMLButtonElement>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const datalistId = React.useId();
+
+  const actualCacheKey = cacheKey || (placeholder ? placeholder.replace(/\s+/g, '_').toLowerCase() : '');
+
+  useEffect(() => {
+    if (actualCacheKey) {
+      try {
+        const stored = localStorage.getItem(`es_cache_${actualCacheKey}`);
+        if (stored) {
+          setCachedOptions(JSON.parse(stored));
+        }
+      } catch (e) {}
+    }
+  }, [actualCacheKey]);
+
+  const allOptions = useMemo(() => {
+    return Array.from(new Set([...options, ...cachedOptions]));
+  }, [options, cachedOptions]);
+
+  const saveManualValue = (val: string) => {
+    const trimmed = val.trim().toUpperCase();
+    if (trimmed && actualCacheKey && !options.includes(trimmed) && !cachedOptions.includes(trimmed)) {
+      const next = [...cachedOptions, trimmed];
+      setCachedOptions(next);
+      try {
+        localStorage.setItem(`es_cache_${actualCacheKey}`, JSON.stringify(next));
+      } catch (e) {}
+    }
+  };
 
   // Keep the size-enhancement transform from the original
   const enhancedClassName = className
@@ -46,10 +77,10 @@ export const EditableSelect: React.FC<EditableSelectProps> = ({
 
   // If value is not in options, switch to manual mode
   useEffect(() => {
-    if (value && !options.includes(value) && value !== 'OTHER_MANUAL') {
+    if (value && !allOptions.includes(value) && value !== 'OTHER_MANUAL') {
       setIsManual(true);
     }
-  }, [value, options]);
+  }, [value, allOptions]);
 
   // Close dropdown on outside click
   useEffect(() => {
@@ -98,8 +129,8 @@ export const EditableSelect: React.FC<EditableSelectProps> = ({
 
   const handleBackToList = () => {
     setIsManual(false);
-    if (!value || !options.includes(value)) {
-      onChange(options[0] || '');
+    if (!value || !allOptions.includes(value)) {
+      onChange(allOptions[0] || '');
     }
   };
 
@@ -112,12 +143,13 @@ export const EditableSelect: React.FC<EditableSelectProps> = ({
           list={datalistId}
           value={value}
           onChange={(e) => onChange(upper(e.target.value))}
+          onBlur={(e) => saveManualValue(e.target.value)}
           placeholder={placeholder || 'Type manually...'}
           className={`${enhancedClassName} pr-8 focus:ring-2 focus:ring-blue-500 outline-none transition-all`}
           autoFocus
         />
         <datalist id={datalistId}>
-          {options.map(opt => (
+          {allOptions.map(opt => (
             <option key={opt} value={opt} />
           ))}
         </datalist>
@@ -177,7 +209,7 @@ export const EditableSelect: React.FC<EditableSelectProps> = ({
                   {placeholder}
                 </button>
               )}
-              {options.filter(opt => opt.toLowerCase().includes(searchTerm.toLowerCase())).map(opt => (
+              {allOptions.filter(opt => opt.toLowerCase().includes(searchTerm.toLowerCase())).map(opt => (
                 <button
                   key={opt}
                   type="button"

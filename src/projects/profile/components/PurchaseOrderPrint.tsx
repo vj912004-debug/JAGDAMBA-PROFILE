@@ -353,21 +353,44 @@ export const PurchaseOrderPrint: React.FC<PurchaseOrderPrintProps> = ({
         <div className="bottom-grid">
             {/* Terms and Conditions Block */}
             <div className="terms-box">
-                <div className="terms-header">TERMS & CONDITIONS</div>
+                <div className="terms-header">TERMS & CONDITIONS {(data.note || data.remark) && !blank ? '& NOTE' : ''}</div>
                 <div className="terms-body">
-                    <ul className="terms-list">
-                        {TERMS.map((t, i) => (
-                            <li key={i} data-num={`${i + 1}.`}>{t}</li>
-                        ))}
-                    </ul>
-                    <div className="note-box">
-                        <span className="note-lbl">NOTE :</span>
-                        <div style={{paddingLeft: '35px', marginTop: '-14px', lineHeight: '1.3', fontWeight: 700}}>
-                            1. Weight calculated as per standard.<br/>
-                            2. All dimensions are in MM.<br/>
-                            3. Weight tolerance ± 5% acceptable.
+                    {data.terms && !blank ? (
+                        <div style={{ whiteSpace: 'pre-wrap', lineHeight: '1.4', marginBottom: '8px' }}>
+                            {data.terms}
                         </div>
-                    </div>
+                    ) : (
+                        <ul className="terms-list">
+                            {TERMS.map((t, i) => (
+                                <li key={i} data-num={`${i + 1}.`}>{t}</li>
+                            ))}
+                        </ul>
+                    )}
+                    {(data.remark || data.note) && !blank ? (
+                        <div className="note-box" style={{ marginTop: '10px' }}>
+                            {data.remark && (
+                                <div style={{ marginBottom: '4px' }}>
+                                    <span className="note-lbl">REMARK : </span>
+                                    <span style={{ fontWeight: 700, whiteSpace: 'pre-wrap' }}>{data.remark}</span>
+                                </div>
+                            )}
+                            {data.note && (
+                                <div>
+                                    <span className="note-lbl">NOTE : </span>
+                                    <span style={{ fontWeight: 700, whiteSpace: 'pre-wrap' }}>{data.note}</span>
+                                </div>
+                            )}
+                        </div>
+                    ) : (
+                        <div className="note-box">
+                            <span className="note-lbl">NOTE :</span>
+                            <div style={{paddingLeft: '35px', marginTop: '-14px', lineHeight: '1.3', fontWeight: 700}}>
+                                1. Weight calculated as per standard.<br/>
+                                2. All dimensions are in MM.<br/>
+                                3. Weight tolerance ± 5% acceptable.
+                            </div>
+                        </div>
+                    )}
                 </div>
             </div>
 

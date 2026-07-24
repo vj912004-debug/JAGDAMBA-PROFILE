@@ -333,16 +333,28 @@ export const ShreePurchaseOrderPrint: React.FC<ShreePurchaseOrderPrintProps> = (
             <div className="sj-terms">
               <div className="sj-terms-header-wrap">
                 <div className="sj-section-icon"><PoIconClipboard /></div>
-                <div className="sj-terms-header">TERMS &amp; CONDITIONS :</div>
+                <div className="sj-terms-header">TERMS &amp; CONDITIONS {(data.note || data.remark) && !blank ? '& NOTE :' : ':'}</div>
               </div>
-              <div className="sj-terms-grid">
-                <div className="sj-terms-col">
-                  <ol>{TERMS_LEFT.map(t => <li key={t}>{t}</li>)}</ol>
+              {data.terms && !blank ? (
+                <div style={{ padding: '8px 12px', fontSize: '10px', whiteSpace: 'pre-wrap', lineHeight: '1.4' }}>
+                  {data.terms}
                 </div>
-                <div className="sj-terms-col">
-                  <ol start={5}>{TERMS_RIGHT.map(t => <li key={t}>{t}</li>)}</ol>
+              ) : (
+                <div className="sj-terms-grid">
+                  <div className="sj-terms-col">
+                    <ol>{TERMS_LEFT.map(t => <li key={t}>{t}</li>)}</ol>
+                  </div>
+                  <div className="sj-terms-col">
+                    <ol start={5}>{TERMS_RIGHT.map(t => <li key={t}>{t}</li>)}</ol>
+                  </div>
                 </div>
-              </div>
+              )}
+              {(data.remark || data.note) && !blank && (
+                <div style={{ padding: '0 12px 8px 12px', fontSize: '10px', lineHeight: '1.4' }}>
+                  {data.remark && <div style={{ marginBottom: '4px' }}><strong>REMARK :</strong> <span style={{ whiteSpace: 'pre-wrap' }}>{data.remark}</span></div>}
+                  {data.note && <div><strong>NOTE :</strong> <span style={{ whiteSpace: 'pre-wrap' }}>{data.note}</span></div>}
+                </div>
+              )}
             </div>
 
             <div className="sj-signatures">
