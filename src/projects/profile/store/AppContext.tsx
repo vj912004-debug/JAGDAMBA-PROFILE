@@ -804,6 +804,7 @@ interface AppContextType {
   addTransport: (transport: Omit<TransportMasterRecord, 'id'>) => Promise<TransportMasterRecord>;
   updateTransport: (transport: TransportMasterRecord) => Promise<void>;
   deleteTransport: (id: string) => Promise<void>;
+  importTransports: (rows: Omit<TransportMasterRecord, 'id' | 'code'>[]) => Promise<{ saved: number; skipped: number; records: TransportMasterRecord[] }>;
 }
 
 // ─── Translations ─────────────────────────────────────────────
@@ -984,7 +985,7 @@ const seedOrders: Order[] = [
     stage: "Challan Done",
     urgent: true,
     deliveryOption: "Self Pick",
-    paymentTerms: "30 Days Credit",
+    paymentTerms: "30 Days",
     termsAndConditions: "Material standard as per drawings.",
     gstType: "CGST/SGST",
     transportationCharges: 1500,
@@ -1082,7 +1083,7 @@ const seedParties: PartyMaster[] = [
     mobileNumber: "9876543210",
     location: "Vadodara",
     deliveryAddress: "PLOT NO. 23/B, GIDC MAKARPURA, VADODARA - 390010",
-    paymentTerms: "30 Days Credit",
+    paymentTerms: "30 Days",
     gstNumber: "24AAACS1234F1Z0",
     email: "superiorsteel@gmail.com",
     address: "PLOT NO. 23/B, GIDC MAKARPURA, VADODARA - 390010",
@@ -1264,6 +1265,40 @@ function pickArray<T>(primary: T[] | undefined, fallback: T[] | undefined): T[] 
   return Array.isArray(primary) ? primary : [];
 }
 
+/** Prefer the richer PO when both exist — never let empty line-items wipe a filled PO. */
+function mergePurchaseOrderRows(
+  primary: PurchaseOrder[] | undefined,
+  localRows: PurchaseOrder[] | undefined,
+): PurchaseOrder[] {
+  const server = Array.isArray(primary) ? primary : [];
+  const local = Array.isArray(localRows) ? localRows : [];
+  if (!server.length) return local;
+  if (!local.length) return server;
+
+  const map = new Map<string, PurchaseOrder>();
+  for (const po of local) map.set(po.id, po);
+  for (const po of server) {
+    const prev = map.get(po.id);
+    if (!prev) {
+      map.set(po.id, po);
+      continue;
+    }
+    const prevItems = Array.isArray(prev.items) ? prev.items.length : 0;
+    const nextItems = Array.isArray(po.items) ? po.items.length : 0;
+    // Keep whichever copy has line items; prefer server when both have items
+    if (nextItems === 0 && prevItems > 0) {
+      map.set(po.id, prev);
+    } else {
+      map.set(po.id, po);
+    }
+  }
+  // Keep local-only POs that server is missing
+  for (const po of local) {
+    if (!map.has(po.id)) map.set(po.id, po);
+  }
+  return Array.from(map.values());
+}
+
 function mergeMasterRows<T extends { id: string }>(
   primary: T[] | undefined,
   localRows: T[] | undefined,
@@ -1285,7 +1320,7 @@ function mergeStoredData(primary: Partial<StoredData> | null | undefined, local:
     usages: pickArray(p.usages, local?.usages),
     dispatches: pickArray(p.dispatches, local?.dispatches),
     challans: pickArray(p.challans, local?.challans),
-    purchaseOrders: pickArray(p.purchaseOrders, local?.purchaseOrders),
+    purchaseOrders: mergePurchaseOrderRows(p.purchaseOrders, local?.purchaseOrders),
     purchaseReceipts: pickArray(p.purchaseReceipts, local?.purchaseReceipts),
     tcRecords: pickArray(p.tcRecords, local?.tcRecords),
     quotations: pickArray(p.quotations, local?.quotations),
@@ -2104,6 +2139,92 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     await persistMastersNow({ transports: next });
   }, [transports, addLog, persistMastersNow]);
 
+  const importTransports = useCallback(async (rows: Omit<TransportMasterRecord, 'id' | 'code'>[]) => {
+    let saved = 0;
+    let skipped = 0;
+    const byName = new Map(transports.map(t => [t.name.trim().toUpperCase(), t]));
+    let codeSeq = transports.length;
+    const touched: TransportMasterRecord[] = [];
+
+    for (const row of rows) {
+      const name = (row.name || '').trim().toUpperCase();
+      if (!name) {
+        skipped += 1;
+        continue;
+      }
+
+      const existing = byName.get(name);
+      if (existing) {
+        const mergedVehicles = [...(existing.vehicles || [])];
+        for (const v of row.vehicles || []) {
+          const dup = mergedVehicles.some(x => x.vehicleNo.toUpperCase() === v.vehicleNo.toUpperCase());
+          if (!dup) mergedVehicles.push(v);
+        }
+        const updated: TransportMasterRecord = {
+          ...existing,
+          contact: row.contact || existing.contact,
+          phone: row.phone || existing.phone,
+          altMobile: row.altMobile || existing.altMobile,
+          mobile: row.mobile || existing.mobile,
+          address: row.address || existing.address,
+          city: row.city || existing.city,
+          state: row.state || existing.state,
+          pincode: row.pincode || existing.pincode,
+          gst: row.gst || existing.gst,
+          email: row.email || existing.email,
+          vehicleCapacity: row.vehicleCapacity || existing.vehicleCapacity,
+          vehicleType: row.vehicleType || existing.vehicleType,
+          ratePerKg: row.ratePerKg || existing.ratePerKg,
+          remark: row.remark || existing.remark,
+          vehicles: mergedVehicles,
+        };
+        byName.set(name, updated);
+        touched.push(updated);
+        saved += 1;
+      } else {
+        codeSeq += 1;
+        const code = `TR-${String(codeSeq).padStart(3, '0')}`;
+        const created: TransportMasterRecord = {
+          id: `tr_${Date.now()}_${saved}`,
+          code,
+          name,
+          contact: row.contact || '',
+          phone: row.phone || '',
+          altMobile: row.altMobile || '',
+          mobile: row.mobile || '',
+          address: row.address || '',
+          city: row.city || '',
+          state: row.state || 'Gujarat',
+          pincode: row.pincode || '',
+          gst: row.gst || '',
+          email: row.email || '',
+          vehicleCapacity: row.vehicleCapacity || '',
+          vehicleType: row.vehicleType || '',
+          ratePerKg: row.ratePerKg || '',
+          remark: row.remark || '',
+          vehicles: row.vehicles || [],
+        };
+        byName.set(name, created);
+        touched.push(created);
+        saved += 1;
+      }
+    }
+
+    const next = Array.from(byName.values());
+    setTransports(next);
+
+    if (saved > 0) {
+      addLog({
+        action: 'Transports Imported',
+        details: `${saved} transport(s) loaded from Excel.${skipped > 0 ? ` ${skipped} empty row(s) skipped.` : ''}`,
+        type: 'info',
+      });
+      await persistMastersNow({ transports: next });
+    }
+
+    return { saved, skipped, records: touched };
+  }, [transports, addLog, persistMastersNow]);
+
   return (
     <AppContext.Provider value={{
       user, setUser, logout,
@@ -2162,7 +2283,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       items, addItem, updateItem, deleteItem,
       sections, addSection, updateSection, deleteSection,
       workers, addWorker, updateWorker, deleteWorker,
-      transports, addTransport, updateTransport, deleteTransport,
+      transports, addTransport, updateTransport, deleteTransport, importTransports,
     }}>
       {children}
     </AppContext.Provider>

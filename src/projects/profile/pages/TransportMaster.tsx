@@ -1,10 +1,11 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { Truck, Pencil, Trash2, Search, FileSpreadsheet, Printer, Edit2, Save, Plus, Filter, ArrowLeft, Check, X } from 'lucide-react';
+import { Truck, Pencil, Trash2, Search, FileSpreadsheet, Printer, Edit2, Save, Plus, Filter, ArrowLeft, Check, X, FileUp, Download } from 'lucide-react';
 import { useAppContext, type TransportMasterRecord, type TransportVehicle } from '../store/AppContext';
 import { nextMasterCode } from '../utils/masterHelpers';
 import { ErpListPagination, paginateRows } from '../components/ErpPageShell';
-import { exportToExcel } from '../utils/excel';
+import { exportToExcel, importFromExcel } from '../utils/excel';
+import { downloadTransportTemplate, excelRowsToTransports } from '../utils/transportExcel';
 import toast from 'react-hot-toast';
 
 const STATES = ['Gujarat', 'Maharashtra', 'Rajasthan', 'Madhya Pradesh', 'Delhi', 'Karnataka', 'Tamil Nadu', 'Other'];
@@ -90,7 +91,7 @@ const Field: React.FC<{
 export const TransportMaster: React.FC = () => {
   const location = useLocation();
   const navigate = useNavigate();
-  const { transports, addTransport, updateTransport, deleteTransport } = useAppContext();
+  const { transports, addTransport, updateTransport, deleteTransport, importTransports } = useAppContext();
   const nextCode = useMemo(() => nextMasterCode('TR-', transports, 3), [transports]);
   const [f, setF] = useState(() => blank(nextCode));
   const [search, setSearch] = useState('');
@@ -236,6 +237,40 @@ export const TransportMaster: React.FC = () => {
     return () => window.removeEventListener('keydown', onKeyDown);
   }, [f.id, handleNew, handleSave, handleDelete]);
 
+  const fileInputRef = React.useRef<HTMLInputElement>(null);
+
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const loading = toast.loading('Reading Excel…');
+    try {
+      const data = await importFromExcel(file);
+      const parsed = excelRowsToTransports(data);
+      if (!parsed.length) {
+        toast.error('No transport rows found — check column headers (Transport Name, Mobile No, …)', { id: loading });
+        return;
+      }
+
+      const { saved, skipped, records } = await importTransports(parsed);
+      // Auto-fill form with first imported transport so details show immediately
+      if (records[0]) {
+        setF(toForm(records[0]));
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }
+
+      toast.success(
+        `${saved} transport(s) imported & details auto-filled${skipped ? ` (${skipped} blank skipped)` : ''}`,
+        { id: loading },
+      );
+    } catch (error) {
+      console.error(error);
+      toast.error('Failed to import Excel — use the Template for correct columns', { id: loading });
+    }
+
+    if (fileInputRef.current) fileInputRef.current.value = '';
+  };
+
   const saveVehicle = () => {
     if (!vForm.vehicleNo) { toast.error('Vehicle No required'); return; }
     if (editingVehicleId && editingVehicleId !== 'new') {
@@ -294,6 +329,17 @@ export const TransportMaster: React.FC = () => {
         <button type="button" onClick={() => window.print()} className="bg-[#6f42c1] hover:bg-[#5a32a3] text-white px-3 py-1.5 text-xs font-bold rounded flex items-center gap-1.5 shadow-sm transition-colors uppercase">
           <Printer className="w-3.5 h-3.5" strokeWidth={3} /> PRINT (F6)
         </button>
+        <button type="button" onClick={() => fileInputRef.current?.click()} className="bg-teal-600 hover:bg-teal-700 text-white px-3 py-1.5 text-xs font-bold rounded flex items-center gap-1.5 shadow-sm transition-colors uppercase">
+          <FileUp className="w-3.5 h-3.5" strokeWidth={3} /> UPLOAD EXCEL
+        </button>
+        <button
+          type="button"
+          onClick={() => { downloadTransportTemplate(); toast.success('Template downloaded — fill & Upload Excel'); }}
+          className="bg-slate-700 hover:bg-slate-800 text-white px-3 py-1.5 text-xs font-bold rounded flex items-center gap-1.5 shadow-sm transition-colors uppercase"
+        >
+          <Download className="w-3.5 h-3.5" strokeWidth={3} /> EXCEL TEMPLATE
+        </button>
+        <input type="file" accept=".xlsx,.xls,.csv" className="hidden" ref={fileInputRef} onChange={handleFileUpload} />
         <button type="button" onClick={() => navigate(-1)} className="bg-white hover:bg-slate-50 text-slate-700 border border-slate-300 px-3 py-1.5 text-xs font-bold rounded flex items-center gap-1.5 ml-auto shadow-sm transition-colors uppercase">
           <ArrowLeft className="w-3.5 h-3.5" strokeWidth={3} /> BACK
         </button>

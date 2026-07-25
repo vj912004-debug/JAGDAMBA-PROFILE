@@ -55,6 +55,7 @@ export const NAV_GROUPS: NavGroup[] = [
       { path: '/purchase-return', label: 'Purchase Return' },
       { path: '/supplier-ledger', label: 'Supplier Ledger' },
       { path: '/reject-material-return', label: 'Reject Material Return' },
+      { path: '/material-required-pending', label: 'Material Required Pending' },
     ]
   },
   {
@@ -109,7 +110,6 @@ export const NAV_GROUPS: NavGroup[] = [
       { path: '/production-reports', label: 'Production Reports' },
       { path: '/stock-reports', label: 'Stock Reports' },
       { path: '/material-receipt-report', label: 'Material Receipt Report' },
-      { path: '/material-required-pending', label: 'Material Required Pending' },
       { path: '/pending-material-report', label: 'Pending Material Report' },
       { path: '/reports', label: 'Sales Dashboard' },
     ]

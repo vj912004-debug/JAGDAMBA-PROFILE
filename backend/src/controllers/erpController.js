@@ -69,6 +69,7 @@ function arrayLen(data, key) {
 /**
  * Merge incoming ERP payload with existing DB data.
  * Empty arrays NEVER replace non-empty collections (permanent anti-wipe).
+ * For purchaseOrders, also protect line-items inside each PO.
  */
 function mergeErpPayload(existing, incoming) {
   const base = existing && typeof existing === 'object' ? existing : {};
@@ -92,6 +93,11 @@ function mergeErpPayload(existing, incoming) {
       continue;
     }
 
+    if (key === 'purchaseOrders') {
+      merged[key] = mergePurchaseOrdersProtectingItems(prev, incomingArr);
+      continue;
+    }
+
     merged[key] = incomingArr;
   }
 
@@ -108,6 +114,30 @@ function mergeErpPayload(existing, incoming) {
   }
 
   return { merged, protectedKeys };
+}
+
+function mergePurchaseOrdersProtectingItems(existingPos, incomingPos) {
+  const map = new Map();
+  for (const po of existingPos || []) {
+    if (po && po.id) map.set(String(po.id), po);
+  }
+  for (const po of incomingPos || []) {
+    if (!po || !po.id) continue;
+    const id = String(po.id);
+    const prev = map.get(id);
+    if (!prev) {
+      map.set(id, po);
+      continue;
+    }
+    const prevItems = Array.isArray(prev.items) ? prev.items.length : 0;
+    const nextItems = Array.isArray(po.items) ? po.items.length : 0;
+    if (nextItems === 0 && prevItems > 0) {
+      map.set(id, { ...po, items: prev.items });
+    } else {
+      map.set(id, po);
+    }
+  }
+  return Array.from(map.values());
 }
 
 async function ensureSchema() {

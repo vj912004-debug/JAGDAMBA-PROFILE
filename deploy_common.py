@@ -215,24 +215,31 @@ def deploy_via_archives(
 
 
 def restart_services(client: paramiko.SSHClient) -> None:
-    run(client, f'cd {REMOTE_ROOT}/backend && pm2 delete api', check=False)
-    run(client, f'cd {REMOTE_ROOT}/backend && pm2 start src/index.js --name api --update-env')
-
-    # Prefer restart; if missing after a crash, start fresh
-    whatsapp_out = run(client, 'pm2 describe whatsapp', check=False)
-    if 'doesn\'t exist' in whatsapp_out or 'does not exist' in whatsapp_out.lower():
-        run(
-            client,
-            f'cd {REMOTE_ROOT}/server && pm2 start src/index.js --name whatsapp --update-env',
-            check=False,
-        )
-    else:
-        run(client, 'pm2 restart whatsapp --update-env', check=False)
+    # Kill conflicting processes started from /var/www incomplete copy
+    run(client, 'pm2 delete backend server api whatsapp 2>/dev/null || true', check=False)
+    # Ensure names are free even if delete raced / daemon desync
+    run(client, 'pm2 stop api whatsapp 2>/dev/null || true', check=False)
+    run(client, 'pm2 delete api whatsapp 2>/dev/null || true', check=False)
 
     run(
         client,
-        f'cp {REMOTE_ROOT}/jagdamba_nginx.txt /etc/nginx/sites-available/jagdamba 2>/dev/null || '
-        f'cp {REMOTE_ROOT}/jagdamba_nginx.txt /etc/nginx/sites-enabled/default 2>/dev/null || true',
+        f'cd {REMOTE_ROOT}/backend && pm2 start src/index.js --name api '
+        f'--cwd {REMOTE_ROOT}/backend --update-env -f',
+    )
+
+    run(
+        client,
+        f'cd {REMOTE_ROOT}/server && pm2 start src/index.js --name whatsapp '
+        f'--cwd {REMOTE_ROOT}/server --update-env -f',
+        check=False,
+    )
+
+    # Keep only the production nginx site pointing at /root/JAGDAMBA-PROFILE
+    run(client, 'rm -f /etc/nginx/sites-enabled/jagdambaprofile', check=False)
+    run(
+        client,
+        f'cp {REMOTE_ROOT}/jagdamba_nginx.txt /etc/nginx/sites-available/jagdamba && '
+        f'ln -sfn /etc/nginx/sites-available/jagdamba /etc/nginx/sites-enabled/jagdamba',
         check=False,
     )
     run(client, 'nginx -t && systemctl reload nginx', check=False)
@@ -240,21 +247,27 @@ def restart_services(client: paramiko.SSHClient) -> None:
     run(client, 'pm2 startup systemd -u root --hp /root', check=False)
     run(client, 'pm2 status', check=False)
 
-    # Block deploy success if API is not actually reachable (prevents cache/502 toasts)
+    # Block deploy success if API/DB/ERP are not actually reachable
     health = ''
-    for attempt in range(1, 6):
+    for attempt in range(1, 8):
         time.sleep(1)
         health = run(
             client,
             'curl -s --max-time 8 http://127.0.0.1:5000/api/health || true',
             check=False,
         )
-        if '"status":"UP"' in health or '"database":"CONNECTED"' in health:
-            safe_print(f'API health OK (attempt {attempt})')
+        erp_code = run(
+            client,
+            'curl -s -o /dev/null -w "%{http_code}" --max-time 8 http://127.0.0.1:5000/api/erp/data || true',
+            check=False,
+        ).strip()
+        if ('"status":"UP"' in health or '"database":"CONNECTED"' in health) and erp_code == '200':
+            safe_print(f'API+ERP health OK (attempt {attempt})')
             break
-        safe_print(f'API health not ready yet (attempt {attempt}/5)...')
+        safe_print(f'API not ready yet (attempt {attempt}/7) health={health[:120]} erp={erp_code}')
     else:
         raise RuntimeError(f'API failed health check after restart: {health[:300]}')
 
     run(client, 'curl -sI https://jagdambaprofile.tech/ | head -5', check=False)
     run(client, 'curl -skI https://jagdambaprofile.tech/api/health | head -8', check=False)
+    run(client, 'curl -skI https://jagdambaprofile.tech/api/erp/data | head -8', check=False)

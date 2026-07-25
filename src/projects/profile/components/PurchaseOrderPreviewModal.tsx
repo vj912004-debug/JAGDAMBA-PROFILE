@@ -111,7 +111,7 @@ export const PurchaseOrderPreviewModal: React.FC<PurchaseOrderPreviewModalProps>
           </div>
           <div className="grow overflow-auto p-4 sm:p-8 bg-slate-200 dark:bg-slate-700/50">
             <div className="mx-auto shrink-0" style={{ width: PO_PRINT_WIDTH_PX, minWidth: PO_PRINT_WIDTH_PX }}>
-              <PurchaseOrderPrint po={po} />
+              <PurchaseOrderPrint po={po} previewMode />
             </div>
           </div>
         </div>

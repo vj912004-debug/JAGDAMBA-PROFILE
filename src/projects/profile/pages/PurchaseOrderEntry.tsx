@@ -980,7 +980,7 @@ export const PurchaseOrderEntry: React.FC = () => {
             <div className="p-4 space-y-3.5">
               <div className="grid grid-cols-[130px_1fr] items-center gap-2">
                 <label className="text-xs font-bold text-slate-600 dark:text-slate-400">Payment Terms <span className="text-red-500">*</span></label>
-                <EditableSelect value={paymentTerms} onChange={setPaymentTerms} options={['IMMEDIATE', 'CHEQUE ON DELIVERY', '15 DAYS CREDIT', '30 DAYS CREDIT', '45 DAYS CREDIT', '60 DAYS CREDIT', 'PDC', '100% ADVANCE']} placeholder="Select Payment Terms" className="w-full !py-1.5 text-xs" />
+                <EditableSelect value={paymentTerms} onChange={setPaymentTerms} options={['IMMEDIATE', 'CHEQUE ON DELIVERY', '15 DAYS', '30 DAYS', '45 DAYS', '60 DAYS', 'PDC', '100% ADVANCE']} placeholder="Select Payment Terms" className="w-full !py-1.5 text-xs" />
               </div>
 
               <div className="grid grid-cols-[130px_1fr] items-center gap-2">

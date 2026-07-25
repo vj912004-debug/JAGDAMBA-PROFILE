@@ -143,12 +143,18 @@ export function buildPurchaseOrderPrintData(
   if (!po.terms && finalNote.includes('TERMS:\n')) {
     const parts = finalNote.split('TERMS:\n');
     finalNote = parts[0].trim();
-    finalTerms = parts[1].trim();
+    // Take first TERMS block only — duplicated TERMS text was blowing up print height
+    finalTerms = (parts[1] || '').split(/\n\s*TERMS:\s*\n/)[0].trim();
   }
   if (!po.remark && finalNote.includes('REMARK: ')) {
     const parts = finalNote.split('REMARK: ');
     finalNote = parts[0].trim();
     finalRemark = parts[1].trim();
+  }
+
+  // Extra safety: if terms still contain a repeated TERMS header, keep the first copy
+  if (finalTerms.includes('\nTERMS:\n')) {
+    finalTerms = finalTerms.split('\nTERMS:\n')[0].trim();
   }
 
   return {

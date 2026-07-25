@@ -517,7 +517,7 @@ export const PurchaseReports: React.FC = () => {
             </div>
             <div className="grow overflow-auto p-4 sm:p-8 bg-slate-200 dark:bg-slate-700/50">
               <div className="mx-auto shrink-0" style={{ width: PO_PRINT_WIDTH_PX, minWidth: PO_PRINT_WIDTH_PX }}>
-                <PurchaseOrderPrint po={previewPO} />
+                <PurchaseOrderPrint po={previewPO} previewMode />
               </div>
             </div>
           </div>

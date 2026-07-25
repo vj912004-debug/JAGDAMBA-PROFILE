@@ -24,6 +24,8 @@ export function openPurchaseOrderPrintWindow(
 
   const fontLink = brand === 'shree' ? PO_SHREE_FONT_LINK : PO_FONT_LINK;
 
+  // IMPORTANT: wrap cloned content in #printAreaId so CSS selectors match.
+  // el.innerHTML alone omits the id wrapper and all #po-print-area rules fail.
   printWindow.document.write(`<!DOCTYPE html>
 <html>
   <head>
@@ -33,15 +35,35 @@ export function openPurchaseOrderPrintWindow(
     <link rel="stylesheet" href="${PO_FA_LINK}" />
     <style>
       html, body { margin: 0; padding: 0; background: #fff; }
+      @page { size: A4; margin: 0; }
       ${poStylesForArea(printAreaId, brand)}
     </style>
   </head>
-  <body>${el.innerHTML}</body>
+  <body>
+    <div id="${printAreaId}">${el.innerHTML}</div>
+  </body>
 </html>`);
   printWindow.document.close();
   printWindow.focus();
   void (async () => {
-    const sheet = printWindow.document.querySelector('.po-sheet') as HTMLElement | null;
+    // Clear any stale inline fit styles copied from the on-screen preview
+    const sheet = printWindow.document.querySelector('.po-sheet, .page-container') as HTMLElement | null;
+    const body = printWindow.document.querySelector('.po-body') as HTMLElement | null;
+    const wrap = printWindow.document.querySelector('.po-body-wrap') as HTMLElement | null;
+    if (body) {
+      body.style.transform = '';
+      body.style.width = '';
+      body.style.marginLeft = '';
+    }
+    if (wrap) {
+      wrap.style.height = '';
+      wrap.style.overflow = '';
+    }
+    if (sheet) {
+      sheet.style.height = '';
+      sheet.style.maxHeight = '';
+      sheet.style.overflow = '';
+    }
     await fitPoSheetBodyWhenReady(sheet);
     printWindow.print();
     printWindow.close();

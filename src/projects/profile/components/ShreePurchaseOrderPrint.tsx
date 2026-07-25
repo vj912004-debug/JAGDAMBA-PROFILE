@@ -24,8 +24,10 @@ import { fitPoSheetBodyWhenReady } from '../utils/fitPoPrintLayout';
 
 const MIN_ROW_COUNT = 4;
 
-const fmt = (n: number) =>
-  (isFinite(n) ? n : 0).toLocaleString('en-IN', { minimumFractionDigits: 0, maximumFractionDigits: 2 });
+const fmt = (n: number | string) => {
+  const num = typeof n === 'number' ? n : Number(n);
+  return (isFinite(num) ? num : 0).toLocaleString('en-IN', { minimumFractionDigits: 0, maximumFractionDigits: 2 });
+};
 
 const fmtDate = (iso: string) => {
   if (!iso) return '';
@@ -74,6 +76,7 @@ export interface ShreePurchaseOrderPrintProps {
   extras?: PurchaseOrderPrintExtras;
   printAreaId: string;
   blank?: boolean;
+  previewMode?: boolean;
 }
 
 export const ShreePurchaseOrderPrint: React.FC<ShreePurchaseOrderPrintProps> = ({
@@ -81,6 +84,7 @@ export const ShreePurchaseOrderPrint: React.FC<ShreePurchaseOrderPrintProps> = (
   extras,
   printAreaId,
   blank = false,
+  previewMode = false,
 }) => {
   const company = PO_COMPANY_BRANDS.shree;
   const source = blank || !po ? EMPTY_PO : po;
@@ -103,10 +107,33 @@ export const ShreePurchaseOrderPrint: React.FC<ShreePurchaseOrderPrintProps> = (
   useLayoutEffect(() => {
     const sheet = sheetRef.current;
     if (!sheet) return;
+    if (previewMode) {
+      const root = sheet.parentElement;
+      const wrap = sheet.querySelector('.po-body-wrap') as HTMLElement | null;
+      const body = sheet.querySelector('.po-body') as HTMLElement | null;
+      if (body) {
+        body.style.transform = '';
+        body.style.width = '';
+        body.style.marginLeft = '';
+      }
+      if (wrap) {
+        wrap.style.height = '';
+        wrap.style.overflow = 'visible';
+      }
+      sheet.style.height = 'auto';
+      sheet.style.maxHeight = 'none';
+      sheet.style.overflow = 'visible';
+      if (root) {
+        root.style.height = 'auto';
+        root.style.maxHeight = 'none';
+        root.style.overflow = 'visible';
+      }
+      return;
+    }
     void fitPoSheetBodyWhenReady(sheet);
     const t = window.setTimeout(() => void fitPoSheetBodyWhenReady(sheet), 250);
     return () => clearTimeout(t);
-  }, [blank, printAreaId, data.poNumber, data.supplierName, data.items.length, data.grandTotal]);
+  }, [blank, printAreaId, previewMode, data.poNumber, data.supplierName, data.items.length, data.grandTotal]);
 
   return (
     <div id={printAreaId}>
